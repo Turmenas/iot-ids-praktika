@@ -1,0 +1,20 @@
+# Eiluciu pabaigos: Git saugo LF, Windows'e isskleidzia i CRLF
+* text=auto
+
+# Tekstiniai failai
+*.tex   text
+*.bib   text
+*.py    text
+*.md    text
+*.yaml  text
+*.yml   text
+*.csv   text
+*.ps1   text eol=crlf
+
+# Binariniai - neliesti
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.parquet binary
+*.pkl   binary
+*.h5    binary
