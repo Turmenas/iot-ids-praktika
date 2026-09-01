@@ -1,0 +1,79 @@
+% =====================================================================
+%  1 UŽDUOTIS — IoT tinklams būdingos kibernetinės atakos
+%  Rugpjūčio 3–4 d. | Tikslinė apimtis: 4–5 psl.
+% =====================================================================
+
+\subsection{IoT architektūros sluoksniai ir jų atakų paviršius}
+
+% TODO (rugpj. 3): trumpas trijų sluoksnių pristatymas (2 pastraipos)
+
+\subsection{Atakų klasifikacija}
+
+% TODO (rugpj. 3): po 1–2 pastraipas kiekvienam sluoksniui.
+% Svarbiausia — stulpelis „matomi tinklo požymiai": jis tiesiogiai
+% virsta modelio įvesties požymiais 4 skyriuje (\cref{sec:sprendimas}).
+
+\begin{table}[H]
+\centering
+\caption{IoT atakų klasifikacija pagal architektūros sluoksnius}
+\label{tab:atakos}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Sluoksnis} & \textbf{Ataka} & \textbf{Matomi tinklo požymiai} \\
+\midrule
+Suvokimo & Jutiklių duomenų klastojimas & Netipinės telemetrijos reikšmės, staigūs šuoliai \\
+         & Fizinis įsilaužimas & Naujas MAC adresas, pasikeitęs įrenginio profilis \\
+\addlinespace
+Tinklo   & DDoS / DoS & Didelis paketų dažnis, vienodas paketų dydis, daug SYN \\
+         & MITM / ARP spoofing & Pasikartojantys ARP atsakymai, pasikeitęs maršrutas \\
+         & Sybil & Daug tapatybių iš vieno fizinio šaltinio \\
+         & RPL maršrutizavimo atakos & Anomalūs DIO/DAO pranešimai, topologijos kaita \\
+\addlinespace
+Programų & Mirai tipo botnetai & Telnet/SSH skenavimas, C\&C periodinės jungtys \\
+         & MQTT piktnaudžiavimas & Netipiniai topic'ai, per didelis publish dažnis \\
+         & Duomenų nutekinimas & Neįprastai didelis išeinantis srautas \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Klasikiniai aptikimo metodai ir jų ribos IoT kontekste}
+
+% TODO (rugpj. 4): parašais grįstas (Snort/Suricata), taisyklėmis grįstas,
+% anomalijomis grįstas — po pastraipą. Akcentas: KODĖL nepakanka.
+
+\begin{table}[H]
+\centering
+\caption{Aptikimo metodų palyginimas IoT kontekste}
+\label{tab:aptikimas}
+\small
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\toprule
+\textbf{Metodas} & \textbf{Privalumai} & \textbf{Trūkumai IoT aplinkoje} \\
+\midrule
+Parašais grįstas & Tikslus žinomoms atakoms, mažai klaidingų teigiamų
+& Neaptinka zero-day; parašų bazė reikalauja nuolatinio atnaujinimo \\
+\addlinespace
+Taisyklėmis / slenksčiais & Paprasta realizuoti, skaidru
+& Daug klaidingų pavojaus signalų; slenksčiai netinka nevienalyčiam IoT elgesiui \\
+\addlinespace
+Anomalijomis grįstas & Aptinka nematytas atakas
+& Reikia „normalaus elgesio" etalono; jautrus koncepcijos dreifui \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{IoT specifika, ribojanti tradicinių IDS taikymą}
+
+% TODO (rugpj. 4): riboti resursai, protokolų įvairovė, įrenginių mastas,
+% nevienalytis normalaus elgesio profilis, šifruotas srautas.
+% Ši dalis pagrindžia, kodėl 2 skyriuje kreipiamės į DI metodus.
+
+\subsection{Aptikimo diegimo vieta}
+
+% TODO (rugpj. 4): on-device / edge-gateway / cloud — privalumai ir trūkumai.
+% Susieti su inferencijos delsos ir modelio dydžio matavimais 5 skyriuje.
+
+\subsection{Skyriaus apibendrinimas}
+
+% TODO: 1 pastraipa — kokie reikalavimai keliami aptikimo sprendimui.

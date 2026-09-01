@@ -1,0 +1,57 @@
+# ─── Duomenys (NIEKADA į Git) ────────────────────────────────
+duomenys/raw/
+duomenys/processed/
+*.csv
+*.parquet
+*.pcap
+!rezultatai/rezultatai.csv          # išimtis: metrikos yra mažos ir svarbios
+
+# ─── Apmokyti modeliai ───────────────────────────────────────
+rezultatai/apmokyti/*
+!rezultatai/apmokyti/metadata.json  # metaduomenys lieka — jie maži ir būtini
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.pt
+*.pth
+
+# ─── LaTeX šiukšlės ──────────────────────────────────────────
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.nav
+*.snm
+*.vrb
+ataskaita/ataskaita.pdf             # generuojamas; jei norite versijuoti — ištrinkite šią eilutę
+
+# ─── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# ─── Eksperimentų sekimas ────────────────────────────────────
+mlruns/
+.optuna/
+wandb/
+
+# ─── OS / IDE ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

@@ -1,0 +1,134 @@
+% =====================================================================
+%  Praktikos ataskaita
+%  IoT kibernetinių atakų prevencija naudojant DI sistemas
+%
+%  Kompiliavimas:  latexmk -pdf ataskaita.tex
+%  arba rankiniu būdu:
+%      pdflatex ataskaita → biber ataskaita → pdflatex ×2
+% =====================================================================
+
+\documentclass[12pt,a4paper]{article}
+
+% ─── Koduotė ir kalba ────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[lithuanian]{babel}     % lietuviški skyrių pavadinimai, kėlimas
+\usepackage{lmodern}
+
+% ─── Puslapio maketas ────────────────────────────────────────────────
+\usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}               % tarpai tarp pastraipų vietoj įtraukų
+
+% ─── Lentelės ir grafika ─────────────────────────────────────────────
+\usepackage{booktabs}              % \toprule \midrule \bottomrule
+\usepackage{longtable}             % lentelės, netelpančios į puslapį
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{siunitx}               % skaičių lygiavimas pagal kablelį
+\sisetup{output-decimal-marker={,}, group-separator={\,}}
+\usepackage{graphicx}
+\graphicspath{{paveikslai/}}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+% ─── Kodas ───────────────────────────────────────────────────────────
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{kodofonas}{RGB}{248,248,248}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{kodofonas},
+  frame=single,
+  breaklines=true,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  captionpos=b,
+  extendedchars=true,
+  literate={ą}{{\k{a}}}1 {č}{{\v{c}}}1 {ę}{{\k{e}}}1 {ė}{{\.e}}1
+           {į}{{\k{i}}}1 {š}{{\v{s}}}1 {ų}{{\k{u}}}1 {ū}{{\=u}}1 {ž}{{\v{z}}}1
+}
+
+% ─── Literatūra ──────────────────────────────────────────────────────
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=99]{biblatex}
+\addbibresource{saltiniai.bib}
+
+% ─── Nuorodos (visada paskutinė) ─────────────────────────────────────
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% ─── Trumpiniai ──────────────────────────────────────────────────────
+\newcommand{\lentele}[1]{\input{lenteles/#1}}
+
+% =====================================================================
+\begin{document}
+
+% ─── Titulinis ───────────────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\large UNIVERSITETO PAVADINIMAS\\ FAKULTETO PAVADINIMAS\par}
+\vspace{3cm}
+
+{\Large\bfseries Vardas Pavardė\par}
+\vspace{1.5cm}
+
+{\huge\bfseries IoT kibernetinių atakų prevencija\\ naudojant dirbtinio intelekto sistemas\par}
+\vspace{0.5cm}
+{\Large Praktikos ataskaita\par}
+
+\vfill
+\begin{flushright}
+Praktikos vadovas:\\ \textit{Vardas Pavardė}
+\end{flushright}
+\vspace{1cm}
+
+{\large Vilnius, 2026\par}
+\end{titlepage}
+
+% ─── Turinys ─────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ─── Skyriai ─────────────────────────────────────────────────────────
+% Kol skyrius nebaigtas — užkomentuokite jį, kad kompiliuotųsi greičiau.
+
+\section{Įvadas}
+\input{skyriai/00_ivadas}
+
+\section{IoT tinklų kibernetinės atakos ir jų aptikimo metodai}
+\label{sec:atakos}
+\input{skyriai/01_atakos}
+
+\section{Dirbtinio intelekto metodų taikymas atakoms aptikti}
+\label{sec:di_metodai}
+\input{skyriai/02_di_metodai}
+
+\section{Metodų parinkimas ir pagrindimas}
+\label{sec:parinkimas}
+\input{skyriai/03_parinkimas}
+
+\section{DI pagrįsto aptikimo sprendimo kūrimas}
+\label{sec:sprendimas}
+\input{skyriai/04_sprendimas}
+
+\section{Eksperimentinis vertinimas}
+\label{sec:vertinimas}
+\input{skyriai/05_vertinimas}
+
+\section{Metodų efektyvumo palyginimas}
+\label{sec:palyginimas}
+\input{skyriai/06_palyginimas}
+
+\section{Išvados}
+\input{skyriai/07_isvados}
+
+% ─── Literatūra ──────────────────────────────────────────────────────
+\newpage
+\printbibliography[heading=bibintoc,title={Literatūros sąrašas}]
+
+\end{document}
