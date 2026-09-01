@@ -1,14 +1,22 @@
-# ─── Duomenys (NIEKADA į Git) ────────────────────────────────
+# PASTABA: .gitignore nepalaiko komentaru eilutes gale.
+# Komentaras po sablono tampa sablono dalimi ir jis nustoja veikti.
+# Visi komentarai cia - atskirose eilutese.
+
+# ─── Duomenys ────────────────────────────────────────────────
 duomenys/raw/
 duomenys/processed/
-*.csv
 *.parquet
 *.pcap
-!rezultatai/rezultatai.csv          # išimtis: metrikos yra mažos ir svarbios
+
+# Visi CSV ignoruojami...
+*.csv
+# ...isskyrus eksperimentu metrikas - jos mazos ir jas verta versijuoti
+!rezultatai/rezultatai.csv
 
 # ─── Apmokyti modeliai ───────────────────────────────────────
 rezultatai/apmokyti/*
-!rezultatai/apmokyti/metadata.json  # metaduomenys lieka — jie maži ir būtini
+# Metaduomenys lieka - hiperparametrai ir duomenu versija butini atkartojamumui
+!rezultatai/apmokyti/metadata.json
 *.pkl
 *.joblib
 *.h5
@@ -16,7 +24,7 @@ rezultatai/apmokyti/*
 *.pt
 *.pth
 
-# ─── LaTeX šiukšlės ──────────────────────────────────────────
+# ─── LaTeX tarpiniai failai ──────────────────────────────────
 *.aux
 *.log
 *.out
@@ -33,7 +41,10 @@ rezultatai/apmokyti/*
 *.nav
 *.snm
 *.vrb
-ataskaita/ataskaita.pdf             # generuojamas; jei norite versijuoti — ištrinkite šią eilutę
+
+# Sukompiliuota ataskaita - generuojama is saltiniu.
+# Jei norite versijuoti PDF istorija, istrinkite sia eilute.
+ataskaita/ataskaita.pdf
 
 # ─── Python ──────────────────────────────────────────────────
 __pycache__/
@@ -44,7 +55,7 @@ venv/
 env/
 *.egg-info/
 
-# ─── Eksperimentų sekimas ────────────────────────────────────
+# ─── Eksperimentu sekimas ────────────────────────────────────
 mlruns/
 .optuna/
 wandb/
