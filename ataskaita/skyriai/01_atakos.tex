@@ -1,79 +1,735 @@
 % =====================================================================
 %  1 UŽDUOTIS — IoT tinklams būdingos kibernetinės atakos
-%  Rugpjūčio 3–4 d. | Tikslinė apimtis: 4–5 psl.
+%  Rugsėjo 2–3 d. | Tikslinė apimtis: 4–5 psl.
+%
+%  REIKALINGA PREAMBULĖJE: \usepackage{xltabular}
+%  (tabularx + longtable; leidžia lentelei persiristi per puslapį)
+%
+%  v2 (rugs. 1, 15:40): požymių stulpelis sutikrintas su oficialiu
+%  CICIoT2023 požymių sąrašu (straipsnio 4 lentelė + MERGED_CSV
+%  antraštė). Pataisytos keturios klaidos — žr. DARBO_ZURNALAS.md.
+%  v3 (rugs. 1, 16:50): pridėtas 1.3 poskyris su tab:aprepis ir
+%  parašytas spragų aptarimo tekstas (T4).
+%  v4 (rugs. 1, 18:05): 1.4 poskyris — tab:aptikimas išplėsta iki 6
+%  metodų su 4 vertinimo kriterijais + parašytas tekstas (T5).
+%  v5 (rugs. 1, 19:20): 1.5 poskyris perrašytas kaip reikalavimų
+%  išvedimas su tab:reikalavimai (T6).
+%  v6 (rugs. 1, 21:10): parašyti 1.1, 1.2, 1.6 (T7) ir 1.7.
+%  v8 (rugs. 1): tab:atakos IŠIMTA iš table float'o — xltabular
+%  remiasi longtable ir float'e netelpa („Float too large for page
+%  by 2419pt"). Antraštė perkelta į lentelės vidų.
+%  SKYRIUS TURINIO PRASME BAIGTAS — TODO žymų nebeliko.
+%
+%  !! APIMTIES ĮSPĖJIMAS: skyrius viršija numatytus 4–5 psl.
+%     Apytiksliai 8–9 psl. su 5 lentelėmis. Tai sąmoninga: pirma
+%     surašyta viskas, ką galima pagrįsti, trumpinama po pirmo
+%     kompiliavimo, kai bus matyti tikras puslapių skaičius.
+%     Trumpinimo eiliškumas surašytas DARBO_ZURNALAS.md.
 % =====================================================================
 
 \subsection{IoT architektūros sluoksniai ir jų atakų paviršius}
+\label{sec:sluoksniai}
 
-% TODO (rugpj. 3): trumpas trijų sluoksnių pristatymas (2 pastraipos)
+Daiktų interneto sistemą sudaro trys funkciškai skirtingos dalys:
+fiziniai įrenginiai, renkantys ir keičiantys aplinkos duomenis; ryšio
+infrastruktūra, kuria tie duomenys perduodami; ir programinės
+paslaugos, kuriose duomenys apdorojami bei priimami sprendimai.
+Atitinkamai literatūroje įprastas trijų sluoksnių atskaitos modelis:
+\emph{suvokimo} (angl. \emph{perception}) sluoksnis apima jutiklius,
+vykdiklius ir įterptines sistemas; \emph{tinklo} sluoksnis --- ryšio
+protokolus, šliuzus ir maršrutizavimą; \emph{programų} sluoksnis ---
+paslaugas, valdymo sąsajas ir duomenų saugyklas. Kiekvienas sluoksnis
+turi savitą atakų paviršių, nes skiriasi ir užpuoliko pasiekiami
+ištekliai, ir siekiamas tikslas.
+
+\citeauthor{krishna2021taxonomy} \cite{krishna2021taxonomy} pateikia
+tris atskaitos modelius --- trijų, penkių ir septynių sluoksnių, ---
+kurių kiekvienas skirtingu detalumu skaido tas pačias funkcijas.
+Šiame darbe pasirinktas trijų sluoksnių modelis dėl dviejų priežasčių.
+Pirma, penkių ir septynių sluoksnių modeliai papildomai išskiria
+paslaugų, operacijų, abstrakcijos ir skaičiavimų sluoksnius, tačiau
+atakų paviršiaus požiūriu jie visi priklauso programų sluoksniui ---
+smulkesnis skaidymas keičia architektūros aprašą, bet ne atakų
+klasifikaciją. Antra, praktinėje darbo dalyje naudojami tinklo srauto
+požymiai, todėl smulkesni sluoksniai neturėtų atitikmens matuojamuose
+duomenyse ir klasifikacija taptų tikslesnė tik formaliai.
+
+Būtina pažymėti, kaip taksonomija sudaryta. Atakų aprašai ir jų
+mechanika imti iš \citeauthor{sasi2024attacks}
+\cite{sasi2024attacks} ir \citeauthor{fei2023systematic}
+\cite{fei2023systematic} apžvalgų, tačiau nė viena jų sluoksnių ašimi
+nesiremia: pirmoji atakas klasifikuoja pagal atakos sritį, vykdymo
+būdą, ryšio protokolą ir užpuoliko poziciją, antroji --- pagal
+pažeidžiamumus, atsakomąsias priemones ir standartus. Todėl atakų
+priskyrimas sluoksniams atliktas šio darbo autoriaus, naudojant
+\cite{krishna2021taxonomy} atskaitos modelį kaip klasifikavimo ašį.
 
 \subsection{Atakų klasifikacija}
+\label{sec:klasifikacija}
 
-% TODO (rugpj. 3): po 1–2 pastraipas kiekvienam sluoksniui.
-% Svarbiausia — stulpelis „matomi tinklo požymiai": jis tiesiogiai
-% virsta modelio įvesties požymiais 4 skyriuje (\cref{sec:sprendimas}).
+Toliau atakos aptariamos pagal sluoksnius, kiekvienai grupei nurodant
+pažeidžiamą saugumo tikslą --- konfidencialumą, vientisumą ar
+prieinamumą. \ref{tab:atakos} lentelėje apibendrinta klasifikacija ir
+nurodyti požymiai, kuriais kiekviena atakų grupė pasireiškia tinklo
+sraute;
+šis stulpelis toliau naudojamas kaip modelio įvesties požymių
+specifikacija \ref{sec:sprendimas} skyriuje.
 
-\begin{table}[H]
-\centering
-\caption{IoT atakų klasifikacija pagal architektūros sluoksnius}
-\label{tab:atakos}
-\small
-\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\textbf{Suvokimo sluoksnis.} Šio sluoksnio atakos reikalauja fizinės
+arba artimos prieigos prie įrenginio, todėl yra sunkiau vykdomos, bet
+ir sunkiau aptinkamos. Jutiklių duomenų klastojimas pažeidžia
+\emph{vientisumą}: įrenginys veikia korektiškai, tačiau perduoda
+suklastotus matavimus, ir jais grįsti sprendimai tampa neteisingi.
+Fizinis įsilaužimas bei įrenginio klonavimas leidžia išgauti
+autentifikavimo raktus ir prisistatyti teisėtu tinklo dalyviu ---
+pažeidžiamas ir vientisumas, ir \emph{konfidencialumas}. Šoninio
+kanalo atakos, analizuojančios energijos suvartojimą ar
+elektromagnetinę spinduliuotę, nukreiptos vien į konfidencialumą.
+Bendra šių atakų savybė --- jos beveik nepalieka pėdsako tinklo
+sraute, todėl srauto stebėjimu grįstam aptikimui iš esmės
+neprieinamos.
+
+\textbf{Tinklo sluoksnis.} Tai plačiausias IoT atakų paviršius, nes
+jame susitinka riboti įrenginių resursai ir vieši ryšio kanalai.
+Didelio srauto (angl. \emph{volumetric}) atakos --- SYN, UDP, ICMP,
+TCP ir HTTP potvyniai, fragmentacijos atakos --- pažeidžia
+\emph{prieinamumą} ir yra veiksmingos būtent todėl, kad IoT įrenginys
+išsenka nuo daug mažesnio krūvio nei įprastas serveris. Lėto
+išsekinimo atakos, tokios kaip SlowLoris, pasiekia tą patį tikslą
+minimaliu srautu, todėl slenksčiais grįstam aptikimui yra sunkios.
+Klastojimo atakos --- ARP ir DNS --- leidžia užpuolikui įsiterpti
+tarp įrenginio ir šliuzo, pažeidžiant vientisumą ir konfidencialumą.
+Atskirą grupę sudaro IoT specifinės maršrutizavimo atakos RPL
+protokole: rango, sinkhole ir wormhole atakos iškreipia tinklo
+topologiją ir nukreipia srautą per užpuoliko valdomą mazgą, o Sybil
+ataka tam pasitelkia kelias suklastotas tapatybes
+\cite{prajapati2025rpl}. Žvalgybos veiksmai --- prievadų ir operacinės
+sistemos skenavimas, mazgų aptikimas --- patys žalos nedaro, bet
+pažeidžia konfidencialumą ir yra parengiamoji beveik kiekvienos
+tolesnės atakos fazė.
+
+\textbf{Programų sluoksnis.} Šiame sluoksnyje IoT įrenginys dažnai
+tampa ne tik taikiniu, bet ir atakos įrankiu. Ryškiausias pavyzdys ---
+Mirai tipo botnetai: užkrėtimo ciklą sudaro interneto skenavimas
+ieškant atvirų Telnet ir SSH prievadų, prisijungimas žodyno ataka su
+gamykliniais kredencialais, kenkėjiškos programos įkėlimas ir jungtis
+su valdymo (angl. \emph{command and control}) serveriu, po kurios
+įrenginys panaudojamas kaip DDoS atakos šaltinis
+\cite{antonakakis2017mirai}. Čia pažeidžiami visi trys saugumo
+tikslai, o žala tenka ne tik įrenginio savininkui, bet ir tretiesiems
+asmenims. Žiniatinklio injekcijos --- SQL, komandų, XSS ir failų
+įkėlimo atakos --- nukreiptos į įrenginių valdymo sąsajas ir pažeidžia
+vientisumą bei konfidencialumą. Užpakalinės durys ir nuolatinis
+valdymo kanalas užtikrina užpuolikui ilgalaikę prieigą, o duomenų
+nutekinimas pažeidžia vien konfidencialumą, tačiau IoT kontekste ---
+dažnai jautriausius asmens duomenis, nes jutikliai stebi fizinę
+aplinką.
+
+% SVARBU: xltabular remiasi longtable, todel NEGALI buti table float'e —
+% float nesiverčia per puslapius ir LaTeX meta „Float too large for page".
+% Todel antraste (\caption) rasoma lenteles viduje, o ne float'e.
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\sloppy
+\begin{xltabular}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{1.5cm}
+  >{\raggedright\arraybackslash}p{3.3cm}
+  >{\raggedright\arraybackslash}X
+  >{\centering\arraybackslash}p{0.8cm}
+  >{\centering\arraybackslash}p{1.15cm}@{}}
+\caption{IoT atakų klasifikacija pagal architektūros sluoksnius ir jų
+         pasireiškimas CICIoT2023 srauto požymiuose}
+\label{tab:atakos} \\
 \toprule
-\textbf{Sluoksnis} & \textbf{Ataka} & \textbf{Matomi tinklo požymiai} \\
+\textbf{Sluoksnis} & \textbf{Ataka} & \textbf{Matomi tinklo požymiai}
+  & \textbf{CIC} & \textbf{Šalt.} \\
 \midrule
-Suvokimo & Jutiklių duomenų klastojimas & Netipinės telemetrijos reikšmės, staigūs šuoliai \\
-         & Fizinis įsilaužimas & Naujas MAC adresas, pasikeitęs įrenginio profilis \\
+\endfirsthead
+\multicolumn{5}{@{}l}{\itshape \ref{tab:atakos} lentelės tęsinys} \\
+\toprule
+\textbf{Sluoksnis} & \textbf{Ataka} & \textbf{Matomi tinklo požymiai}
+  & \textbf{CIC} & \textbf{Šalt.} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+% ---------- SUVOKIMO SLUOKSNIS ----------
+Suvokimo
+  & Jutiklių duomenų klastojimas
+  & Telemetrijos turinys sraute nematomas. Netiesiogiai --- \texttt{IAT}
+    ir \texttt{Number} nuokrypis nuo įrenginio siuntimo profilio,
+    pasikeitę \texttt{AVG} ir \texttt{Std} paketų ilgiai
+  & ne & \cite{krishna2021taxonomy,sasi2024attacks} \\
 \addlinespace
-Tinklo   & DDoS / DoS & Didelis paketų dažnis, vienodas paketų dydis, daug SYN \\
-         & MITM / ARP spoofing & Pasikartojantys ARP atsakymai, pasikeitęs maršrutas \\
-         & Sybil & Daug tapatybių iš vieno fizinio šaltinio \\
-         & RPL maršrutizavimo atakos & Anomalūs DIO/DAO pranešimai, topologijos kaita \\
+  & Fizinis įsilaužimas, įrenginio klonavimas
+  & Rinkinyje nėra MAC ir IP identifikatorių, todėl tapatybės pokytis
+    nefiksuojamas. Netiesiogiai --- \texttt{ARP} ir \texttt{DHCP}
+    aktyvumas, pasikeitęs protokolų profilis
+  & ne & \cite{krishna2021taxonomy} \\
 \addlinespace
-Programų & Mirai tipo botnetai & Telnet/SSH skenavimas, C\&C periodinės jungtys \\
-         & MQTT piktnaudžiavimas & Netipiniai topic'ai, per didelis publish dažnis \\
-         & Duomenų nutekinimas & Neįprastai didelis išeinantis srautas \\
+  & Šoninio kanalo ataka
+  & Tinklo sraute nepasireiškia --- reikalauja fizinės prieigos prie
+    įrenginio
+  & ne & \cite{krishna2021taxonomy,fei2023systematic} \\
+\addlinespace[4pt]
+
+% ---------- TINKLO SLUOKSNIS ----------
+Tinklo
+  & SYN potvynis
+  & \texttt{syn\_flag\_number} $=1$, \texttt{syn\_count} $\uparrow$ prie
+    mažo \texttt{ack\_count}; \texttt{Rate}, \texttt{Srate} $\uparrow$;
+    \texttt{flow\_duration} $\downarrow$; vienodi trumpi paketai
+    (\texttt{Tot size}, \texttt{Std} $\downarrow$)
+  & taip & \cite{neto2023ciciot,sasi2024attacks} \\
+\addlinespace
+  & UDP ir ICMP potvyniai
+  & \texttt{UDP} arba \texttt{ICMP} $=1$, atitinkamas
+    \texttt{Protocol Type}; \texttt{Rate}, \texttt{Tot sum},
+    \texttt{Number} $\uparrow$; \texttt{IAT}, \texttt{Std} $\downarrow$
+  & taip & \cite{neto2023ciciot} \\
+\addlinespace
+  & Fragmentacijos atakos (ACK, UDP, ICMP)
+  & Anomalus \texttt{Header\_Length}; netipinis \texttt{Min},
+    \texttt{Max}, \texttt{AVG} paketų ilgių pasiskirstymas;
+    \texttt{Magnitue} ir \texttt{Radius} nuokrypis
+  & taip & \cite{neto2023ciciot} \\
+\addlinespace
+  & SlowLoris (lėtas išsekinimas)
+  & \texttt{flow\_duration} $\uparrow\uparrow$ prie \texttt{Rate} ir
+    \texttt{Number} $\downarrow$; \texttt{HTTP} $=1$;
+    \texttt{psh\_flag\_number}; mažas \texttt{Tot size}
+  & taip & \cite{neto2023ciciot,komal2026idsreview} \\
+\addlinespace
+  & RST/FIN ir PSH-ACK potvyniai
+  & \texttt{rst\_flag\_number}, \texttt{rst\_count},
+    \texttt{fin\_count}, \texttt{psh\_flag\_number},
+    \texttt{ack\_count} disproporcija jungties fazėms;
+    \texttt{Weight} asimetrija
+  & taip & \cite{neto2023ciciot} \\
+\addlinespace
+  & ARP klastojimas (MITM)
+  & \texttt{ARP} $=1$, \texttt{LLC} $=1$; \texttt{Number} $\uparrow$;
+    reguliarus \texttt{IAT}; mažas \texttt{Tot size}. Neužklausti
+    atsakymai kaip tokie nefiksuojami
+  & taip & \cite{neto2023ciciot,sasi2024attacks} \\
+\addlinespace
+  & DNS klastojimas
+  & \texttt{DNS} $=1$, \texttt{UDP} $=1$; \texttt{Srate} ir
+    \texttt{Drate} disbalansas (atsakymų perteklius); \texttt{IAT}
+    anomalija; \texttt{Tot size} nuokrypis
+  & taip & \cite{neto2023ciciot} \\
+\addlinespace
+  & Žvalgyba: prievadų ir OS skenavimas, mazgų aptikimas
+  & Daug trumpų vienpusių srautų: \texttt{flow\_duration},
+    \texttt{Number}, \texttt{Tot size} $\downarrow$;
+    \texttt{syn\_flag\_number} $=1$ be \texttt{ack\_flag\_number};
+    \texttt{Drate} $\to 0$, \texttt{Weight} $\downarrow$. Unikalių
+    taikinių skaičius nefiksuojamas
+  & taip & \cite{neto2023ciciot,antonakakis2017mirai} \\
+\addlinespace
+  & Sybil ir RPL maršrutizavimo atakos (rangas, sinkhole, wormhole)
+  & Pasireiškia RPL ir 6LoWPAN valdymo pranešimuose (DIO, DAO, DIS),
+    kurių rinkinyje nėra; kelios tapatybės iš vieno šaltinio
+    neatpažįstamos be adresų
+  & ne & \cite{prajapati2025rpl} \\
+\addlinespace[4pt]
+
+% ---------- PROGRAMŲ SLUOKSNIS ----------
+Programų
+  & Mirai tipo botneto verbavimas
+  & \texttt{Telnet} $=1$, \texttt{SSH} $=1$;
+    \texttt{syn\_flag\_number} be \texttt{ack\_flag\_number};
+    pasikartojantys trumpi srautai (\texttt{flow\_duration},
+    \texttt{Number} $\downarrow$); \texttt{Drate} $\to 0$
+  & dal. & \cite{antonakakis2017mirai,meidan2018nbaiot} \\
+\addlinespace
+  & Mirai GRE potvyniai (GREIP, GREETH)
+  & \texttt{Protocol Type} pažymimas kaip \emph{Unknown} --- GRE nėra
+    rinkinio protokolų enumeracijoje; \texttt{IPv} $=1$;
+    \texttt{Rate}, \texttt{Tot sum}, \texttt{Number} $\uparrow$;
+    \texttt{Magnitue} nuokrypis
+  & taip & \cite{neto2023ciciot} \\
+\addlinespace
+  & Žodyno grubios jėgos ataka
+  & \texttt{SSH}, \texttt{Telnet} arba \texttt{HTTP} $=1$; daug trumpų
+    sesijų su panašiu \texttt{Tot size} ir mažu \texttt{Std};
+    reguliarus \texttt{IAT}; mažas \texttt{Weight}
+  & taip & \cite{neto2023ciciot,antonakakis2017mirai} \\
+\addlinespace
+  & Žiniatinklio injekcijos (SQL, komandų, XSS, failų įkėlimas)
+  & \texttt{HTTP} arba \texttt{HTTPS} $=1$; padidėjęs \texttt{Tot size}
+    ir \texttt{Max} užklausų kryptimi; \texttt{Srate}/\texttt{Drate}
+    asimetrija; \texttt{Header\_Length} nuokrypis. Šifruotu atveju ---
+    tik metaduomenys
+  & taip & \cite{neto2023ciciot,alwhbi2024encrypted} \\
+\addlinespace
+  & Užpakalinės durys ir C\&C valdymo kanalas
+  & Periodiškumas: pastovus \texttt{IAT} mažoje sklaidoje
+    (\emph{beaconing}); ilgas \texttt{flow\_duration} prie mažo
+    \texttt{Number} ir \texttt{Tot size}; \texttt{IRC} $=1$
+  & taip & \cite{meidan2018nbaiot,neto2023ciciot} \\
+\addlinespace
+  & Duomenų nutekinimas
+  & \texttt{Srate} $\gg$ \texttt{Drate}; \texttt{Weight} ir
+    \texttt{Variance} asimetrija; \texttt{Tot sum} $\uparrow$; ilgas
+    \texttt{flow\_duration}
+  & dal. & \cite{sasi2024attacks,alwhbi2024encrypted} \\
+
+\end{xltabular}
+
+\vspace{2pt}
+\noindent\footnotesize
+\textbf{Stulpelis CIC} --- ar atakos tipas atstovaujamas CICIoT2023
+duomenų rinkinyje \cite{neto2023ciciot}: \emph{taip} --- yra atskira
+etiketė; \emph{dal.} --- pasireiškia netiesiogiai, atskiros etiketės
+nėra; \emph{ne} --- rinkinyje neatstovaujama, todėl šiame darbe
+nemodeliuojama.
+\texttt{Šriftu} pažymėti pavadinimai atitinka CICIoT2023 stulpelius
+(46 požymiai ir etiketė); likusieji iš jų išvedami slenkančiame lange.
+Atkreiptinas dėmesys, kad stulpelis \texttt{Duration} rinkinyje žymi ne
+srauto trukmę, o paketo gyvavimo laiką (\emph{time-to-live}); srauto
+trukmė yra \texttt{flow\_duration}. Rinkinyje nėra IP ir MAC adresų,
+prievadų numerių bei laiko žymos, todėl požymiai, reikalaujantys
+tapatybių ar taikinių skaičiavimo, iš principo neišvedami.
+\par\endgroup
+
+\subsection{Taksonomijos ir CICIoT2023 duomenų rinkinio sąsaja}
+\label{sec:aprepis}
+
+Sudaryta taksonomija remiasi mokslinėje literatūroje aprašytomis
+atakomis, o ne pasirinkto duomenų rinkinio etikečių sąrašu. Toks
+eiliškumas yra sąmoningas: jeigu taksonomija būtų atkurta atbulai iš
+etikečių, ji atrodytų visiškai padengta, o tikrosios praktinės
+sprendimo ribos liktų neįvardytos. Todėl prieš pereinant prie
+praktinės dalies būtina nustatyti, kuri taksonomijos dalis
+eksperimentiškai tikrinama, o kuri lieka už darbo ribų.
+
+CICIoT2023 rinkinyje \cite{neto2023ciciot} išskirtos septynios atakų
+kategorijos, apimančios 33 atakų tipus; kartu su gerybinio srauto
+etikete \texttt{BenignTraffic} iš viso yra 34 klasės.
+\ref{tab:aprepis} lentelėje parodyta, kaip šios kategorijos pasiskirsto tarp
+\ref{tab:atakos} lentelėje apibrėžtų architektūros sluoksnių.
+
+\begin{table}[htbp]
+\centering
+\caption{CICIoT2023 atakų kategorijų sąsaja su taksonomijos sluoksniais}
+\label{tab:aprepis}
+\small
+\begin{tabularx}{\textwidth}{@{}l c l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Kategorija} & \textbf{Atakų} & \textbf{Sluoksnis}
+  & \textbf{Atitikmuo \ref{tab:atakos} lentelėje} \\
+\midrule
+DDoS        & 12 & Tinklo   & SYN, UDP, ICMP, TCP, HTTP potvyniai;
+                              fragmentacijos atakos; SlowLoris \\
+\addlinespace
+DoS         & 4  & Tinklo   & Tos pačios atakos iš vieno šaltinio \\
+\addlinespace
+Recon       & 5  & Tinklo   & Žvalgyba: prievadų ir OS skenavimas,
+                              mazgų aptikimas, pažeidžiamumų paieška \\
+\addlinespace
+Spoofing    & 2  & Tinklo   & ARP klastojimas (MITM), DNS klastojimas \\
+\addlinespace
+Mirai       & 3  & Programų & GRE potvyniai; verbavimo fazė
+                              neatstovaujama \\
+\addlinespace
+Web-based   & 6  & Programų & Žiniatinklio injekcijos; užpakalinės
+                              durys \\
+\addlinespace
+Brute force & 1  & Programų & Žodyno grubios jėgos ataka \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Iš viso 33 atakos}} &
+  \multicolumn{2}{l}{Suvokimo sluoksnis neatstovaujamas} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
+Iš lentelės matyti trys ribojimai. \emph{Pirma}, visos 33 atakos
+priskiriamos tinklo ir programų sluoksniams --- \textbf{suvokimo
+sluoksnis rinkinyje neatstovaujamas visiškai}. Tai nėra rinkinio
+trūkumas: fizinės, šoninio kanalo ir jutiklių klastojimo atakos
+nepalieka pėdsako tinklo sraute, todėl srauto požymiais grįstas
+sprendimas jų aptikti negali iš principo. Šio darbo rezultatai galioja
+tinklo ir programų sluoksnio atakoms, ir tokia formuluotė vartotina
+išvadose.
+
+\emph{Antra}, net tinklo sluoksnyje aprėptis netolygi. Aptikimui
+prieinamos didelio srauto (\emph{volumetric}) atakos ir klastojimas,
+tačiau IoT specifinės maršrutizavimo atakos --- RPL rango, sinkhole,
+wormhole bei Sybil --- rinkinyje neatstovaujamos, nes pasireiškia
+6LoWPAN ir RPL valdymo pranešimuose, kurie į požymių rinkinį
+neįtraukti \cite{prajapati2025rpl}. Tai reikšminga, nes būtent šios
+atakos neturi atitikmens klasikiniuose informacinių technologijų
+tinkluose ir yra vienas stipriausių argumentų, kodėl IoT reikia
+atskirų aptikimo sprendimų.
+
+\emph{Trečia}, klasių pasiskirstymas rinkinyje neatitinka realaus
+tinklo. Gerybinio srauto \texttt{BenignTraffic} yra apie 1{,}10~mln.
+eilučių iš maždaug 46{,}69~mln., t.\,y. tik apie 2{,}4~\%; atakų
+santykis su gerybiniu srautu siekia maždaug 42:1. Realiame tinkle
+santykis yra priešingas --- vyrauja gerybinis srautas. Ši aplinkybė
+sistemingai palankiai iškreipia atpažinimo metrikas: modeliui, kuris
+beveik viską klasifikuoja kaip ataką, tenka aukštas jautrumas
+(\emph{recall}) ir tik nedaug klaidingų teigiamų, nors realioje
+aplinkoje toks sprendimas būtų nenaudojamas. Būtent tokius iškraipymus
+kaip pagrindinę literatūroje skelbiamų 99~\%\,+ tikslumų priežastį
+įvardija ir \citeauthor{reddy2026datasets}
+\cite{reddy2026datasets}. Todėl 5~skyriuje atskirai analizuojami
+klaidingai teigiami aptikimai ir naudojamos kiekvienai klasei
+atskiros metrikos, o ne bendras tikslumas.
+
+% PASTABA: čia buvo numatyta pridėti 2–3 sakinius apie tai, kaip šie
+% ribojimai virsta reikalavimais sprendimui. Nebereikia — 1.5 poskyris
+% (tab:reikalavimai) tą darbą atlieka sistemingai. Nekartoti.
+
 \subsection{Klasikiniai aptikimo metodai ir jų ribos IoT kontekste}
+\label{sec:klasikiniai}
 
-% TODO (rugpj. 4): parašais grįstas (Snort/Suricata), taisyklėmis grįstas,
-% anomalijomis grįstas — po pastraipą. Akcentas: KODĖL nepakanka.
+Įsibrovimų aptikimo sistemos (angl. \emph{intrusion detection system},
+IDS) skirstomos pagal tai, kuo remiantis priimamas sprendimas, ar
+stebimas srautas yra kenkėjiškas. \ref{tab:aptikimas} lentelėje pagrindiniai
+metodai apibendrinti pagal keturis kriterijus, kurie IoT aplinkoje yra
+lemiami: žinomų ir nematytų atakų aptikimą, klaidingų teigiamų signalų
+kiekį ir skaičiavimo resursų poreikį.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Aptikimo metodų palyginimas IoT kontekste}
 \label{tab:aptikimas}
-\small
-\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{2.1cm}
+  >{\raggedright\arraybackslash}X
+  >{\centering\arraybackslash}p{1.5cm}
+  >{\centering\arraybackslash}p{1.4cm}
+  >{\centering\arraybackslash}p{1.5cm}
+  >{\centering\arraybackslash}p{1.6cm}@{}}
 \toprule
-\textbf{Metodas} & \textbf{Privalumai} & \textbf{Trūkumai IoT aplinkoje} \\
+\textbf{Metodas} & \textbf{Veikimo principas} & \textbf{Žinomos atakos}
+  & \textbf{Zero-day} & \textbf{Klaid. teig.} & \textbf{Resursai} \\
 \midrule
-Parašais grįstas & Tikslus žinomoms atakoms, mažai klaidingų teigiamų
-& Neaptinka zero-day; parašų bazė reikalauja nuolatinio atnaujinimo \\
+
+Parašais grįstas (Snort, Suricata)
+  & Srautas lyginamas su žinomų atakų parašų --- baitų sekų ir
+    protokolo šablonų --- baze
+  & gerai & ne & mažai & vidutiniai \\
 \addlinespace
-Taisyklėmis / slenksčiais & Paprasta realizuoti, skaidru
-& Daug klaidingų pavojaus signalų; slenksčiai netinka nevienalyčiam IoT elgesiui \\
+
+Taisyklėmis ir slenksčiais grįstas
+  & Rankiniu būdu aprašytos taisyklės ir fiksuotos ribinės reikšmės
+    (paketų dažnis, jungčių skaičius)
+  & ribotai & ribotai & daug & maži \\
 \addlinespace
-Anomalijomis grįstas & Aptinka nematytas atakas
-& Reikia „normalaus elgesio" etalono; jautrus koncepcijos dreifui \\
+
+Statistinis anomalijų aptikimas
+  & Sudaromas normalaus elgesio statistinis profilis; nukrypimai už
+    pasikliautinųjų ribų žymimi kaip anomalijos
+  & ribotai & taip & daug & maži \\
+\addlinespace
+
+Specifikacija grįstas
+  & Aprašomas leistinas protokolo elgesys (pvz., RPL būsenų mašina);
+    nukrypimas nuo specifikacijos laikomas ataka
+  & gerai & ribotai & mažai & vidutiniai \\
+\addlinespace
+
+Hibridinis
+  & Parašai taikomi žinomoms atakoms, anomalijų aptikimas --- likusiam
+    srautui
+  & gerai & taip & vidut. & dideli \\
+\addlinespace
+
+Mašininiu mokymusi grįstas
+  & Modelis mokomas iš duomenų atpažinti požymių derinius; prižiūrimas
+    arba neprižiūrimas
+  & gerai & taip\textsuperscript{*} & vidut. & dideli
+    mokant \\
+\bottomrule
+\end{tabularx}
+
+\vspace{2pt}
+\raggedright\footnotesize
+\textsuperscript{*}~Nematytas atakas aptinka neprižiūrimo mokymosi
+modeliai; prižiūrimi modeliai apsiriboja mokymo aibėje esančiomis
+klasėmis. Resursų poreikis nurodytas mokymo etapui --- inferencijos
+sąnaudos daugeliu atvejų yra kelios eilės mažesnės.
+\end{table}
+
+\textbf{Parašais grįstas aptikimas} yra pramonėje labiausiai paplitęs
+sprendimas ir žinomoms atakoms veikia tiksliai bei su nedideliu
+klaidingų pavojaus signalų kiekiu. Tačiau jis principinis: aptinkama
+tik tai, kas jau aprašyta parašų bazėje. Kaip nurodo
+\citeauthor{komal2026idsreview} \cite{komal2026idsreview}, parašais
+grįstas IDS negali aptikti nei zero-day, nei kintančių grėsmių. IoT
+aplinkoje šis trūkumas ryškėja dėl trijų priežasčių. Pirma, botnetų
+šeimos greitai mutuoja --- vien Mirai išeities kodo paskelbimas
+sukėlė daugybę variantų, kurių kiekvienam reikia atskiro parašo
+\cite{antonakakis2017mirai}. Antra, parašų bazės atnaujinimas
+reikalauja nuolatinio ryšio ir atminties, o tai riboto resurso
+įrenginiams sunkiai įgyvendinama. Trečia, plintant šifravimui parašų
+lyginimas su naudingąja apkrova tampa neįmanomas --- prieinami lieka
+tik srauto metaduomenys \cite{alwhbi2024encrypted}.
+
+\textbf{Taisyklėmis ir slenksčiais grįstas} aptikimas yra paprastas
+realizuoti ir skaidrus: sprendimo priežastis visada aiški. Jo silpnybė
+IoT kontekste --- fiksuotos ribinės reikšmės. Normalaus elgesio
+profilis skirtingiems IoT įrenginiams nesutampa: temperatūros jutiklis
+siunčia kelis paketus per minutę, o vaizdo kamera --- nuolatinį srautą.
+Vienas slenkstis visam tinklui neišvengiamai arba praleidžia atakas
+prieš mažo aktyvumo įrenginius, arba generuoja klaidingus signalus
+aktyviems.
+
+\textbf{Statistinis anomalijų aptikimas} šią problemą sprendžia iš
+kitos pusės: vietoj to, kad būtų aprašoma ataka, aprašomas normalus
+elgesys, o viskas, kas nuo jo nukrypsta, laikoma įtartinu. Tai
+vienintelis iš klasikinių metodų, iš principo gebantis aptikti
+nematytas atakas, ir būtent jis yra dirbtinio intelekto metodų
+pagrindas. Kaina --- didesnis klaidingų teigiamų kiekis ir
+priklausomybė nuo to, ar mokymo laikotarpiu stebėtas elgesys tikrai
+buvo normalus. Papildoma problema yra koncepcijos dreifas: IoT tinklo
+sudėtis kinta, prijungiami nauji įrenginiai, ir profilis pasensta.
+
+\textbf{Specifikacija grįstas} aptikimas užima tarpinę padėtį ---
+leistinas elgesys aprašomas ne iš duomenų, o iš protokolo apibrėžimo.
+IoT srityje jis labiausiai išplėtotas maršrutizavimo protokolams:
+\citeauthor{prajapati2025rpl} \cite{prajapati2025rpl} RPL apsaugos
+mechanizmus skirsto į specifikacija grįstus, mašininiu intelektu
+grįstus bei pasitikėjimo ir slenksčių metodus. Metodas duoda mažai
+klaidingų teigiamų, tačiau kiekvienam protokolui specifikaciją reikia
+aprašyti rankiniu būdu, o IoT protokolų įvairovė --- MQTT, CoAP, RPL,
+Zigbee, BLE --- tokį darbą daro sunkiai keičiamą masteliu.
+
+Iš \ref{tab:aptikimas} lentelės matyti, kad nė vienas klasikinis metodas
+neapima visų keturių kriterijų vienu metu: tikslumas žinomoms atakoms
+ir mažas klaidingų teigiamų kiekis derinasi su nesugebėjimu aptikti
+nematytų atakų, o gebėjimas aptikti nematytas atakas --- su didesniu
+klaidingų signalų kiekiu. Hibridiniai sprendimai abu metodus sujungia,
+bet paveldi ir resursų poreikį. Būtent šis kompromisas ir yra
+priežastis, dėl kurios kreipiamasi į dirbtinio intelekto metodus: jie
+išlaiko anomalijomis grįsto aptikimo gebėjimą atpažinti nematytas
+atakas, tačiau, mokydamiesi iš duomenų sudėtingesnių požymių derinių,
+gali sumažinti klaidingų teigiamų kiekį iki praktiškai priimtino
+lygio. Šių metodų galimybės nagrinėjamos kitame skyriuje.
+
+% ISSPRESTA: label sec:di_metodai yra ataskaita.tex faile, todel
+% nuoroda veikia. Palikta zodine formuluote — skamba geriau nei
+% "2 skyriuje", ir nereikia linksniuoti.
+
+\subsection{IoT specifika ir iš jos kylantys reikalavimai sprendimui}
+\label{sec:specifika}
+
+% PASTABA (rugs. 1): poskyris perrašytas kaip REIKALAVIMŲ išvedimas, o
+% ne kaip IoT ypatybių sąrašas. Priežastis: 1.4 poskyryje jau aptarti
+% šifruotas srautas, nevienalytis elgesio profilis ir protokolų
+% įvairovė — kartojant jie skambėtų antrą kartą. Čia jie nebeaptariami
+% iš naujo, o virsta reikalavimais, kurie tikrinami 3 ir 5 skyriuose.
+
+Ankstesniame poskyryje parodyta, kad nė vienas klasikinis aptikimo
+metodas neapima visų keturių vertinimo kriterijų. Šie trūkumai nėra
+atsitiktiniai --- jie kyla iš pačių IoT sistemų savybių. Todėl toliau
+jos nagrinėjamos ne kaip ypatybių sąrašas, o kaip apribojimai, iš
+kurių išvedami konkretūs reikalavimai kuriamam sprendimui
+(\ref{tab:reikalavimai} lentelė).
+
+\begin{table}[htbp]
+\centering
+\caption{IoT savybės ir iš jų kylantys reikalavimai aptikimo sprendimui}
+\label{tab:reikalavimai}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}X
+  >{\raggedright\arraybackslash}X
+  c@{}}
+\toprule
+\textbf{IoT savybė} & \textbf{Pasekmė aptikimui}
+  & \textbf{Reikalavimas sprendimui} & \textbf{Sk.} \\
+\midrule
+
+Riboti skaičiavimo ir atminties resursai
+  & Sudėtingi modeliai netelpa į įrenginį ar šliuzą
+  & Modelio dydis ir inferencijos delsa --- atrankos kriterijus, ne
+    antraeilis rodiklis
+  & 3, 5 \\
+\addlinespace
+
+Uždara ir nevienalytė aparatinė bei programinė įranga
+  & Agento pačiame įrenginyje įdiegti dažniausiai neįmanoma
+  & Aptikimas turi remtis tinklo srautu, ne įrenginio telemetrija
+  & 4 \\
+\addlinespace
+
+Didelis įrenginių skaičius ir įvairovė
+  & Kiekvieno įrenginio derinti rankiniu būdu neįmanoma
+  & Sprendimas turi veikti be per-įrenginio konfigūravimo
+  & 4 \\
+\addlinespace
+
+Ilgas gyvavimo ciklas, ribotas atnaujinamumas, standartų stoka
+  & Pažeidžiamumai lieka neištaisyti visą įrenginio tarnavimo laiką
+  & Aptikimas veikia kaip kompensacinė priemonė --- negali remtis
+    prielaida, kad įrenginiai pataisyti
+  & 1 \\
+\addlinespace
+
+Didelis srautų kiekis ir ribotas analitikų pajėgumas
+  & Net nedidelė klaidingų teigiamų dalis virsta nevaldomu signalų
+    srautu
+  & Klaidingų teigiamų lygis vertinamas atskirai nuo bendro tikslumo
+  & 5 \\
+\bottomrule
+\end{tabularx}
+
+\vspace{2pt}
+\raggedright\footnotesize
+Stulpelis „Sk." nurodo skyrių, kuriame reikalavimas tikrinamas arba
+įgyvendinamas.
+\normalsize
+\end{table}
+
+Iš \ref{tab:reikalavimai} lentelės du reikalavimai nusipelno platesnio
+paaiškinimo, nes jie lemia visą tolesnį darbą.
+
+\textbf{Aptikimas turi būti tinklo, o ne mazgo lygmens.} Klasikinėse
+informacinių technologijų sistemose įsibrovimų aptikimas dažnai
+remiasi mazge veikiančiu agentu, kuris renka operacinės sistemos
+žurnalus ir procesų telemetriją. IoT įrenginiuose tai retai
+įmanoma: aparatinė ir programinė įranga nevienalytė, gamintojo
+programinė įranga dažnai uždara, o laisvų resursų agentui
+nelieka. Todėl aptikimo sistemos praktiškai visada diegiamos šliuze
+arba tinklo perimetre ir remiasi srauto stebėjimu
+\cite{komal2026idsreview,fei2023systematic}. Ši aplinkybė pagrindžia
+esminę šio darbo prielaidą: modelio įvestis yra tinklo srauto
+požymiai, o ne įrenginio vidinė būsena --- būtent tokie požymiai ir
+surašyti \ref{tab:atakos} lentelės trečiajame stulpelyje.
+
+\textbf{Klaidingų teigiamų kaina IoT tinkle didesnė nei įprastai.}
+Aptikimo kokybė paprastai vertinama tikslumu, tačiau eksploatacijoje
+lemia ne jis, o klaidingų pavojaus signalų kiekis. Pavyzdinis
+skaičiavimas: jeigu tinkle veikia 100 įrenginių ir kiekvienas per parą
+sukuria apie 1000 srautų, tai net 1~\% klaidingų teigiamų lygis duoda
+apie 1000 klaidingų signalų per parą --- kiekį, kurio nė vienas
+saugumo analitikas neperžiūrės. Praktikoje tai reiškia, kad sistema
+bus išjungta arba ignoruojama. \citeauthor{reddy2026datasets}
+\cite{reddy2026datasets} nurodo, kad būtent aukštas klaidingų pavojaus
+signalų lygis yra viena dažniausių priežasčių, dėl kurių literatūroje
+gerus rezultatus rodantys sprendimai realioje aplinkoje pasirodo esą
+netinkami. Todėl 5~skyriuje klaidingi teigiami analizuojami atskirai,
+o ne kaip bendro tikslumo dalis.
+
+Šie penki reikalavimai toliau naudojami kaip 3~skyriaus metodų
+atrankos kriterijų pagrindas: aptikimo kokybė, klaidingų teigiamų
+lygis, resursų poreikis ir interpretuojamumas kyla tiesiogiai iš
+\ref{tab:reikalavimai} lentelės, o ne pasirenkami savavališkai.
+
+\subsection{Aptikimo diegimo vieta}
+\label{sec:diegimas}
+
+Ankstesniame poskyryje nustatyta, kad aptikimas turi remtis tinklo
+srautu. Lieka atsakyti, kurioje infrastruktūros vietoje sprendimas
+veikia. Literatūroje skiriami trys lygmenys --- pats įrenginys,
+kraštinis šliuzas ir debesis \cite{komal2026idsreview}; jie skiriasi
+ne tik prieinamais resursais, bet ir leistina aptikimo delsa.
+\citeauthor{sallam2026gap} \cite{sallam2026gap}, išanalizavę 32
+naujausius IoT aptikimo sprendimus, nurodo tokius realaus laiko
+reikalavimus: mikrovaldiklio lygmeniu --- 1--10~ms, šliuzo lygmeniu
+--- 20--50~ms, debesyje --- 100~ms ir daugiau.
+
+\begin{table}[htbp]
+\centering
+\caption{Aptikimo sprendimo diegimo vietos palyginimas}
+\label{tab:diegimas}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{2.4cm}
+  c
+  >{\raggedright\arraybackslash}X
+  >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Diegimo vieta} & \textbf{Delsa} & \textbf{Privalumai}
+  & \textbf{Trūkumai} \\
+\midrule
+
+Įrenginyje (mikrovaldiklis)
+  & 1--10~ms
+  & Mažiausia delsa; veikia be ryšio; duomenys neišeina iš įrenginio
+  & Griežti atminties ir skaičiavimo apribojimai; diegimas ir
+    atnaujinimas kiekviename įrenginyje atskirai \\
+\addlinespace
+
+Kraštiniame šliuze
+  & 20--50~ms
+  & Mato viso segmento srautą, todėl atpažįsta paskirstytus šablonus;
+    vienas diegimo ir atnaujinimo taškas; pakanka resursų realiam
+    modeliui
+  & Nemato srauto tarp to paties segmento įrenginių; vienas gedimo
+    taškas \\
+\addlinespace
+
+Debesyje
+  & $\geq$100~ms
+  & Praktiškai neriboti resursai; koreliacija tarp kelių tinklų;
+    paprastas modelio permokymas
+  & Didelė delsa; priklausomybė nuo ryšio; srauto duomenų perdavimas
+    kelia privatumo ir pralaidumo klausimų \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\subsection{IoT specifika, ribojanti tradicinių IDS taikymą}
+Šiame darbe kuriamas sprendimas orientuojamas į \textbf{kraštinio
+šliuzo} lygmenį. Toks pasirinkimas išplaukia iš
+\ref{tab:reikalavimai} lentelės: šliuzas yra vienintelė vieta, kurioje vienu
+metu tenkinami reikalavimai remtis tinklo srautu ir veikti be
+per-įrenginio konfigūravimo. Jis taip pat atitinka naudojamų duomenų
+pobūdį --- CICIoT2023 srauto požymiai surinkti tinklo, o ne įrenginio
+lygmeniu \cite{neto2023ciciot}. Praktinė šio pasirinkimo pasekmė yra
+ta, kad 5~skyriuje matuojama inferencijos delsa ir modelio dydis
+vertinami ne abstrakčiai, o lyginant su 20--50~ms šliuzo biudžetu.
 
-% TODO (rugpj. 4): riboti resursai, protokolų įvairovė, įrenginių mastas,
-% nevienalytis normalaus elgesio profilis, šifruotas srautas.
-% Ši dalis pagrindžia, kodėl 2 skyriuje kreipiamės į DI metodus.
-
-\subsection{Aptikimo diegimo vieta}
-
-% TODO (rugpj. 4): on-device / edge-gateway / cloud — privalumai ir trūkumai.
-% Susieti su inferencijos delsos ir modelio dydžio matavimais 5 skyriuje.
+Verta pažymėti ir apribojimą, kurį ši vieta įneša. Šliuze stebimas tik
+srautas, einantis per jį; įrenginių tarpusavio ryšys tame pačiame
+segmente lieka nematomas. Praktikoje tai reiškia, kad į plitimą tinklo
+viduje (angl. \emph{lateral movement}) grįstos atakos aptinkamos tik
+tada, kai užkrėstas įrenginys pradeda bendrauti su išoriniais
+mazgais --- pavyzdžiui, jungiasi prie valdymo serverio arba pradeda
+skenavimą.
 
 \subsection{Skyriaus apibendrinimas}
+\label{sec:atakos_isvados}
 
-% TODO: 1 pastraipa — kokie reikalavimai keliami aptikimo sprendimui.
+Šiame skyriuje IoT atakos suklasifikuotos pagal architektūros
+sluoksnius ir kiekvienai grupei nustatyta, kaip ji pasireiškia tinklo
+sraute. Gautas rezultatas yra ne tik teorinė apžvalga, bet ir įvesties
+specifikacija tolesniam darbui: \ref{tab:atakos} lentelės požymių stulpelis
+apibrėžia, kokius dydžius modelis turi matyti, o \ref{tab:aprepis} lentelė
+nurodo, kuri taksonomijos dalis pasirinktais duomenimis
+eksperimentiškai tikrinama. Aiškiai įvardyta ir tai, kas lieka už
+darbo ribų --- suvokimo sluoksnio atakos ir IoT specifinės
+maršrutizavimo atakos, kurių tinklo srauto požymiuose nėra.
+
+Klasikinių aptikimo metodų analizė parodė, kad nė vienas jų netenkina
+visų keturių vertinimo kriterijų vienu metu: parašais ir specifikacija
+grįsti metodai yra tikslūs, bet neaptinka nematytų atakų, o
+anomalijomis grįsti metodai jas aptinka didesnio klaidingų teigiamų
+kiekio kaina. Iš IoT sistemų savybių išvesti penki reikalavimai
+(\ref{tab:reikalavimai} lentelė) šį kompromisą paverčia konkrečiais
+atrankos kriterijais: aptikimo kokybė, klaidingų teigiamų lygis,
+resursų poreikis ir interpretuojamumas. Kartu apibrėžta ir diegimo
+vieta --- kraštinis šliuzas su 20--50~ms delsos biudžetu.
+
+Galiausiai svarbu iš anksto įvardyti vertinimo prielaidą.
+\citeauthor{reddy2026datasets} \cite{reddy2026datasets} apžvalgoje
+nurodoma, kad daugelis literatūroje skelbiamų 99~\%\,+ tikslumo
+rezultatų IoT įsibrovimų aptikimo srityje yra klasių disbalanso,
+pasikartojančių atakų šablonų ir laiko nutekėjimo tarp mokymo ir
+testavimo aibių padarinys. Todėl šiame darbe aukštas bendras tikslumas
+savaime nelaikomas sėkmės rodikliu --- rezultatų patikimumas
+tikrinamas atskirai, o vertinime remiamasi kiekvienai klasei
+skaičiuojamomis metrikomis ir klaidingų teigiamų analize
+(5~skyrius). Kaip dirbtinio intelekto metodai gali patenkinti šiame
+skyriuje suformuluotus reikalavimus, nagrinėjama toliau.

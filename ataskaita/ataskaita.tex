@@ -2,9 +2,15 @@
 %  Praktikos ataskaita
 %  IoT kibernetinių atakų prevencija naudojant DI sistemas
 %
-%  Kompiliavimas:  latexmk -pdf ataskaita.tex
+%  Kompiliavimas:  .\build.ps1
 %  arba rankiniu būdu:
 %      pdflatex ataskaita → biber ataskaita → pdflatex ×2
+%
+%  2026-09-01: pridėta xltabular, csquotes ir lietuviški \cref
+%              pavadinimai (reikalinga skyriai/01_atakos.tex);
+%              bibliografijos antraštė perkelta į preambulę ir
+%              nustatyta casechanger=latex2e (biblatex 3.21 expl3
+%              keitiklis lūžta ties lietuviškomis raidėmis).
 % =====================================================================
 
 \documentclass[12pt,a4paper]{article}
@@ -14,6 +20,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[lithuanian]{babel}     % lietuviški skyrių pavadinimai, kėlimas
 \usepackage{lmodern}
+\usepackage{csquotes}              % PRIDĖTA: biblatex jo reikalauja su babel
 
 % ─── Puslapio maketas ────────────────────────────────────────────────
 \usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
@@ -25,12 +32,15 @@
 \usepackage{booktabs}              % \toprule \midrule \bottomrule
 \usepackage{longtable}             % lentelės, netelpančios į puslapį
 \usepackage{tabularx}
+\usepackage{xltabular}             % PRIDĖTA: tabularx + longtable viename
+                                   % (reikalinga tab:atakos, 17 eilučių)
 \usepackage{multirow}
 \usepackage{siunitx}               % skaičių lygiavimas pagal kablelį
 \sisetup{output-decimal-marker={,}, group-separator={\,}}
 \usepackage{graphicx}
 \graphicspath{{paveikslai/}}
 \usepackage{float}
+\usepackage{pdfpages}   % literatura.pdf ijungimui
 \usepackage{caption}
 \captionsetup{font=small,labelfont=bf}
 
@@ -52,13 +62,55 @@
 }
 
 % ─── Literatūra ──────────────────────────────────────────────────────
-\usepackage{csquotes}
-\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=99]{biblatex}
+% casechanger=latex2e — palikta, bet VIENOS JOS NEPAKANKA: LaTeX 2025
+% branduolio \MakeUppercase pats remiasi expl3, todėl keitiklis
+% nepakeičiamas iki galo. Tikrasis sprendimas — \DeclareLanguageMapping
+% žemiau. Galimos reikšmės: auto, expl3, latex2e.
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=99,
+            casechanger=latex2e]{biblatex}
 \addbibresource{saltiniai.bib}
+
+% BŪTINA su pdflatex: biblatex lietuvių kalbos faile lithuanian.lbx
+% raidės įrašytos gryna UTF-8, o LaTeX 2025 branduolio raidžių dydžio
+% keitiklis (expl3) su inputenc aktyviais simboliais dėl to lūžta:
+%   ! Improper alphabetic constant  ties \q__text_recursion_tail
+% Ši eilutė nurodo biblatex naudoti english.lbx (grynas ASCII).
+% KAINA: bibliografijos tarnybiniai žodžiai bus angliški — „and",
+% „et al.", „In:", „pp.". Kadangi visi 11 šaltinių angliški, tai
+% priimtina; pačių įrašų ir antraštės tai nekeičia.
+\DeclareLanguageMapping{lithuanian}{english}
+
+% PRIDĖTA 2026-09-01: bibliografijos antraštė apibrėžiama ČIA, o ne
+% \printbibliography parametre. Priežastis: biblatex 3.21 su expl3
+% raidžių dydžio keitikliu lūžta, kai į `title={...}` patenka lietuviškos
+% raidės — „! Improper alphabetic constant" ties \q__text_recursion_tail.
+% Preambulėje eilutė į parametrų analizatorių nepatenka ir problemos nėra.
+% (\defbibheading nebenaudojamas — žr. dokumento pabaigą)
 
 % ─── Nuorodos (visada paskutinė) ─────────────────────────────────────
 \usepackage[hidelinks]{hyperref}
 \usepackage{cleveref}
+
+% PRIDĖTA: cleveref lietuvių kalbos nepalaiko — be šių eilučių
+% \Cref{tab:atakos} spausdintų „Table 1", ne „Lentelė 1".
+\crefname{table}{lentelė}{lentelės}
+\Crefname{table}{Lentelė}{Lentelės}
+\crefname{section}{skyrius}{skyriai}
+\Crefname{section}{Skyrius}{Skyriai}
+\crefname{figure}{pav.}{pav.}
+\Crefname{figure}{Pav.}{Pav.}
+
+% PRIDĖTA (neprivaloma): mažina išsikišusias eilutes lentelėse.
+% \texttt{} viduje LaTeX nekelia žodžių, todėl ilgi požymių pavadinimai
+% (syn_flag_number) išsikiša už stulpelio. Su hyphenat kėlimas vyksta
+% ties pabraukimu.
+%
+% ĮJUNGTI TIK PO PIRMO SĖKMINGO KOMPILIAVIMO — hyphenat kartu su
+% babel[lithuanian] neišbandytas. Jei metama klaida, vėl užkomentuoti:
+% skyrius kompiliuosis ir be to, tik liks kelios išsikišusios eilutės.
+%
+% \usepackage[htt]{hyphenat}
+% \setlength{\emergencystretch}{3em}
 
 % ─── Trumpiniai ──────────────────────────────────────────────────────
 \newcommand{\lentele}[1]{\input{lenteles/#1}}
@@ -71,10 +123,15 @@
 \centering
 \vspace*{2cm}
 
-{\large UNIVERSITETO PAVADINIMAS\\ FAKULTETO PAVADINIMAS\par}
-\vspace{3cm}
+{\large VILNIAUS GEDIMINO TECHNIKOS UNIVERSITETAS\\
+% TODO: patikslinti fakulteto ir katedros pavadinima
+FAKULTETO PAVADINIMAS\par}
+\vspace{1cm}
 
-{\Large\bfseries Vardas Pavardė\par}
+{\large Dirbtinio intelekto programinės sistemos\par}
+\vspace{2cm}
+
+{\Large\bfseries Gabrielius Tumėnas\par}
 \vspace{1.5cm}
 
 {\huge\bfseries IoT kibernetinių atakų prevencija\\ naudojant dirbtinio intelekto sistemas\par}
@@ -129,6 +186,20 @@ Praktikos vadovas:\\ \textit{Vardas Pavardė}
 
 % ─── Literatūra ──────────────────────────────────────────────────────
 \newpage
-\printbibliography[heading=bibintoc,title={Literatūros sąrašas}]
+% Bibliografija generuojama ATSKIRAI (literatura.tex) ir įjungiama
+% kaip PDF. Priežastis: pilnoje šio dokumento preambulėje biblatex
+% lūžta („! Improper alphabetic constant"), o minimalioje veikia.
+% build.ps1 sukompiliuoja literatura.pdf prieš ataskaitą — rankinio
+% sujungimo nereikia.
+%
+% Citavimai [1]–[11] tekste veikia įprastai: juos duoda \cite ir
+% ataskaita.bbl, o ne \printbibliography.
+%
+% KAI PRIEŽASTIS BUS RASTA — grąžinti į vieną failą:
+%   \printbibliography[heading=none]
+% ir išimti pdfpages bei literatura.tex.
+\phantomsection
+\addcontentsline{toc}{section}{Literatūros sąrašas}
+\includepdf[pages=-]{literatura.pdf}
 
 \end{document}

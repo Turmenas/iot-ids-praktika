@@ -1,0 +1,42 @@
+% =====================================================================
+%  literatura.tex — TIK bibliografija, atskiras dokumentas.
+%
+%  Kodel atskirai: pilnoje ataskaita.tex preambuleje biblatex luzta
+%  (! Improper alphabetic constant ties \q__text_recursion_tail).
+%  Priezastis dar nerasta. Sis failas naudoja minimalia preambule,
+%  kurioje viskas veikia.
+%
+%  Kompiliavimas (daro build.ps1 automatiskai):
+%      pdflatex literatura
+%      biber literatura
+%      pdflatex literatura
+%
+%  Rezultatas literatura.pdf ijungiamas i ataskaita.tex per \includepdf.
+%  Rankinio sujungimo NEREIKIA.
+%
+%  SVARBU: sio failo preambule turi likti minimali. Kiekvienas naujas
+%  paketas cia yra rizika, kad grizs ta pati klaida.
+% =====================================================================
+
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% Tie patys parastes kaip ataskaita.tex — kad puslapis atrodytu vienodai
+\usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{lmodern}  % konteineryje nera, tavo masinoje yra
+
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=99]{biblatex}
+\addbibresource{saltiniai.bib}
+
+\pagestyle{empty}          % puslapiu numerius uzdeda ataskaita.tex
+\begin{document}
+
+\section*{Literatūros sąrašas}
+\nocite{*}
+\printbibliography[heading=none]
+
+\end{document}

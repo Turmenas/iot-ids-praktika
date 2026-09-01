@@ -1,0 +1,26 @@
+% =====================================================================
+%  MINIMALUS TESTAS — nustatyti, ar problema biblatex/biber/saltiniai.bib,
+%  ar tavo preambuleje.
+%
+%  Idek si faila i ataskaita/ (salia saltiniai.bib) ir paleisk:
+%      pdflatex bibtestas
+%      biber bibtestas
+%      pdflatex bibtestas
+%
+%  REZULTATAS:
+%   A) Ta pati klaida "Improper alphabetic constant"
+%      -> kalta biblatex/biber/saltiniai.bib pora. Preambule niekuo detta.
+%   B) Susikompiliavo, gavai bibtestas.pdf su 11 saltiniu
+%      -> biblatex veikia; kalta kazkuri preambules eilute.
+%         Tada bisektuosim preambule.
+% =====================================================================
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=99]{biblatex}
+\addbibresource{saltiniai.bib}
+\begin{document}
+Testas: \cite{neto2023ciciot} \cite{sasi2024attacks}
+\nocite{*}
+\printbibliography
+\end{document}
