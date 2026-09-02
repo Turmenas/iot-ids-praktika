@@ -90,12 +90,46 @@ ATAKU_ETIKETES = frozenset(KATEGORIJOS) - {GERYBINE}
 
 
 # --------------------------------------------------------------------
+# Registro normalizavimas (2026-09-02)
+# --------------------------------------------------------------------
+# Naudojamame Kaggle leidime etiketes rasomos DIDZIOSIOMIS raidemis:
+#   DDOS-PSHACK_FLOOD, o ne DDoS-PSHACK_Flood.
+# Vienas atvejis yra ne registro, o PAVADINIMO skirtumas:
+#   BenignTraffic -> BENIGN  (".upper()" duotu BENIGNTRAFFIC, ko faile NERA)
+# Todel .upper() sutvarko 33 etiketes is 34, o BENIGN reikia atitikmens.
+# Sis sluoksnis leidzia tam paciam kodui veikti su abiem leidimais.
+
+ALIASAI: dict[str, str] = {
+    "BENIGNTRAFFIC": "BENIGN",
+}
+
+#: Normalizuotas zodynas: RAKTAS DIDZIOSIOMIS -> kategorija.
+KATEGORIJOS_NORM: dict[str, str] = {
+    ALIASAI.get(e.upper(), e.upper()): k for e, k in KATEGORIJOS.items()
+}
+
+GERYBINE_NORM = ALIASAI.get(GERYBINE.upper(), GERYBINE.upper())   # "BENIGN"
+
+
+def normalizuoti(etikete: str) -> str:
+    """Suvienodina vienos etiketes uzrasyma: apkarpo, i DIDZIASIAS, alias."""
+    e = etikete.strip().upper()
+    return ALIASAI.get(e, e)
+
+
+def normalizuoti_stulpeli(s):
+    """Ta pati pandas Series stulpeliui. Grazina nauja Series."""
+    s = s.str.strip().str.upper()
+    return s.replace(ALIASAI)
+
+
+# --------------------------------------------------------------------
 # Funkcijos
 # --------------------------------------------------------------------
 def i_kategorija(etikete: str) -> str:
     """Grazina etiketes kategorija. Meta KeyError, jei etikete nezinoma."""
     try:
-        return KATEGORIJOS[etikete]
+        return KATEGORIJOS_NORM[normalizuoti(etikete)]
     except KeyError:
         raise KeyError(
             f"Nezinoma etikete: {etikete!r}. "
@@ -111,7 +145,8 @@ def patikrinti(etiketes) -> None:
     atsisiusta kita versija, klaida pasirodys cia, o ne kaip tyliai
     dingusi klase modelio rezultatuose.
     """
-    nezinomos = set(etiketes) - set(KATEGORIJOS)
+    etiketes = {normalizuoti(e) for e in etiketes if isinstance(e, str)}
+    nezinomos = etiketes - set(KATEGORIJOS_NORM)
     if nezinomos:
         raise ValueError(
             f"Rinkinyje yra {len(nezinomos)} nezinomu etikeciu: "
@@ -119,14 +154,14 @@ def patikrinti(etiketes) -> None:
             f"atnaujinkite src/duomenys/etiketes.py bei duomenys/README.md."
         )
 
-    truksta = set(KATEGORIJOS) - set(etiketes)
+    truksta = set(KATEGORIJOS_NORM) - etiketes
     if truksta:
         print(f"[ISPEJIMAS] Rinkinyje NERA {len(truksta)} zinomu etikeciu: "
               f"{sorted(truksta)}")
         print("            Imtyje tai gali buti normalu; pilname rinkinyje - ne.")
 
 
-def prideti_kategorija(df, is_stulpelio: str = "label",
+def prideti_kategorija(df, is_stulpelio: str = "Label",
                        i_stulpeli: str = "kategorija"):
     """Prideda kategorijos stulpeli. Grazina ta pati DataFrame.
 
@@ -134,8 +169,17 @@ def prideti_kategorija(df, is_stulpelio: str = "label",
         df = prideti_kategorija(df)
         df["kategorija"].value_counts()
     """
+    # 9 is 63 CSV failu baigiasi nutrukusia eilute; pandas ja perskaito
+    # TYLIAI kaip irasa su Label=NaN. Zr. duomenys/README.md.
+    nan = df[is_stulpelio].isna().sum()
+    if nan:
+        print(f"[ISPEJIMAS] {nan} eilutes su tusciu {is_stulpelio!r} - salinamos "
+              f"(nutrukusios CSV eilutes).")
+        df = df.dropna(subset=[is_stulpelio]).copy()
+
+    df[is_stulpelio] = normalizuoti_stulpeli(df[is_stulpelio])
     patikrinti(df[is_stulpelio].unique())
-    df[i_stulpeli] = df[is_stulpelio].map(KATEGORIJOS)
+    df[i_stulpeli] = df[is_stulpelio].map(KATEGORIJOS_NORM)
     return df
 
 
@@ -156,6 +200,14 @@ def _pasitikrinti() -> None:
     assert len(ATAKU_ETIKETES) == 33, "Turi buti 33 ataku etiketes"
     assert set(KATEGORIJU_EILE) == set(laukiama), "KATEGORIJU_EILE nesutampa"
     assert set(KATEGORIJU_VARDAI) == set(laukiama), "KATEGORIJU_VARDAI nesutampa"
+
+    # Registro sluoksnis: realaus failo etiketes turi buti atpazistamos
+    assert len(KATEGORIJOS_NORM) == 34, "Normalizuotas zodynas sutrumpejo"
+    assert normalizuoti("BenignTraffic") == "BENIGN"
+    assert i_kategorija("DDOS-PSHACK_FLOOD") == "DDoS"
+    assert i_kategorija("DDoS-PSHACK_Flood") == "DDoS"
+    assert i_kategorija("BENIGN") == "Benign"
+    assert i_kategorija("  benign  ") == "Benign"
 
     # Irodymas, kodel reikia zodyno, o ne label.split("-")
     sutampa = sum(

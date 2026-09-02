@@ -1,7 +1,7 @@
 """
 CICIoT2023 duomenu ikelimas: patikra, stratifikuota imtis, Parquet.
 
-Kodel reikia imties: pilnas rinkinys yra ~46,7 mln. eiluciu / 13 GB.
+Kodel reikia imties: pilnas rinkinys yra 45,0 mln. eiluciu / 8,7 GB (63 failai).
 Su pandas i RAM netilps, o 2,5 savaites projektui to ir nereikia.
 
 Paleidimas (is projekto saknies, aktyvavus iot-ids aplinka):
@@ -23,12 +23,12 @@ import pandas as pd
 # ─── Nustatymai ──────────────────────────────────────────────────────
 
 SAKNIS = Path(__file__).resolve().parents[2]
-RAW = SAKNIS / "duomenys" / "raw"
+RAW = SAKNIS / "duomenys" / "raw" / "archive"   # 2026-09-02: CSV gula i archive/
 PROCESSED = SAKNIS / "duomenys" / "processed"
 DARBINIAI = SAKNIS / "rezultatai" / "darbiniai"
 
 SABLONAS = "Merged*.csv"      # shadman1028 veidrodzio failu pavadinimai
-ETIKETE = "label"
+ETIKETE = "Label"            # 2026-09-02: faile DIDZIOJI L, ne "label"
 
 FRAKCIJA = 0.05               # 5 % nuo kiekvienos klases
 MIN_EILUCIU = 5_000           # bet ne maziau nei tiek retoms klasems
@@ -65,7 +65,7 @@ def patikra() -> None:
 
     df = pd.read_csv(failai[0], nrows=200_000)
 
-    print(f"Stulpeliu: {df.shape[1]}  (tiketasi ~47)")
+    print(f"Stulpeliu: {df.shape[1]}  (tiketasi 40 = 39 pozymiai + Label)")
     if df.shape[1] < 40:
         print("  [!] Per mazai stulpeliu - gali buti ismestu pozymiu")
 
@@ -104,10 +104,10 @@ def _klasiu_kiekiai(failai: list[Path]) -> pd.Series:
     """
     Suskaiciuoja klasiu pasiskirstyma visame rinkinyje.
 
-    Skaitomas TIK `label` stulpelis (usecols) - todel 13 GB perziura
+    Skaitomas TIK `Label` stulpelis (usecols) - todel 13 GB perziura
     uztrunka minutes, o ne desimtis minuciu, ir netelpa i RAM problemos nera.
     """
-    print("1/2  Skaiciuojamos klases (skaitomas tik 'label' stulpelis)...")
+    print("1/2  Skaiciuojamos klases (skaitomas tik 'Label' stulpelis)...")
     dalys = []
     for i, f in enumerate(failai, 1):
         s = pd.read_csv(f, usecols=[ETIKETE])[ETIKETE]
