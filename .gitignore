@@ -66,3 +66,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Atsargines kodo kopijos
+*.bak
