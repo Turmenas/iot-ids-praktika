@@ -35,7 +35,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | Kelias | Kas tai |
 |---|---|
 | ✅ `ataskaita.tex` | Pagrindinis dokumentas — preambulė + `\input` |
-| ✅ `saltiniai.bib` | Visi šaltiniai — **18 įrašų** (po 3 užd. bus ~20) |
+| ✅ `saltiniai.bib` | Visi šaltiniai — **20 įrašų**, visi su patikrintu DOI (išsk. `antonakakis2017mirai`) |
 | ✅ `build.ps1` | Kompiliavimas — **gryname ASCII**. `-Clean`, `-Greitas` |
 | ✅ `literatura.tex` → `literatura.pdf` | ⭐ Bibliografija atskirai (žr. žemiau) |
 | ✅ `bibtestas.tex` | Diagnostikai — ištrinti radus priežastį |

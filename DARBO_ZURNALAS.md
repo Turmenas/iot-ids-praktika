@@ -815,6 +815,27 @@ Skyriuje liko akivaizdus prieštaravimas: `tab:matrica` rikiuotė neveda prie ke
 
 Kartu ten pateko du dalykai, kurių pradiniame plane nebuvo, nes jie **atsirado iš pačios matricos**: LightGBM lygus XGBoost (todėl atkrenta ne dėl silpnumo), ir sprendimų medis lenkia Random Forest (todėl lieka vertas dėmesio kaip pigus, savaime paaiškinamas atskaitos modelis). **Abu — matricos produktas, ne prielaida.**
 
+#### 24. T8: šaltiniai užpildė spragą, ne skaičių ⭐
+
+Pridėti du įrašai (18 → **20**), abu su Crossref patikrintais DOI:
+
+| Raktas | Šaltinis | Kam |
+|---|---|---|
+| `chawla2002smote` | Chawla et al. (2002), *JAIR* 16:321–357 | SMOTE abliacija |
+| `dietterich1998tests` | Dietterich (1998), *Neural Computation* 10(7) | Kodėl 3 paleidimų neužtenka |
+
+⭐ **Dietterich atskleidė tikrą protokolo spragą.** Rašydamas 3.6 buvau užrašęs „pateikiamas vidurkis ir standartinis nuokrypis“ — ir viskas. **Nebuvo pasakyta, kaip skirtumas tarp modelių bus laikomas tikru.** Dietterich rodo, kad pakartotinio perskirstymo testai turi pervertintą I tipo klaidą, o t-testas ant trijų paleidimų yra kaip tik toks. Todėl protokole dabar užrašyta: skirtumas reikšmingas tik viršijęs paleidimų sklaidą, formalus testas neatliekamas.
+
+**Be šaltinio šis punktas būtų likęs neužrakintas** — o T6 priėmimo kriterijus reikalavo, kad neužrakintų nebūtų. Vadinasi, T8 iš tikrųjų uždarė T6 skylę.
+
+**Abu šaltiniai — 1998 ir 2002 m., seniausi visame darbe.** Sąmoningai: metodo aprašui cituojamas pirminis šaltinis, ne naujausias jį minintis darbas. `imani2025imbalance` lieka empiriniam SMOTE + XGBoost rezultatui.
+
+**Demšar (2006) atmestas dviem priežastimis:** skirtas palyginimui per daug rinkinių (čia rinkinys vienas), ir JMLR straipsnis DOI neturi.
+
+**Rašant anotaciją atsirado trečias argumentas dėl SMOTE.** Jis interpoliuoja tarp artimiausių kaimynų, o mūsų duomenyse 4,98 % eilučių turi prieštaringas etiketes — sintetiniai pavyzdžiai tokiose srityse dviprasmiškumą tik sustiprintų. Iki šiol SMOTE buvo abliacija dėl biudžeto ir dėl `imani2025imbalance`; dabar yra ir duomenų argumentas.
+
+**Patikra:** 20 `.bib` raktų, dublikatų nėra, skliaustai subalansuoti, be DOI tik `antonakakis2017mirai` (USENIX, jo neturi). Anotacijos padengia **20 iš 20**.
+
 ### 3 UŽDUOTIS BAIGTA — suvestinė
 
 | Kas | Rezultatas |
@@ -825,6 +846,7 @@ Kartu ten pateko du dalykai, kurių pradiniame plane nebuvo, nes jie **atsirado 
 | Svoriai | 30/30/25/15, kiekvienas iš `tab:reikalavimai` eilutės |
 | Jautrumas | 8 iš 8 stabilu; dvi poros sprendžiamos **dominavimo** |
 | Protokolas | Užrakintas; dublikatai 33,1 %, **teorinė riba ~95 %** |
+| Šaltiniai | 18 → **20**, visi su patikrintu DOI, anotacijos 20/20 |
 | Kompiliavimas | 30 psl., **0 klaidų, 0 neišspręstų nuorodų** |
 
 **Vertingiausias dienos rezultatas nėra metodų aibė** — ji buvo žinoma vakar. Vertingiausia yra tai, kad (a) atmetimų priežastys pasirodė esančios duomenų, o ne resursų, (b) dvi svarbiausios poros sprendžiamos dominavimo, tad nepriklauso nuo jokių svorių, ir (c) **išmatuota teorinė tikslumo riba, kuri yra žemiau už literatūroje skelbiamus skaičius.**

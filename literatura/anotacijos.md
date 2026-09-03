@@ -290,6 +290,26 @@ Požymių atranka 46 → 23 sumažino inferenciją 30–51 %, mokymą 33–40 %.
 
 ---
 
+## I. Eksperimento metodika (3 skyrius, 3.6 poskyris)
+
+### `chawla2002smote` — Chawla, Bowyer, Hall, Kegelmeyer (2002), *Journal of Artificial Intelligence Research* 16:321–357
+
+Pirminis SMOTE šaltinis: mažumos klasė papildoma **sintetiniais** pavyzdžiais, interpoliuojant tarp artimiausių tos klasės kaimynų, o ne dubliuojant esamas eilutes. Straipsnis rodo, kad toks papildymas kartu su gausios klasės mažinimu duoda geresnę ROC kreivę nei vien svorių keitimas.
+
+**Kam reikalingas šiame darbe.** 3.6 poskyryje SMOTE numatytas kaip **abliacija vienam modeliui**, ne kaip pagrindinis balansavimo būdas — pagrindinis yra klasių svoriai, nes jie duomenų nedubliuoja. Cituojamas pirminis, o ne naujesnis šaltinis: metodo aprašui tinka originalas, o `imani2025imbalance` lieka empiriniam SMOTE ir XGBoost derinio rezultatui.
+
+⚠️ **Svarbu mūsų duomenims:** SMOTE interpoliuoja tarp kaimynų, o mūsų rinkinyje **4,98 % eilučių turi prieštaringas etiketes**. Sintetiniai pavyzdžiai tokiose srityse tik sustiprintų dviprasmiškumą — dar viena priežastis laikyti SMOTE abliacija, o ne numatytuoju sprendimu.
+
+### `dietterich1998tests` — Dietterich (1998), *Neural Computation* 10(7):1895–1923
+
+Lygina penkis statistinius testus mokymosi algoritmams palyginti ir parodo, kad **pakartotinio perskirstymo (resampling) testai turi pervertintą I tipo klaidą** — skirtumai atrodo reikšmingi dažniau, nei yra iš tikrųjų, nes paleidimai nėra nepriklausomi.
+
+**Kam reikalingas šiame darbe.** Tai tiesioginis pagrindas 3.6 poskyrio sprendimui: turint **tik tris pradinius dydžius**, t-testas ant jų būtų kaip tik toks testas, apie kurį Dietterich įspėja. Todėl protokole užrašyta, kad skirtumas laikomas reikšmingu tik tada, kai viršija paleidimų sklaidą, o formalus reikšmingumo testas neatliekamas.
+
+> **Kodėl ne Demšar (2006).** Jo darbas skirtas palyginimui **per daug duomenų rinkinių**; čia rinkinys vienas, todėl tinka Dietterich formuluotė. Be to Demšar publikuotas JMLR ir DOI neturi, o taisyklė reikalauja patikrinto DOI.
+
+**Abu šaltiniai — 1998 ir 2002 m.**, t. y. gerokai senesni už visus kitus. Tai sąmoninga: metodo aprašui cituojamas pirminis šaltinis, ne naujausias jį minintis darbas.
+
 ## Aprėpties patikra pagal poskyrius
 
 | Poskyris | Šaltiniai | Būklė |

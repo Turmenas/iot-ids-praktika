@@ -83,9 +83,24 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **rikiuotė išliko ta pati 8 atvejais iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
 | ~~**T6**~~ | ~~**Užrakinti eksperimento protokolą**~~ | ✅ **Atlikta.** 3.6 poskyris. Trys sąlyginiai punktai išmatuoti ir tapo faktais: **dublikatai 33,1 %**, **teorinė riba ~95 %**, nematytų klasių trys scenarijai įvardyti vardais | — |
 | ~~**T7**~~ | ~~Parašyti `03_parinkimas.tex`~~ | ✅ **Atlikta.** 7 poskyriai, 4 lentelės, 1 092 žodžiai prozos. ⚠️ **~5 psl. vietoj 4,5** | — |
-| **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
+| ~~**T8**~~ | ~~Papildyti šaltinius~~ | ✅ **Atlikta.** 18 → **20** įrašų: `chawla2002smote`, `dietterich1998tests`. DOI patikrinti per Crossref; abu **panaudoti 3.6 poskyryje**; anotacijos — 20/20 padengta | — |
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
+
+### T8 rezultatas — abu šaltiniai senesni už visus kitus, ir tai sąmoninga
+
+| Raktas | Šaltinis | DOI | Kam |
+|---|---|---|---|
+| `chawla2002smote` | Chawla et al. (2002), *JAIR* 16:321–357 | `10.1613/jair.953` | SMOTE abliacija 3.6 |
+| `dietterich1998tests` | Dietterich (1998), *Neural Computation* 10(7) | `10.1162/089976698300017197` | Kodėl 3 paleidimų neužtenka reikšmingumui |
+
+**Visi kiti 18 šaltinių — 2017–2026 m.; šie du — 1998 ir 2002.** Tai ne aplaidumas: metodo aprašui cituojamas **pirminis** šaltinis, ne naujausias jį minintis darbas. `imani2025imbalance` lieka empiriniam SMOTE + XGBoost rezultatui, o `chawla2002smote` — pačiam metodui.
+
+⭐ **Šaltiniai užpildė tikrą spragą, ne skaičių.** Rašant 3.6 paaiškėjo, kad protokole **nebuvo pasakyta, kaip skirtumai tarp modelių bus laikomi tikrais**. Dietterich duoda atsakymą: trijų paleidimų t-testas yra kaip tik tas testas, kurio I tipo klaida pervertinta, todėl protokole užrašyta, kad skirtumas reikšmingas tik viršijęs paleidimų sklaidą. **Be šaltinio šis punktas būtų likęs neužrakintas.**
+
+⚠️ **Demšar (2006) atmestas dviem priežastimis:** jo metodika skirta palyginimui per daug duomenų rinkinių (čia rinkinys vienas), o JMLR straipsnis DOI neturi — taisyklė reikalauja patikrinto.
+
+**Pastaba, atsiradusi rašant anotaciją:** SMOTE interpoliuoja tarp artimiausių kaimynų, o mūsų duomenyse 4,98 % eilučių turi prieštaringas etiketes. Sintetiniai pavyzdžiai tokiose srityse dviprasmiškumą tik sustiprintų — **trečias nepriklausomas argumentas** laikyti SMOTE abliacija, o ne numatytuoju sprendimu.
 
 ### T7 rezultatas — apimtis viršyta trečią kartą, bet mažiausiai ⚠️
 
@@ -392,7 +407,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] ⭐ **Numeracijos atitikimas patikrintas `.aux` faile:** `\section{Įvadas}` yra 1, todėl **N užduotis = N+1 skyrius** (3 užd. → 4 skyrius). Poslinkis nuoseklus visiems skyriams; ar palikti taip — ⚠️ **tavo sprendimas**, žr. žurnalą
 - [x] ⭐ **3.7 poskyryje matomas užduoties rezultatas** — keturi metodai su vaidmenimis + kas užrakinta
 - [x] Automatinė patikra praleista: kirilica 0 · `\SI`/`\num` argumentai sutikrinti su kitais skyriais · `\section` 0 · dubliuotų `\label` ir kabančių nuorodų nėra
-- [ ] `git push` · `DARBO_ZURNALAS.md` papildytas · `STRUKTURA.md` atnaujinta
+- [x] `DARBO_ZURNALAS.md` papildytas · `STRUKTURA.md` atnaujinta · commit'ai `3096b8b`…`1680692` *(`git push` — tavo pusėje)*
 
 ---
 
@@ -435,7 +450,7 @@ Užsirašyti dabar, kad rugsėjo 9 d. nereikėtų atkurti:
 - [x] `literatura/literatura_anotacijos.md` — ištrinta *(T0)*; papildomai ištrintas `02_di_metodai.tex.bak`
 - [ ] `bibtestas.tex` / `bibtestas2.tex` — ištrinti radus biblatex priežastį (arba rugs. 18 d.)
 - [ ] `praktikos_planas.md` 4 sk. („Realistinė apimtis“) — **pažymėti, kad 26–34 psl. norma neegzistuoja** (žurnale jau pažymėta)
-- [ ] T8: 2 nauji šaltiniai — SMOTE pirminis šaltinis ir statistinio klasifikatorių palyginimo metodika. **Taisyklė nesikeičia: be patikrinto DOI į `.bib` nepatenka**
+- [x] T8: 2 nauji šaltiniai pridėti — `chawla2002smote` (10.1613/jair.953), `dietterich1998tests` (10.1162/089976698300017197). Taisyklė išlaikyta
 
 ---
 

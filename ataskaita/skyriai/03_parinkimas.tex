@@ -367,9 +367,7 @@ aibei.
 tikslumas ir atkūrimas, PR-AUC, MCC ir sumaišymo matrica. Bendras
 tikslumas pateikiamas \emph{tik} palyginimui su literatūra, nurodant, kad
 prie 41,8:1 santykio jis nėra rodiklis. Inferencijos delsa matuojama
-gryna, atskirai nuo srauto lango sukaupimo laiko. Kiekvienas modelis
-mokomas su trimis pradiniais dydžiais; pateikiamas vidurkis ir standartinis
-nuokrypis. Hiperparametrai derinami atsitiktine paieška \emph{tik}
+gryna, atskirai nuo srauto lango sukaupimo laiko. Klasių disbalansas pirmiausia sprendžiamas klasių svoriais, nes jie nedubliuoja duomenų; SMOTE \cite{chawla2002smote} tikrinamas kaip abliacija vienam modeliui ir taikomas \emph{tik} mokymo aibei. Kiekvienas modelis mokomas su trimis pradiniais dydžiais; pateikiamas vidurkis ir standartinis nuokrypis. Trijų paleidimų nepakanka patikimam statistiniam skirtumų vertinimui --- pakartotinio perskirstymo testai linkę pervertinti reikšmingumą \cite{dietterich1998tests}, --- todėl skirtumas tarp modelių laikomas reikšmingu tik tada, kai viršija paleidimų sklaidą. Hiperparametrai derinami atsitiktine paieška \emph{tik}
 validacijos aibėje, o testavimo aibė neliečiama iki vertinimo etapo.
 
 \textbf{Nematytų atakų patikra} atliekama trimis scenarijais: iš mokymo
