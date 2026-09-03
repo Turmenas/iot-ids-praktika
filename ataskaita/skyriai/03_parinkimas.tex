@@ -1,0 +1,124 @@
+% =====================================================================
+%  3 UŽDUOTIS — DI metodų parinkimas ir pagrindimas
+%  Rugsėjo 3 d. | Tikslinė apimtis: 3,5–4 psl. (RIBA 4,5)
+%
+%  REIKALINGA PREAMBULĖJE: \usepackage{xltabular}
+%  DĖMESIO: šiame faile \section BŪTI NEGALI — jį deklaruoja
+%  ataskaita.tex (rugs. 2 d. pamoka: dubliuotas \section nustūmė
+%  visą turinį į kitą skyrių).
+%
+%  Būklė: tab:filtras užpildyta (T2). Toliau — tab:kriterijai (T3),
+%  tab:matrica (T4), jautrumo analizė (T5), protokolas (T6).
+%  Poskyrio 3.1 tekstas rašomas PASKUTINIS.
+% =====================================================================
+
+\subsection{Kietieji apribojimai}
+\label{sec:filtras}
+
+% ---------------------------------------------------------------------
+%  tab:filtras — kietųjų apribojimų filtras (T2)
+% ---------------------------------------------------------------------
+%  Eilučių tvarka SUTAMPA su tab:metodai (18 eilučių, tos pačios
+%  paradigmų grupės) — kad skaitytojas galėtų gretinti abi lenteles.
+%
+%  Vartai taikomi iš eilės K1 -> K4; sprendžiantys yra pirmieji, ties
+%  kuriais atsiranda x. Pažymimi VISI neįveikti vartai, ne tik pirmas.
+% ---------------------------------------------------------------------
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\sloppy
+\begin{xltabular}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{3.5cm}
+  >{\centering\arraybackslash}p{0.8cm}
+  >{\centering\arraybackslash}p{0.8cm}
+  >{\centering\arraybackslash}p{0.8cm}
+  >{\centering\arraybackslash}p{0.8cm}
+  >{\raggedright\arraybackslash}X@{}}
+\caption{Kietųjų apribojimų filtras: kurie metodai apskritai taikytini
+         šio darbo duomenims ir diegimo vietai}
+\label{tab:filtras} \\
+\toprule
+\textbf{Metodas} & \textbf{K1} & \textbf{K2} & \textbf{K3} & \textbf{K4}
+  & \textbf{Rezultatas} \\
+\midrule
+\endfirsthead
+\multicolumn{6}{@{}l}{\itshape \ref{tab:filtras} lentelės tęsinys} \\
+\toprule
+\textbf{Metodas} & \textbf{K1} & \textbf{K2} & \textbf{K3} & \textbf{K4}
+  & \textbf{Rezultatas} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+% --- Prižiūrimas mokymasis ---
+Sprendimų medis (CART) & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+Random Forest & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+XGBoost & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+LightGBM & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+SVM (RBF) & $\surd$ & $\surd$ & $\times$ & $\surd$ &
+  Atmetama (K3): $O(n^2)$--$O(n^3)$ mokymas prie 2,43~mln. eilučių \\
+$k$ artimiausių kaimynų & $\surd$ & $\surd$ & $\surd$ & $\times$ &
+  Atmetama (K4): inferencijos kaina auga su mokymo aibe \\
+Naive Bayes & $\surd$ & $\times$ & $\surd$ & $\surd$ &
+  Atmetama (K2): nepriklausomumo prielaida paneigta patikra \\
+\addlinespace
+% --- Neprižiūrimas mokymasis ---
+Autokoderis & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+Isolation Forest & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+One-Class SVM & $\surd$ & $\surd$ & $\times$ & $\surd$ &
+  Atmetama (K3): ta pati mokymo kaina kaip SVM \\
+Klasterizavimas ($k$-vid., DBSCAN) & $\surd$ & $\surd$ & $\surd$ &
+  $\surd$ & Už darbo ribų: duoda grupes, ne sprendimą
+  „ataka / ne ataka“ \\
+\addlinespace
+% --- Pusiau prižiūrimas ---
+Savimoka (pseudo-žymėjimas) & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  Už darbo ribų: rinkinys pažymėtas visas, todėl paradigmos nauda
+  neišmatuojama \\
+\addlinespace
+% --- Gilusis mokymasis ---
+Daugiasluoksnis perceptronas & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+1D-CNN & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
+  \textbf{Praeina} \\
+LSTM / GRU & $\times$ & $\surd$ & $\surd$ & $\surd$ &
+  Atmetama (K1): sekos duomenyse nėra --- kiekviena eilutė jau yra
+  lango agregatas \\
+Transformer & $\times$ & $\surd$ & $\times$ & $\times$ &
+  Atmetama (K1): ta pati sekos problema; papildomai netelpa į mokymo
+  ir delsos biudžetus \\
+Grafų neuroninis tinklas & $\times$ & $\surd$ & $\times$ & $\times$ &
+  Atmetama (K1): nėra mazgų identifikatorių nei briaunų, grafo
+  sukonstruoti neįmanoma \\
+\addlinespace
+% --- Paskirstytas mokymasis ---
+Federuotas mokymasis (FedAvg) & $\times$ & $\surd$ & $\surd$ & $\surd$ &
+  Atmetama (K1): nėra įrenginio identifikatoriaus, realistiško ne-IID
+  padalijimo į klientus sudaryti neįmanoma \\
+\end{xltabular}
+
+\vspace{-0.5em}
+{\footnotesize
+\textbf{Vartai.}
+\textbf{K1} --- duomenų struktūra leidžia metodą taikyti;
+\textbf{K2} --- modelio prielaidos nepažeistos duomenimis;
+\textbf{K3} --- mokymas telpa į \SI{30}{\minute} be grafinio
+spartintuvo prie 2,43~mln. eilučių ir 36 požymių;
+\textbf{K4} --- inferencija telpa į \SIrange{20}{50}{\milli\second}
+kraštinio šliuzo biudžetą \cite{sallam2026gap}.
+K1 ir K2 kyla iš rugsėjo 2 d. duomenų patikros, K3 ir K4 --- iš
+\ref{tab:reikalavimai} lentelės pirmosios eilutės.
+\textbf{Žymėjimai.} $\surd$ --- vartai įveikti, $\times$ --- ne.
+Vartai taikomi iš eilės, todėl sprendžiantys yra pirmieji, ties
+kuriais atsiranda $\times$; pažymimi visi neįveikti.
+\par}
+\endgroup

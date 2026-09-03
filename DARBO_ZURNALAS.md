@@ -635,8 +635,22 @@ Išnaša po lentele perrašyta: 46 → **39 požymiai**, įvardyti visi aštuoni
 
 **Pasekmė apimčiai:** 1 skyrius nebesusitrauks, tad ~23 psl. teorijos prognozė galioja be išlygų.
 
+#### 9. T2: filtre metodų ne 17, o 18 — ir tai keičia du skaičius ⚠️
+
+Rašydamas `tab:filtras` sutikrinau su `tab:metodai` ir radau, kad plane paveldėtas skaičius neteisingas. `metodu_apzvalga.md` skaičiuoja **17 metodų**, nes „Transformer / GNN“ ten yra vienas punktas; `tab:metodai` juos **išskiria**, todėl eilučių yra **18**. Kadangi plane pats reikalavau, kad filtro eilių tvarka sutaptų su `tab:metodai`, teisingas skaičius yra 18.
+
+**Antras taisymas — „17 → 9“.** Praeina ne devyni, o **aštuoni**: sprendimų medis, RF, XGBoost, LightGBM, autokoderis, Isolation Forest, MLP, 1D-CNN. Devintas atsirado todėl, kad klasterizavimą ir savimoką buvau įskaičiavęs kaip praeinančius. Jie iš tikrųjų **visus keturis vartus praeina**, bet lieka **už darbo ribų**: pirmasis duoda grupes, ne sprendimą „ataka / ne ataka“, antrojo naudos pažymėtame rinkinyje išmatuoti neįmanoma.
+
+⭐ **Iš to seka lentelės sandaros pataisa:** stulpelis „Rezultatas“ turi turėti **tris** reikšmes, ne dvi. „Už darbo ribų“ nėra atmetimas — sulieti juos į vieną reikštų pasakyti, kad metodas netinka, kai iš tikrųjų netinka uždavinys. Ta pati skirtis, kurią rugsėjo 2 d. užsirašiau apie disbalanso stulpelį neprižiūrimiems metodams („neaktualus“, ne „geras“).
+
+**Galutinis balansas: 18 = 8 praeina + 8 atmesti vartais + 2 už ribų.** Atmetimų pasiskirstymas pasitvirtino toks, koks buvo numatytas: **K1 — 4, K2 — 1, K3 — 2, K4 — 1.** Tai reiškia, kad **pusę atrankos atlieka duomenų struktūra**, o skaičiavimo resursai — tik ketvirtadalį.
+
+**Techninė pastaba:** varnelei naudojau `$\surd$`, ne `\checkmark` — `amssymb` preambulėje nėra. Patikrinau prieš rašydamas, o ne po kompiliavimo klaidos.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas, T1 atšauktas (susilieja su T3). Pagal `claude/uzduotis_03_planas.md` 7 sk. biudžetą lieka: `tab:filtras` → `tab:kriterijai` su svoriais → sprendimų matrica ir jautrumas → **eksperimento protokolas** → skyriaus tekstas → `build.ps1`, commit. Atšauktas T1 atlaisvina pusvalandį, kuris atitenka protokolui.
+T0 uždarytas, T1 atšauktas (susilieja su T3), T2 atliktas. Lieka: `tab:kriterijai` su svoriais (T3) → sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit. Atšauktas T1 atlaisvina pusvalandį, kuris atitenka protokolui.
+
+⚠️ **Kompiliavimas nepaleistas nuo rugsėjo 2 d.** `03_parinkimas.tex` iki šiol buvo tuščias, dabar jame yra lentelė su `xltabular` ir `\SI` — abu jau kartą laužė kompiliavimą. **Verta paleisti `build.ps1` dabar, o ne po T7**, kad klaida, jei tokia yra, būtų viename naujame faile, o ne penkiuose poskyriuose.
 
 **Neišspręsta, reikia sprendimo:** titulinio puslapio fakultetas (`% TODO` 127 eil.) ir praktikos vadovas (`Vardas Pavardė`). Kadangi dokumentas teikiamas **Aineros** vadovui, klausimas platesnis nei užpildyti du laukus — ar titulinis apskritai turi būti universitetinio pavidalo.

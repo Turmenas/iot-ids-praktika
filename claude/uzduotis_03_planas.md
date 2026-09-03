@@ -48,11 +48,13 @@ Keturi dvejetainiai vartai. Metodas arba tinka, arba ne; kompromiso nėra, todė
 | **K3** | Mokymas telpa į ≤ 30 min. be GPU prie 2,43 mln. × 36 | `uzduotis_02_planas.md` 12 sk. |
 | **K4** | Inferencija telpa į 20–50 ms šliuzo biudžetą | `sallam2026gap` per 1 užd. `tab:reikalavimai` |
 
-**17 → 9.** Aštuoni atmetami čia, ir **nė vienas atmetimas nepriklauso nuo svorio.** Tai svarbiausias šio skyriaus argumentas: didžiąją atrankos dalį atlieka duomenys ir diegimo vieta, ne mano prioritetai.
+**18 → 8.** Aštuoni atmetami vartais, du lieka už darbo ribų, ir **nė vienas atmetimas nepriklauso nuo svorio.** Tai svarbiausias šio skyriaus argumentas: didžiąją atrankos dalį atlieka duomenys ir diegimo vieta, ne mano prioritetai.
 
-### 2 pakopa — svertiniai balai tik likusiems devyniems
+### 2 pakopa — svertiniai balai tik likusiems aštuoniems
 
-Devyni likę: sprendimų medis · Random Forest · XGBoost · LightGBM · Isolation Forest · autokoderis · MLP · 1D-CNN · *(klasterizavimas ir savimoka — už darbo ribų, ne atmesti)*.
+Aštuoni likę: sprendimų medis · Random Forest · XGBoost · LightGBM · autokoderis · Isolation Forest · MLP · 1D-CNN.
+
+*(Klasterizavimas ir savimoka vartus praeina, bet lieka **už darbo ribų**: pirmasis duoda grupes, ne sprendimą „ataka / ne ataka“, antrojo naudos pažymėtame rinkinyje išmatuoti neįmanoma. Tai ne atmetimas — todėl `tab:filtras` stulpelyje „Rezultatas“ turi tris reikšmes, ne dvi.)*
 
 Tik čia atsiranda kriterijai, svoriai ir balai. Ir tik čia yra subjektyvumo — **vieninteliame darbo taške, kur jis yra**, todėl jį reikia pažymėti, o ne užglaistyti.
 
@@ -75,9 +77,9 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 |---|---|---|---|
 | ~~**T0**~~ | ~~Uždaryti 2 užduoties likučius~~ | ✅ **Atlikta 13:40–14:30.** 15 `tab:atakos` taisymų + 3 pasenę skaičiai; `etiketes.py` — 34/34 prieš realias etiketes; smulkmenos sutikrintos. Commit `f324772` | — |
 | ~~**T1**~~ | ~~Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk.~~ | ❌ **Atšaukta 2026-09-03.** Perkėlimas buvo apimties priemonė, o normos nėra. Vietoj to 3 skyriuje kuriama sava `tab:kriterijai` — **susilieja su T3** | — |
-| **T2** | Formalizuoti kietųjų apribojimų filtrą | `tab:filtras`: 17 eilučių × 4 vartai; 17 → 9; kiekvienas ✗ su priežastimi | **P0** |
+| ~~**T2**~~ | ~~Formalizuoti kietųjų apribojimų filtrą~~ | ✅ **Atlikta.** `tab:filtras`: **18 eilučių × 4 vartai; 18 → 8 praeina, 8 atmesti, 2 už darbo ribų.** Atmetimai: K1 — 4, K2 — 1, K3 — 2, K4 — 1 | — |
 | **T3** | Pagrįsti kriterijų svorius | 5 svoriai, kiekvienas su nuoroda į konkrečią `tab:reikalavimai` eilutę | **P0** |
-| **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 9 metodai × 5 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
+| **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 8 metodai × 5 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
 | **T5** | Jautrumo analizė | Svoriai keičiami ±10 p. p. → ar keičiasi ketvertas; rezultatas įrašytas nepriklausomai nuo to, koks jis | **P0** |
 | **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
@@ -118,7 +120,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
             is kurios tab:reikalavimai eilutes kyla)
         - tab:reikalavimai LIEKA 1 skyriuje; cia i ja tik nurodoma
    3.4. Sprendimų matrica                                   (~0,7 psl.)
-        --> tab:matrica (9 metodai x 5 kriterijai)
+        --> tab:matrica (8 metodai x 5 kriterijai)
         - balu skale apibrezta pries balus
    3.5. Jautrumo analizė ir aibės pilnumo taisyklė          (~0,5 psl.)
         - +-10 p. p. rezultatas
@@ -144,22 +146,22 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 | Stulpelis | Turinys |
 |---|---|
-| Metodas | 17 apžvelgtų, ta pati eilių tvarka kaip `tab:metodai` |
+| Metodas | **18** — visi `tab:metodai` metodai, ta pati eilių tvarka |
 | K1 duomenų struktūra | ✓ / ✗ |
 | K2 prielaidos | ✓ / ✗ |
 | K3 mokymo kaina | ✓ / ✗ |
 | K4 inferencijos delsa | ✓ / ✗ |
-| Rezultatas | **Praeina** / atmetimo priežastis, 3–5 žodžiai |
+| Rezultatas | **Praeina** / **Atmetama (Kn)** su priežastimi / **Už darbo ribų** |
 
-> **Šios lentelės vertė — stulpelių pasiskirstymas.** Iš aštuonių atmetimų **keturi** krenta ties K1, **vienas** ties K2, **du** ties K3 ir **vienas** ties K4. Taigi kietuosius vartus daugiausia uždaro duomenys, ne aparatūra. Tas pats faktas, kuris `metodu_apzvalga.md` užrašytas proza, čia tampa matomas vienu žvilgsniu.
+> **Šios lentelės vertė — stulpelių pasiskirstymas.** ✅ Patvirtinta: iš aštuonių atmetimų **keturi** krenta ties K1, **vienas** ties K2, **du** ties K3 ir **vienas** ties K4. Taigi kietuosius vartus daugiausia uždaro duomenys, ne aparatūra. Tas pats faktas, kuris `metodu_apzvalga.md` užrašytas proza, čia tampa matomas vienu žvilgsniu.
 >
-> ⚠️ **Formatas:** `tabularx`, `\small`, **be `table` float'o**, jei netelpa (1 užd. `xltabular` pamoka). 17 eilučių × 6 stulpeliai ≈ 0,6 psl.
+> ✅ **Formatas:** `xltabular` su `\footnotesize`, `\caption` viduje — kaip `tab:metodai`. 18 eilučių × 6 stulpeliai.
 
 ### `tab:matrica` — sprendimų matrica (T4) ⭐
 
 | Stulpelis | Turinys |
 |---|---|
-| Metodas | 9 likę po filtro |
+| Metodas | 8 likę po filtro |
 | Tikslumo potencialas (w₁) | Balas 1–5 |
 | Atsparumas disbalansui (w₂) | Balas 1–5 |
 | Resursai: inferencija + dydis (w₃) | Balas 1–5 |
@@ -308,7 +310,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] `python -m src.duomenys.etiketes` praeina be `AssertionError` *(be to: 34/34 prieš realias etiketes)*
 - [ ] `tab:kriterijai` sudaryta; **kiekvienoje eilutėje užpildytas stulpelis „Iš ko kyla“** su nuoroda į `tab:reikalavimai`
 - [x] `tab:reikalavimai` **nepajudinta** iš 1 skyriaus *(T1 atšauktas)*; `\ref` nuorodos iš 2 sk. veikia
-- [ ] `tab:filtras` — **17 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**
+- [x] `tab:filtras` — **18 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**, praeina **8**, už ribų **2**
 - [ ] Balų skalė (1–5) apibrėžta **kiekvienam** iš 5 kriterijų **prieš** balus
 - [ ] Kiekvienas iš 5 svorių turi sakinį, nurodantį konkrečią `tab:reikalavimai` eilutę
 - [ ] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka
