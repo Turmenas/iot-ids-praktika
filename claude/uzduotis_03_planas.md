@@ -81,11 +81,28 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
 | ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
 | ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **rikiuotė išliko ta pati 8 atvejais iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
-| **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
+| ~~**T6**~~ | ~~**Užrakinti eksperimento protokolą**~~ | ✅ **Atlikta.** 3.6 poskyris. Trys sąlyginiai punktai išmatuoti ir tapo faktais: **dublikatai 33,1 %**, **teorinė riba ~95 %**, nematytų klasių trys scenarijai įvardyti vardais | — |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
 | **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
+
+### T6 rezultatas — dublikatų patikra pakeitė protokolą ⭐⭐
+
+Trys punktai plane buvo sąlyginiai („jei > 1 %…“). Išmatavus jie tapo faktais, ir vienas iš jų keičia ne tik protokolą, bet ir rezultatų vertinimo atskaitos tašką.
+
+| Punktas | Plane buvo | Išmatuota |
+|---|---|---|
+| Dublikatai | „jei > 1 %, šalinti“ | **33,1 %** — šalinimas privalomas |
+| Prieštaringos etiketės | nenumatyta | **55 440 vektorių**; 4,98 % eilučių neklasifikuojamos iš principo |
+| Teorinė tikslumo riba | nenumatyta | **~95 %**, ne 100 % |
+| Nematytos klasės | „2–3 klasės“ | `DDOS-SLOWLORIS`, `RECON-PORTSCAN`, `DICTIONARYBRUTEFORCE` |
+
+⭐ **Svarbiausia pasekmė.** Literatūroje skelbiami 99,5–99,6 % tikslumai yra **aukščiau už čia išmatuotą teorinę ribą**. Vadinasi, juose greičiausiai lieka dublikatų nutekėjimas. Tai stipriausias turimas argumentas 6 skyriui — ir jis gautas ne iš literatūros, o iš savo duomenų.
+
+⚠️ **Būtina išlyga:** riba galioja **šiam 39 požymių leidimui**. Pašalinti krypties ir trukmės požymiai kaip tik skirtų dalį dabar sutampančių vektorių, todėl 46 požymių darbuose riba būtų aukštesnė. Tai kiekybiškai sustiprina 2 skyriaus teiginį apie ribotą palyginamumą.
+
+**Tvarkos pakeitimas:** dublikatai šalinami **prieš** imties sudarymą ir skaidymą, ne po. Šalinama pagal **visą eilutę** — prieštaringos etiketės paliekamos, nes tai tikras duomenų dviprasmiškumas, o ne dubliavimas.
 
 ### T5 rezultatas — ±10 p. p. buvo per siauras zondas ⭐
 
@@ -353,10 +370,10 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka — atkartojamumas patikrintas (du paleidimai, tas pats md5)
 - [x] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**; papildomai įvardyta, kad ±10 p. p. zondas per siauras
 - [ ] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas, o ne kaip balų rezultatas
-- [ ] **Visi 24 protokolo punktai turi konkrečią reikšmę.** Nė viename nėra „bus nuspręsta vėliau“
-- [ ] `rezultatai.csv` stulpelių schema užrašyta ir suderinta su `i_latex.py`
-- [ ] Nematytos klasės testui **klasės įvardytos vardais**, ne „2–3 klasės“
-- [ ] Dublikatų patikros sprendimas (slenkstis, veiksmas) užrašytas prieš skaidymą
+- [x] **Visi protokolo punktai turi konkrečią reikšmę.** Trys anksčiau sąlyginiai (dublikatų slenkstis, požymių šalinimas, nematytos klasės) išmatuoti realiais duomenimis
+- [x] `rezultatai.csv` stulpelių schema užrašyta (plano 5.11) ir suderinta su `i_latex.py`
+- [x] Nematytos klasės testui **klasės įvardytos vardais**: `DDOS-SLOWLORIS`, `RECON-PORTSCAN`, `DICTIONARYBRUTEFORCE`
+- [x] Dublikatų sprendimas užrašytas: šalinama **pagal visą eilutę**, **prieš** skaidymą; prieštaringos etiketės **paliekamos** kaip tikras dviprasmiškumas
 - [ ] Skyrius kompiliuojasi be klaidų · TODO nėra · **≤ 4,5 psl.** *(laiko, ne formato biudžetas — žr. 12 sk.)*
 - [x] ⭐ **Numeracijos atitikimas patikrintas `.aux` faile:** `\section{Įvadas}` yra 1, todėl **N užduotis = N+1 skyrius** (3 užd. → 4 skyrius). Poslinkis nuoseklus visiems skyriams; ar palikti taip — ⚠️ **tavo sprendimas**, žr. žurnalą
 - [ ] ⭐ **3.7 poskyryje matomas užduoties rezultatas** — kas pasirinkta ir kas užrakinta — neverčiant skaityti viso skyriaus

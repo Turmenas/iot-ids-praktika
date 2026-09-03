@@ -764,9 +764,42 @@ Rodiklį buvau užrašęs kaip **„pirmi trys pasikeitė 0 kartų iš 8“**. P
 
 **Korektūros riktas** „kiekvienai poroai“ → „porai“. Abi rastos peržiūrint failą po įrašymo — patikra dabar apima ir `\SI` argumentų sutikrinimą su tuo, kas jau naudota kituose skyriuose.
 
+#### 20. T6: dublikatų patikra pakeitė ne protokolą, o rezultatų atskaitos tašką ⭐⭐⭐
+
+Plane trys punktai buvo sąlyginiai — „jei dublikatų > 1 %, šalinti“. Išmatavus 1,9 mln. eilučių imtyje:
+
+| | Plane buvo | Yra |
+|---|---|---|
+| Tikslūs dublikatai | „jei > 1 %“ | **33,1 %** |
+| Prieštaringos etiketės | nenumatyta | **55 440 vektorių** |
+| Neklasifikuojamos eilutės | nenumatyta | **4,98 %** |
+| **Teorinė tikslumo riba** | nenumatyta | **~95 %** |
+
+**Dublikatai susitelkę ten, kur ir tikėtumeisi:** `DDOS-ICMP_FLOOD` — 50 %, potvynio klasės 32–50 %, o retos klasės (`XSS`, `SQLINJECTION`, `UPLOADING_ATTACK`) — **0 %**. Atsitiktinai skaidant tos pačios eilutės kopijos patektų į abi aibes, ir modelis būtų testuojamas tuo, ką matė mokydamasis.
+
+⭐ **Bet svarbiausia ne tai.** 55 440 požymių vektorių turi **daugiau nei vieną skirtingą etiketę** — tas pats įvesties vektorius pažymėtas skirtingai. Po dublikatų šalinimo tai palieka 4,98 % eilučių, kurių teisingai suklasifikuoti neįmanoma **jokiam modeliui**. Vadinasi, **teorinė tikslumo riba šiame rinkinyje yra ~95 %, ne 100 %**.
+
+**Iš to seka argumentas, kurio darbe iki šiol nebuvo:** literatūroje skelbiami **99,5–99,6 %** tikslumai yra **aukščiau už šią ribą**. Tai reiškia, kad juose greičiausiai lieka dublikatų nutekėjimas. `reddy2026datasets` tai teigia bendrai; dabar turiu **savo skaičių**, išmatuotą savo duomenyse.
+
+⚠️ **Išlyga, be kurios teiginys būtų per stiprus:** riba galioja **šiam 39 požymių leidimui**. Pašalinti krypties ir trukmės požymiai kaip tik ir skirtų dalį dabar sutampančių vektorių, todėl 46 požymių aibėje riba būtų aukštesnė. Tai kiekybiškai sustiprina 2 skyriaus teiginį apie ribotą palyginamumą — iš „skaičiai nepalyginami“ tampa „štai kiek ir kodėl“.
+
+**Protokolo tvarka pasikeitė:** dublikatai šalinami **prieš** imties sudarymą ir skaidymą. Šalinama pagal **visą eilutę**, ne pagal požymius — prieštaringos etiketės paliekamos, nes tai tikras dviprasmiškumas, o ne dubliavimas. Šalinimas kartu sumažina disbalansą (imtyje 5 999:1 → 2 983:1) ir padidina `BENIGN` dalį (2,33 % → 3,49 %).
+
+**Nematytų klasių scenarijai įvardyti vardais**, kaip reikalavo priėmimo kriterijus: `DDOS-SLOWLORIS` (žemo intensyvumo ataka, kurios pagrindinio požymio šiame leidime nėra — sunkiausias atvejis), `RECON-PORTSCAN`, ir ištisa kategorija `DICTIONARYBRUTEFORCE` (vienintelė savo kategorijos klasė, todėl prižiūrimas modelis etiketės neturi iš principo — tikroji autokoderio patikra).
+
+#### 21. `\num{0,737}` būtų buvusi tyli klaida ⚠️
+
+Taisyklę „naudoti tik tai, kas darbe jau įrodyta veikiant“ pritaikiau ir vėl neužteko. `\num` **yra** naudojamas 2 skyriuje — bet su **tašku**: `\num{0.018}`. Kablelis atsiranda išvestyje per `\sisetup{output-decimal-marker={,}}`.
+
+Buvau parašęs `\num{0,737}` ir `\numrange{99,5}{99,6}` — siunitx kablelį įvestyje traktuoja kitaip, ir rezultatas būtų arba klaida, arba **tyliai neteisingas skaičius**. Pagavau tikrindamas, kaip komanda kviečiama kituose skyriuose, ne tik ar ji ten yra.
+
+**Patikslinta taisyklė:** tikrinti ne tik *ar* komanda naudota, bet ir *kaip* ji kviečiama. Kartu pašalinti du `\percent` — darbe procentai visur rašomi `~\%`.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas, T1 atšauktas (susiliejo su T3), T2–T5 atlikti. Liko **T6 (eksperimento protokolas — dienos svarbiausias)** ir T7 (skyriaus tekstas). Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
+T0 uždarytas, T1 atšauktas, **T2–T6 atlikti**. Liko **T7** — skyriaus tekstas (3.1 įžanga ir 3.7 apibendrinimas) ir `build.ps1`.
+
+⚠️ **Prieš T7 verta paleisti kompiliavimą:** 3 skyrius nuo paskutinio build'o paaugo trimis poskyriais, dviem generuojamomis lentelėmis ir `\num`/`\numrange` komandomis. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
 
 ✅ **Kompiliavimas praėjo be klaidų** su `tab:filtras` — 26 psl., lentelė 9-a, p. 21. `xltabular` ir `\SI` naujame faile suveikė iš pirmo karto, nes buvo kopijuotas `tab:metodai` šablonas, o ne rašyta iš naujo.
 
