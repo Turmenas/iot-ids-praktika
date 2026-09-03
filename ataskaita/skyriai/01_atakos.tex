@@ -179,8 +179,8 @@ Suvokimo
 Tinklo
   & SYN potvynis
   & \texttt{syn\_flag\_number} $=1$, \texttt{syn\_count} $\uparrow$ prie
-    mažo \texttt{ack\_count}; \texttt{Rate}, \texttt{Srate} $\uparrow$;
-    \texttt{flow\_duration} $\downarrow$; vienodi trumpi paketai
+    mažo \texttt{ack\_count}; \texttt{Rate} $\uparrow$, \texttt{IAT} $\downarrow$; vienodi trumpi
+    paketai
     (\texttt{Tot size}, \texttt{Std} $\downarrow$)
   & taip & \cite{neto2023ciciot,sasi2024attacks} \\
 \addlinespace
@@ -193,20 +193,21 @@ Tinklo
   & Fragmentacijos atakos (ACK, UDP, ICMP)
   & Anomalus \texttt{Header\_Length}; netipinis \texttt{Min},
     \texttt{Max}, \texttt{AVG} paketų ilgių pasiskirstymas;
-    \texttt{Magnitue} ir \texttt{Radius} nuokrypis
+    padidėjęs \texttt{Variance}
   & taip & \cite{neto2023ciciot} \\
 \addlinespace
   & SlowLoris (lėtas išsekinimas)
-  & \texttt{flow\_duration} $\uparrow\uparrow$ prie \texttt{Rate} ir
-    \texttt{Number} $\downarrow$; \texttt{HTTP} $=1$;
-    \texttt{psh\_flag\_number}; mažas \texttt{Tot size}
+  & \texttt{HTTP} $=1$; \texttt{psh\_flag\_number}; \texttt{Rate} ir
+    \texttt{Number} $\downarrow$ prie didelio \texttt{IAT}; mažas
+    \texttt{Tot size}. Srauto trukmės šis leidimas neišreiškia ---
+    pagrindinis atakos požymis lieka nepadengtas
   & taip & \cite{neto2023ciciot,komal2026idsreview} \\
 \addlinespace
   & RST/FIN ir PSH-ACK potvyniai
   & \texttt{rst\_flag\_number}, \texttt{rst\_count},
     \texttt{fin\_count}, \texttt{psh\_flag\_number},
     \texttt{ack\_count} disproporcija jungties fazėms;
-    \texttt{Weight} asimetrija
+    \texttt{Rate} $\uparrow$ prie mažo \texttt{Tot size}
   & taip & \cite{neto2023ciciot} \\
 \addlinespace
   & ARP klastojimas (MITM)
@@ -216,17 +217,16 @@ Tinklo
   & taip & \cite{neto2023ciciot,sasi2024attacks} \\
 \addlinespace
   & DNS klastojimas
-  & \texttt{DNS} $=1$, \texttt{UDP} $=1$; \texttt{Srate} ir
-    \texttt{Drate} disbalansas (atsakymų perteklius); \texttt{IAT}
-    anomalija; \texttt{Tot size} nuokrypis
+  & \texttt{DNS} $=1$, \texttt{UDP} $=1$; \texttt{IAT} anomalija;
+    \texttt{Tot size} nuokrypis. Atsakymų perteklius nefiksuojamas ---
+    krypties požymių leidime nėra
   & taip & \cite{neto2023ciciot} \\
 \addlinespace
   & Žvalgyba: prievadų ir OS skenavimas, mazgų aptikimas
-  & Daug trumpų vienpusių srautų: \texttt{flow\_duration},
-    \texttt{Number}, \texttt{Tot size} $\downarrow$;
-    \texttt{syn\_flag\_number} $=1$ be \texttt{ack\_flag\_number};
-    \texttt{Drate} $\to 0$, \texttt{Weight} $\downarrow$. Unikalių
-    taikinių skaičius nefiksuojamas
+  & Daug trumpų srautų: \texttt{Number}, \texttt{Tot size}
+    $\downarrow$, \texttt{Rate} $\uparrow$; \texttt{syn\_flag\_number} $=1$
+    be \texttt{ack\_flag\_number}. Srauto kryptis, trukmė ir unikalių
+    taikinių skaičius nefiksuojami
   & taip & \cite{neto2023ciciot,antonakakis2017mirai} \\
 \addlinespace
   & Sybil ir RPL maršrutizavimo atakos (rangas, sinkhole, wormhole)
@@ -241,40 +241,41 @@ Programų
   & Mirai tipo botneto verbavimas
   & \texttt{Telnet} $=1$, \texttt{SSH} $=1$;
     \texttt{syn\_flag\_number} be \texttt{ack\_flag\_number};
-    pasikartojantys trumpi srautai (\texttt{flow\_duration},
-    \texttt{Number} $\downarrow$); \texttt{Drate} $\to 0$
+    pasikartojantys trumpi srautai (\texttt{Number},
+    \texttt{Tot size} $\downarrow$); reguliarus \texttt{IAT}
   & dal. & \cite{antonakakis2017mirai,meidan2018nbaiot} \\
 \addlinespace
   & Mirai GRE potvyniai (GREIP, GREETH)
   & \texttt{Protocol Type} pažymimas kaip \emph{Unknown} --- GRE nėra
     rinkinio protokolų enumeracijoje; \texttt{IPv} $=1$;
     \texttt{Rate}, \texttt{Tot sum}, \texttt{Number} $\uparrow$;
-    \texttt{Magnitue} nuokrypis
+    \texttt{AVG} ir \texttt{Variance} nuokrypis
   & taip & \cite{neto2023ciciot} \\
 \addlinespace
   & Žodyno grubios jėgos ataka
   & \texttt{SSH}, \texttt{Telnet} arba \texttt{HTTP} $=1$; daug trumpų
     sesijų su panašiu \texttt{Tot size} ir mažu \texttt{Std};
-    reguliarus \texttt{IAT}; mažas \texttt{Weight}
+    reguliarus \texttt{IAT}; mažas \texttt{Number}
   & taip & \cite{neto2023ciciot,antonakakis2017mirai} \\
 \addlinespace
   & Žiniatinklio injekcijos (SQL, komandų, XSS, failų įkėlimas)
-  & \texttt{HTTP} arba \texttt{HTTPS} $=1$; padidėjęs \texttt{Tot size}
-    ir \texttt{Max} užklausų kryptimi; \texttt{Srate}/\texttt{Drate}
-    asimetrija; \texttt{Header\_Length} nuokrypis. Šifruotu atveju ---
+  & \texttt{HTTP} arba \texttt{HTTPS} $=1$; padidėjęs \texttt{Tot size} ir \texttt{Max};
+    \texttt{Header\_Length} nuokrypis. Krypties leidimas neišreiškia,
+    todėl užklausų ir atsakymų atskirti negalima. Šifruotu atveju ---
     tik metaduomenys
   & taip & \cite{neto2023ciciot,alwhbi2024encrypted} \\
 \addlinespace
   & Užpakalinės durys ir C\&C valdymo kanalas
   & Periodiškumas: pastovus \texttt{IAT} mažoje sklaidoje
-    (\emph{beaconing}); ilgas \texttt{flow\_duration} prie mažo
-    \texttt{Number} ir \texttt{Tot size}; \texttt{IRC} $=1$
+    (\emph{beaconing}) prie mažo \texttt{Number} ir
+    \texttt{Tot size}; \texttt{IRC} $=1$
   & taip & \cite{meidan2018nbaiot,neto2023ciciot} \\
 \addlinespace
   & Duomenų nutekinimas
-  & \texttt{Srate} $\gg$ \texttt{Drate}; \texttt{Weight} ir
-    \texttt{Variance} asimetrija; \texttt{Tot sum} $\uparrow$; ilgas
-    \texttt{flow\_duration}
+  & \texttt{Tot sum} ir \texttt{AVG} $\uparrow$ prie mažo
+    \texttt{Number}; \texttt{Variance} nuokrypis. Krypties asimetrijos
+    ir srauto trukmės --- pagrindinių šios atakos požymių ---
+    leidimas neišreiškia
   & dal. & \cite{sasi2024attacks,alwhbi2024encrypted} \\
 
 \end{xltabular}
@@ -286,13 +287,17 @@ duomenų rinkinyje \cite{neto2023ciciot}: \emph{taip} --- yra atskira
 etiketė; \emph{dal.} --- pasireiškia netiesiogiai, atskiros etiketės
 nėra; \emph{ne} --- rinkinyje neatstovaujama, todėl šiame darbe
 nemodeliuojama.
-\texttt{Šriftu} pažymėti pavadinimai atitinka CICIoT2023 stulpelius
-(46 požymiai ir etiketė); likusieji iš jų išvedami slenkančiame lange.
-Atkreiptinas dėmesys, kad stulpelis \texttt{Duration} rinkinyje žymi ne
-srauto trukmę, o paketo gyvavimo laiką (\emph{time-to-live}); srauto
-trukmė yra \texttt{flow\_duration}. Rinkinyje nėra IP ir MAC adresų,
-prievadų numerių bei laiko žymos, todėl požymiai, reikalaujantys
-tapatybių ar taikinių skaičiavimo, iš principo neišvedami.
+\texttt{Šriftu} pažymėti pavadinimai atitinka naudojamo CICIoT2023
+leidimo stulpelius (39 požymiai ir etiketė). Šis leidimas neturi
+srauto trukmės (\texttt{flow\_duration}) ir krypties požymių
+(\texttt{Srate}, \texttt{Drate} bei iš jų išvestų \texttt{Magnitue},
+\texttt{Radius}, \texttt{Covariance}, \texttt{Weight}), o paketo
+gyvavimo laiko stulpelis vadinasi \texttt{Time\_To\_Live}. Todėl
+atakos, kurių parašas remiasi trukme arba srauto asimetrija,
+lentelėje pažymėtos kaip nepadengtos. Rinkinyje taip pat nėra IP ir
+MAC adresų, prievadų numerių bei laiko žymos, todėl požymiai,
+reikalaujantys tapatybių ar taikinių skaičiavimo, iš principo
+neišvedami.
 \par\endgroup
 
 \subsection{Taksonomijos ir CICIoT2023 duomenų rinkinio sąsaja}
@@ -308,7 +313,7 @@ eksperimentiškai tikrinama, o kuri lieka už darbo ribų.
 
 CICIoT2023 rinkinyje \cite{neto2023ciciot} išskirtos septynios atakų
 kategorijos, apimančios 33 atakų tipus; kartu su gerybinio srauto
-etikete \texttt{BenignTraffic} iš viso yra 34 klasės.
+etikete \texttt{BENIGN} iš viso yra 34 klasės.
 \ref{tab:aprepis} lentelėje parodyta, kaip šios kategorijos pasiskirsto tarp
 \ref{tab:atakos} lentelėje apibrėžtų architektūros sluoksnių.
 
@@ -366,9 +371,9 @@ tinkluose ir yra vienas stipriausių argumentų, kodėl IoT reikia
 atskirų aptikimo sprendimų.
 
 \emph{Trečia}, klasių pasiskirstymas rinkinyje neatitinka realaus
-tinklo. Gerybinio srauto \texttt{BenignTraffic} yra apie 1{,}10~mln.
-eilučių iš maždaug 46{,}69~mln., t.\,y. tik apie 2{,}4~\%; atakų
-santykis su gerybiniu srautu siekia maždaug 42:1. Realiame tinkle
+tinklo. Gerybinio srauto \texttt{BENIGN} yra 1{,}05~mln. eilučių iš
+45{,}02~mln., t.\,y. 2{,}3~\%; atakų santykis su gerybiniu srautu
+--- 41{,}8:1. Realiame tinkle
 santykis yra priešingas --- vyrauja gerybinis srautas. Ši aplinkybė
 sistemingai palankiai iškreipia atpažinimo metrikas: modeliui, kuris
 beveik viską klasifikuoja kaip ataką, tenka aukštas jautrumas
