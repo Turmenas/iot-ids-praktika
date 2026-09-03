@@ -688,9 +688,48 @@ Tikrindamas, kur PDF'e atsidūrė `tab:filtras`, pažiūrėjau į `.aux` ir pama
 
 Vėl parašiau `r"...\n..."` ir gavau literal backslash-n vietoj eilutės lūžio — dabar keitiniuose. Pagavo `assert`, ne kompiliavimas. Rugsėjo 3 d. jau turėjau tą patį su `re.escape` ir tarpais. **Sprendimas nustojo būti ad hoc:** keitiniams naudoju `pat()` funkciją, kuri tarpus paverčia `\s+`, tad eilučių lūžiai nebesvarbūs.
 
+#### 14. T4: matrica ketverto nepatvirtino — ir tai geriausia, kas galėjo nutikti ⭐⭐
+
+Suvedus balus pagal `tab:kriterijai` skalę, rikiuotė gavosi tokia:
+
+| Prižiūrimi | Suma | | Neprižiūrimi | Suma |
+|---|---:|---|---|---:|
+| XGBoost | **4,70** | | Isolation Forest | **3,50** |
+| LightGBM | **4,70** | | Autokoderis | 2,95 |
+| Sprendimų medis | 3,80 | | | |
+| Random Forest | 3,55 | | | |
+| MLP | 3,25 | | | |
+| 1D-CNN | 2,70 | | | |
+
+**Iš vakar fiksuoto ketverto rikiuotės viršūnėje yra tik XGBoost.** RF ketvirtas, MLP penktas, autokoderis — antras iš dviejų.
+
+**Pirma reakcija buvo taisyti balus, ir ją reikėjo sustabdyti.** Tai tiksliai tas veiksmas, nuo kurio saugojausi rašydamas planą: pakoreguoti kriterijus, kol rezultatas sutaps su atsakymu. Balai lieka tokie, kokie išeina iš skalės, apibrėžtos **prieš** juos.
+
+**Trys radiniai, kurių be matricos nebūtų buvę:**
+
+1. ⚠️ **Sprendimų medis (3,80) lenkia Random Forest (3,55).** Priežastis skaidri: 5/5 už resursus ir interpretuojamumą prieš 4/3. Ketverte RF lieka dėl **sudėtingumo gradiento** — jis yra ansamblio pakopa. Bet radinys savarankiškas: šliuzo uždaviniui pigiausias ir aiškiausias prižiūrimas metodas yra stipresnis, nei atrodė. **Verta apsvarstyti jį kaip penktą, pigų atskaitos modelį.**
+2. **LightGBM lygus XGBoost (4,70).** Jis atkrenta ne balais, o dėl to, kad du beveik tapatūs stiprinimo metodai palyginime nieko neprideda. **Matrica šį rugsėjo 2 d. sprendimą patvirtino**, ne paneigė.
+3. **Isolation Forest (3,50) lenkia autokoderį (2,95).** Autokoderis aibėje dėl funkcinio reikalavimo, ne dėl balo. Tai antras nepriklausomas argumentas, kad IF vertas pridėti kaip pigus etalonas — pirmasis buvo rugsėjo 2 d.
+
+> **Jei balai būtų sutapę su ketvertu, lentelė nieko neįrodytų** — tik atkartotų vakar priimtą sprendimą gražesniu pavidalu. Nesutapimas yra įrodymas, kad kriterijai nebuvo derinami prie norimo atsakymo.
+
+#### 15. Palyginimo asimetrija atsirado lentelėje, ne tekste
+
+Neprižiūrimų metodų negalima dėti į tą patį stulpelį su prižiūrimais — tai numatyta dar rugsėjo 2 d. (2.8 poskyris). Iki šiol tai buvo pastaba tekste; dabar ji **įgyvendinta lentelės sandaroje**: du atskiri blokai su antraštėmis, ir išnaša, kad sumos tarpusavyje nepalyginamos.
+
+Papildomai reikėjo užrašyti, ką neprižiūrimiems metodams reiškia stulpelis „Disbalansas“: **problema jiems nekyla, o ne yra išspręsta.** Be to sakinio balas 4 atrodytų kaip pranašumas prieš RF balą 3, nors matuoja visai kitą dalyką.
+
+#### 16. Matrica generuojama, ne rašoma — ir tai jau atsipirko
+
+`sprendimu_matrica.csv` → `src/eksperimentai/matrica.py` → `ataskaita/lenteles/matrica.tex`, įtraukiama per `\lentele{}`. Atkartojamumą patikrinau paleisdamas du kartus ir sulygindamas `md5sum` — failas identiškas.
+
+**Kaina buvo maždaug 20 minučių, o T5 be jos būtų neįmanomas:** jautrumo analizė perskaičiuoja svertines sumas aštuoniems svorių rinkiniams; rankomis tai būtų 64 perrašyti skaičiai.
+
+**Skripte pagauta klaida:** `"..." % (...) .replace(...)` — `.replace` prilipo prie tuple, ne prie suformatuotos eilutės. Be to pati mintis buvo bloga: `.replace(".", ",")` visai eilutei būtų sugadinęs žymą `(aut.)` → `(aut,)`. **Kablelis dabar keičiamas tik pačiame skaičiuje.** Klaidą parodė `AttributeError`, bet tylųjį `(aut,)` variantą būčiau pamatęs tik PDF'e.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas, T1 atšauktas (susiliejo su T3), T2 ir T3 atlikti. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
+T0 uždarytas, T1 atšauktas (susiliejo su T3), T2–T4 atlikti. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
 
 ✅ **Kompiliavimas praėjo be klaidų** su `tab:filtras` — 26 psl., lentelė 9-a, p. 21. `xltabular` ir `\SI` naujame faile suveikė iš pirmo karto, nes buvo kopijuotas `tab:metodai` šablonas, o ne rašyta iš naujo.
 

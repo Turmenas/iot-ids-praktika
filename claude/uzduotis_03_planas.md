@@ -79,13 +79,32 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T1**~~ | ~~Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk.~~ | ❌ **Atšaukta 2026-09-03.** Perkėlimas buvo apimties priemonė, o normos nėra. Vietoj to 3 skyriuje kuriama sava `tab:kriterijai` — **susilieja su T3** | — |
 | ~~**T2**~~ | ~~Formalizuoti kietųjų apribojimų filtrą~~ | ✅ **Atlikta.** `tab:filtras`: **18 eilučių × 4 vartai; 18 → 8 praeina, 8 atmesti, 2 už darbo ribų.** Atmetimai: K1 — 4, K2 — 1, K3 — 2, K4 — 1 | — |
 | ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
-| **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 8 metodai × 4 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
+| ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
 | **T5** | Jautrumo analizė | Svoriai keičiami ±10 p. p. → ar keičiasi ketvertas; rezultatas įrašytas nepriklausomai nuo to, koks jis | **P0** |
 | **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
 | **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
+
+### T4 rezultatas — rikiuotė ketverto nepatvirtina ⚠️⭐
+
+| Vieta | Prižiūrimi | Suma | | Vieta | Neprižiūrimi | Suma |
+|---:|---|---:|---|---:|---|---:|
+| 1. | XGBoost | **4,70** | | 1. | Isolation Forest | **3,50** |
+| 2. | LightGBM | **4,70** | | 2. | Autokoderis | 2,95 |
+| 3. | Sprendimų medis | 3,80 | | | | |
+| 4. | Random Forest | 3,55 | | | | |
+| 5. | MLP | 3,25 | | | | |
+| 6. | 1D-CNN | 2,70 | | | | |
+
+**Iš ketverto (RF, XGBoost, MLP, autokoderis) rikiuotės viršūnėje yra tik XGBoost.** RF — ketvirtas, MLP — penktas, autokoderis — antras iš dviejų. Tai **ne matricos klaida ir ne ženklas taisyti balus** — tai tiksliai tas atvejis, kuriam plano 1 skyriuje numatyta **aibės pilnumo taisyklė**. Trys pasekmės, kurias 3.5 poskyris privalo pasakyti atvirai:
+
+1. **Sprendimų medis (3,80) lenkia Random Forest (3,55).** Priežastis skaidri: 5/5 už resursus ir interpretuojamumą prieš 4/3. Ketverte RF lieka ne dėl balo, o dėl **sudėtingumo gradiento** — jis yra ansamblio pakopa tarp medžio ir stiprinimo. ⚠️ **Bet tai savarankiškas radinys: pigiausias ir aiškiausias prižiūrimas metodas šliuzo uždaviniui yra stipresnis, nei atrodė.**
+2. **LightGBM (4,70) lygus XGBoost.** Jis atkrenta ne balais, o dėl to, kad du beveik tapatūs stiprinimo metodai palyginime nieko neprideda — sprendimas priimtas 2 skyriuje ir dabar **matricos patvirtintas**, ne paneigtas.
+3. **Isolation Forest (3,50) lenkia autokoderį (2,95).** Autokoderis aibėje dėl **funkcinio reikalavimo** (sudėtingesnės anomalijos, zero-day hipotezės patikra), ne dėl balo. Tai stiprina 2 skyriaus pastabą, kad IF vertas pridėti kaip pigus etalonas.
+
+> **Būtent dėl to matrica ir yra vertinga.** Jei balai būtų sutapę su ketvertu, lentelė nieko neįrodytų — tik atkartotų vakar priimtą sprendimą. Nesutapimas parodo, kad kriterijai nebuvo derinami prie norimo atsakymo.
 
 ### T0 — ✅ uždarytas 2026-09-03, 14:30
 
@@ -312,7 +331,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] `tab:filtras` — **18 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**, praeina **8**, už ribų **2**
 - [x] Balų skalė (1–5) apibrėžta **kiekvienam** iš 4 kriterijų **prieš** balus — `tab:kriterijai` ketvirtame stulpelyje
 - [x] Kiekvienas iš 4 svorių nurodo konkrečią `tab:reikalavimai` eilutę
-- [ ] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka
+- [x] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka — atkartojamumas patikrintas (du paleidimai, tas pats md5)
 - [ ] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**
 - [ ] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas, o ne kaip balų rezultatas
 - [ ] **Visi 24 protokolo punktai turi konkrečią reikšmę.** Nė viename nėra „bus nuspręsta vėliau“

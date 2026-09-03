@@ -203,3 +203,38 @@ priežasties: visi aštuoni likę metodai turi standartines bibliotekų
 realizacijas, todėl visiems gautų tą patį balą ir rikiuotės nekeistų.
 \normalsize
 \end{table}
+
+\subsection{Sprendimų matrica}
+\label{sec:matrica}
+
+% ---------------------------------------------------------------------
+%  tab:matrica — svertiniai balai aštuoniems po filtro likusiems (T4)
+% ---------------------------------------------------------------------
+%  LENTELĖ GENERUOJAMA, ne rašoma ranka:
+%      rezultatai/darbiniai/sprendimu_matrica.csv
+%      -> python -m src.eksperimentai.matrica
+%      -> ataskaita/lenteles/matrica.tex
+%  Perskaičiavus svorius (T5) skaičiai atsinaujina patys.
+%
+%  Balų skalė apibrėžta tab:kriterijai — PRIEŠ balus, ne po jų.
+% ---------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Sprendimų matrica: po filtro likę metodai pagal
+         \ref{tab:kriterijai} lentelės kriterijus ir svorius}
+\label{tab:matrica}
+\lentele{matrica.tex}
+
+\vspace{2pt}
+\raggedright\footnotesize
+Balai 1--5 pagal \ref{tab:kriterijai} lentelėje iš anksto apibrėžtą skalę;
+svertinė suma --- balų ir svorių sandaugų suma.
+\textbf{Abiejų blokų sumos tarpusavyje nepalyginamos:} prižiūrimi metodai
+vertinami aštuonių kategorijų klasifikavimo, o neprižiūrimi --- dvejetainėje
+anomalijų aptikimo formuluotėje, todėl jų balai matuoja skirtingus dalykus.
+Neprižiūrimų metodų stulpelis „Disbalansas“ žymi, kad klasių disbalanso
+problema jiems \emph{nekyla} --- mokoma tik iš gerybinio srauto --- o ne kad
+ji išspręsta.
+\normalsize
+\end{table}
