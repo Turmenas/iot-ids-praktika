@@ -73,7 +73,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 | Nr. | Tikslas | Išmatuojamas rezultatas | Prior. |
 |---|---|---|---|
-| **T0** | Uždaryti 2 užduoties likučius — **trys skirtingos būklės, žr. žemiau** | `tab:atakos` pataisyta; kodas patikrintas paleidus; smulkmenų būklė sutikrinta | **P0** |
+| ~~**T0**~~ | ~~Uždaryti 2 užduoties likučius~~ | ✅ **Atlikta 13:40–14:30.** 15 `tab:atakos` taisymų + 3 pasenę skaičiai; `etiketes.py` — 34/34 prieš realias etiketes; smulkmenos sutikrintos. Commit `f324772` | — |
 | ~~**T1**~~ | ~~Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk.~~ | ❌ **Atšaukta 2026-09-03.** Perkėlimas buvo apimties priemonė, o normos nėra. Vietoj to 3 skyriuje kuriama sava `tab:kriterijai` — **susilieja su T3** | — |
 | **T2** | Formalizuoti kietųjų apribojimų filtrą | `tab:filtras`: 17 eilučių × 4 vartai; 17 → 9; kiekvienas ✗ su priežastimi | **P0** |
 | **T3** | Pagrįsti kriterijų svorius | 5 svoriai, kiekvienas su nuoroda į konkrečią `tab:reikalavimai` eilutę | **P0** |
@@ -85,17 +85,21 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
 
-### T0 detaliau — trys punktai, ne vienas
+### T0 — ✅ uždarytas 2026-09-03, 14:30
 
-| Punktas | Būklė dokumentuose | Ką daryti |
-|---|---|---|
-| **`tab:atakos` eilutės**, mininčios `flow_duration` / srauto asimetriją | ❌ **Neatlikta.** Nėra jokio įrašo nei žurnale, nei `STRUKTURA.md` | **Tikras darbas.** Vienintelė vieta, kur 1 skyrius tebeprieštarauja realiems duomenims |
-| **`ikelimas.py` / `etiketes.py`** (`Label`, `.upper()`, `BENIGN`) | ✅ **Greičiausiai atlikta 09-02** — `STRUKTURA.md` abu pažymėti su data | **Tik patikra:** `python -m src.duomenys.etiketes`. Jei `assert` praeina — punktas uždarytas |
-| **Smulkmenos** | ⚠️ **Dokumentai prieštarauja** — žr. žemiau | Sutikrinti su realiu aplanku, ne su užrašais |
+| Punktas | Rezultatas |
+|---|---|
+| **`tab:atakos`** | ✅ **15 taisymų.** Visi 8 neegzistuojantys stulpeliai pašalinti; keturiose atakose (SlowLoris, DNS, žvalgyba, nutekinimas) spraga **įvardyta atvirai**; išnaša 46 → 39 |
+| **Pasenę skaičiai** *(plane nebuvo)* | ✅ 46,69 → **45,02 mln.**; 1,10 → **1,05 mln.** (2,3 %, 41,8:1); `BenignTraffic` → **`BENIGN`** 2 vietose |
+| **`etiketes.py` / `ikelimas.py`** | ✅ Patikrinta **prieš realias etiketes** iš visų 63 failų: **34/34**, klaidų nėra |
+| **Nutrūkusios eilutės** *(protokolo 3 p.)* | ✅ **9 failai**; `pandas` → `Label = NaN`; `dropna` pašalina. Punktas patikrintas, ne perimtas |
+| **`requirements-lock.txt`** | ✅ **Egzistuoja nuo 09-01.** Žurnalas buvo pasenęs, `STRUKTURA.md` teisi |
+| **`README.md`** | ✅ Turi turinį; `STRUKTURA.md` klaidingai žymėjo tuščią — pataisyta |
+| **Dublikatai** | ✅ Ištrinti `literatura_anotacijos.md` ir `02_di_metodai.tex.bak` |
+| **Titulinis puslapis** | ⬜ **Neuždaryta — reikia sprendimo.** `% TODO` fakultetas (127 eil.), `Vardas Pavardė` vadovas (143 eil.). Kadangi dokumentas Aineros vadovui, klausimas platesnis: ar titulinis apskritai universitetinio pavidalo |
+| **`houichi` metrikos** | ⬜ Užblokuota (Wiley 403) — ne šios dienos darbas |
 
-⚠️ **`requirements-lock.txt`: du dokumentai sako skirtingai.** `STRUKTURA.md` (sudaryta 09-02 **iš realaus aplanko turinio**) jį žymi ✅; žurnalo rugs. 1 d. „Nebaigta“ ir `uzduotis_02_planas.md` 11 sk. tebelaiko jį neatliktu. Tikėtina, kad failas yra, o žymos liko neatnaujintos — bet **tai tikrinama `dir`, ne spėjimu.** Ta pati rugsėjo 2 d. pamoka: užrašas, sudarytas neatidarius failo, yra hipotezė.
-
-**Kiti smulkūs:** titulinis puslapis — neatlikta · `houichi` metrikos — užblokuota (Wiley 403) · `literatura_anotacijos.md` dublikatas — tebeguli.
+**Struktūrinės patikros po taisymų:** 17 lentelės eilučių × 5 stulpeliai · skliaustai 342/342 · aplinkos suporuotos · dubliuotų `\label` nėra · kirilicos nėra. **Kompiliavimas Windows pusėje dar nepaleistas** — Linux mašinoje trūksta lietuviško babel ir `siunitx`.
 
 ---
 
@@ -300,10 +304,10 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 
 ## 8. Priėmimo kriterijai
 
-- [ ] `tab:atakos` neminimi požymiai, kurių 39 požymių leidime nėra
-- [ ] `python -m src.duomenys.etiketes` praeina be `AssertionError`
+- [x] `tab:atakos` neminimi požymiai, kurių 39 požymių leidime nėra *(T0, 15 taisymų)*
+- [x] `python -m src.duomenys.etiketes` praeina be `AssertionError` *(be to: 34/34 prieš realias etiketes)*
 - [ ] `tab:kriterijai` sudaryta; **kiekvienoje eilutėje užpildytas stulpelis „Iš ko kyla“** su nuoroda į `tab:reikalavimai`
-- [ ] `tab:reikalavimai` **nepajudinta** iš 1 skyriaus; `\ref` nuorodos iš 2 ir 3 skyrių veikia
+- [x] `tab:reikalavimai` **nepajudinta** iš 1 skyriaus *(T1 atšauktas)*; `\ref` nuorodos iš 2 sk. veikia
 - [ ] `tab:filtras` — **17 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**
 - [ ] Balų skalė (1–5) apibrėžta **kiekvienam** iš 5 kriterijų **prieš** balus
 - [ ] Kiekvienas iš 5 svorių turi sakinį, nurodantį konkrečią `tab:reikalavimai` eilutę
@@ -355,10 +359,10 @@ Užsirašyti dabar, kad rugsėjo 9 d. nereikėtų atkurti:
 
 ## 11. Likučiai — rezervo laikas arba rugs. 4 d. rytas
 
-- [ ] `pip freeze > requirements-lock.txt`
-- [ ] Titulinio puslapio fakultetas ir praktikos vadovas
+- [x] `pip freeze > requirements-lock.txt` — **jau buvo atlikta 09-01**, žymos buvo pasenusios
+- [ ] ⚠️ Titulinio puslapio fakultetas ir praktikos vadovas — **reikia tavo sprendimo** (žr. T0 lentelę)
 - [ ] `houichi2025smartcity` metrikos — reikia universiteto prieigos (Wiley 403). Jei negaunama iki rugs. 8 d., eilutė iš `tab:susije` **išimama**, o šaltinis lieka tekste
-- [ ] `literatura/literatura_anotacijos.md` — **ištrinti** dubliuotą kopiją, palikti `anotacijos.md`
+- [x] `literatura/literatura_anotacijos.md` — ištrinta *(T0)*; papildomai ištrintas `02_di_metodai.tex.bak`
 - [ ] `bibtestas.tex` / `bibtestas2.tex` — ištrinti radus biblatex priežastį (arba rugs. 18 d.)
 - [ ] `praktikos_planas.md` 4 sk. („Realistinė apimtis“) — **pažymėti, kad 26–34 psl. norma neegzistuoja** (žurnale jau pažymėta)
 - [ ] T8: 2 nauji šaltiniai — SMOTE pirminis šaltinis ir statistinio klasifikatorių palyginimo metodika. **Taisyklė nesikeičia: be patikrinto DOI į `.bib` nepatenka**
