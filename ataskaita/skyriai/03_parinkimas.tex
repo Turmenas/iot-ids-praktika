@@ -12,6 +12,25 @@
 %  Poskyrio 3.1 tekstas rašomas PASKUTINIS.
 % =====================================================================
 
+\subsection{Atrankos rėmas: du filtrai, ne vienas}
+\label{sec:remas}
+
+Ankstesnis skyrius baigėsi kandidatų aibe; čia ji siaurinama iki galutinės.
+Tokia atranka turi žinomą silpnybę: svertinė matrica, kurios rezultatas
+sutampa su iš anksto žinomu atsakymu, o svoriai parinkti be pagrindimo, yra
+retorinė priemonė, o ne metodas.
+
+Todėl atranka skaidoma į dvi pakopas su skirtinga logika. Pirmoji ---
+kietieji apribojimai: metodas arba taikytinas šiems duomenims ir šiai
+diegimo vietai, arba ne. Kompromiso čia nėra, todėl nėra nei svorių, nei
+balų. Antroji --- svertiniai balai, taikomi \emph{tik} pirmąją pakopą
+įveikusiems metodams.
+
+Toks skaidymas turi konkrečią pasekmę: didžiąją atrankos dalį atlieka
+duomenų savybės, o ne autoriaus prioritetai. Subjektyvumas lieka
+vieninteliame taške --- kriterijų svoriuose, --- ir todėl jis atskirai
+pažymimas bei tikrinamas \ref{sec:jautrumas} poskyryje.
+
 \subsection{Kietieji apribojimai}
 \label{sec:filtras}
 
@@ -361,3 +380,42 @@ kategorija (\texttt{DICTIONARYBRUTEFORCE} --- vienintelė savo
 kategorijos klasė). Pirmieji du tikrina, ar atpažįstamas naujas žinomos
 šeimos variantas; trečiasis yra tikroji autokoderio hipotezės patikra,
 nes prižiūrimas modelis tokios kategorijos etiketės neturi iš principo.
+
+
+\subsection{Galutinė aibė ir apibendrinimas}
+\label{sec:parinkimas_isvados}
+
+\ref{tab:matrica} lentelės rikiuotė galutinės aibės \emph{neduoda}, ir tai
+pasakytina atvirai: iš keturių pasirinktų metodų rikiuotės viršūnėje yra
+tik XGBoost. Aibė sudaroma pagal tris sudedamąsias --- rikiuotės viršūnę,
+mokymosi paradigmų padengimą ir sudėtingumo gradientą, --- iš kurių tik
+pirmoji remiasi balais.
+
+Pasirenkami \textbf{keturi metodai}. \textbf{XGBoost} --- rikiuotės
+viršūnė ir vienintelis, kurio rezultatą galima tiesiogiai gretinti su
+literatūra. \textbf{Random Forest} --- ansamblio pakopa sudėtingumo
+gradiente tarp medžio ir stiprinimo; jis nustato atskaitos lygį, prie kurio
+matuojamas prieaugis. \textbf{Daugiasluoksnis perceptronas} --- gilaus
+mokymosi atstovas, be kurio liktų neatsakytas ankstesniame skyriuje
+iškeltas klausimas, ar sudėtingumas lentelinei įvesčiai apsimoka.
+\textbf{Autokoderis} --- vienintelis, aptinkantis atakas be jų pavyzdžių;
+jis įtraukiamas dėl funkcinio reikalavimo, o ne dėl balo, ir tai matyti iš
+lentelės.
+
+Dvi pastabos, kylančios iš pačios matricos. Pirma, \textbf{LightGBM balais
+lygus XGBoost}; jis neįtraukiamas ne dėl silpnesnio rezultato, o dėl to,
+kad du beveik tapatūs stiprinimo metodai palyginime nieko neprideda. Antra,
+\textbf{sprendimų medis lenkia Random Forest} --- dėl savaiminio
+interpretuojamumo ir mažiausio resursų poreikio. Ketverte jo vieta atitenka
+ansamblio pakopai, tačiau kaip pigus ir aiškiai paaiškinamas atskaitos
+modelis jis lieka vertas dėmesio; tas pats galioja Isolation Forest kaip
+pigiam autokoderio etalonui.
+
+Kartu su metodais užrakinama ir tai, kas lemia rezultatų palyginamumą:
+pagrindinis užduoties detalumas --- aštuonios kategorijos; dublikatų
+šalinimas prieš skaidymą; stratifikuotas skaidymas su išsaugotais
+indeksais; macro-F1 kaip pagrindinė metrika ir trys pradiniai dydžiai
+kiekvienam modeliui. Svarbiausia --- \textbf{atskaitos taškas rezultatams
+yra ne 100~\%, o šiuose duomenyse išmatuota maždaug
+95~\% riba}, žemiau kurios lieka ir dalis literatūroje
+skelbiamų skaičių.

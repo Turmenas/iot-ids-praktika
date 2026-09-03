@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-03 po T4 — sutikrinta su **realiu aplanko turiniu**, ne su užrašais
+**Atnaujinta:** 2026-09-03 — **3 užduotis baigta**; sutikrinta su realiu aplanko turiniu
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -43,8 +43,9 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\01_atakos.tex` | **1 užd.** Baigta. **2026-09-03: `tab:atakos` suderinta su 39 požymių leidimu** (15 taisymų). `tab:reikalavimai` **lieka čia** — perkėlimas atšauktas |
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
 | ⚠️ `skyriai\ciciot2023_pozymiai.md` | **Ne skyrius** — duomenų dokumentas tarp `.tex` failų. Vieta svarstytina |
-| ✅ `skyriai\03_parinkimas.tex` | **3 užd.** ← dabartinis darbas. 4 poskyriai: `tab:filtras`, `tab:kriterijai`, `tab:matrica`, `tab:jautrumas` ✅; lieka protokolas (T6) ir tekstas (T7) |
-| ⬜ `skyriai\04..07_*.tex` | 4–6 užd. ir išvados |
+| ✅ `skyriai\03_parinkimas.tex` | **3 užd. BAIGTA** — 7 poskyriai, 4 lentelės, ~5 psl. Protokolas 3.6 poskyryje |
+| ⬜ `skyriai\04_sprendimas.tex` | **4 užd.** ← **kitas darbas.** Metodika rašoma iš 3.6 protokolo |
+| ⬜ `skyriai\05..07_*.tex` | 5–6 užd. ir išvados |
 | ✅ `lenteles\rezultatai.tex` | **Generuojama** — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
 | ⬜ `paveikslai\` · `skaidres\` | Grafikai, skaidrės |
@@ -75,6 +76,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `konfig\random_forest.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
 | ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys |
+| ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |
 | ✅ `rezultatai\darbiniai\sprendimu_matrica.csv` | ⭐ **3 užd.:** 8 metodai × 4 kriterijai. **Vienintelis balų šaltinis** — `matrica.tex` ranka neliesti |
 | ✅ `literatura\anotacijos.md` | Šaltinių anotacijos *(ne ataskaitos tekstas)*. Dublikatas ištrintas 09-03 |
 
@@ -137,7 +139,8 @@ Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1
 | sklearn: `Input contains infinity` | **991 eilutė** turi `Rate` = `Infinity` → `replace([inf,-inf], nan).dropna()` |
 | Tyliai atsiranda 35-a klasė | 9 failai baigiasi **nutrūkusia eilute** → `dropna(subset=["Label"])` |
 | Koreliacijos filtras palieka `Variance` | `Variance` = `Std`², bet tiesinė koreliacija 0,737 — šalinti **sąrašu** |
-| **Išpūsti rezultatai be matomos klaidos** | Tikslūs dublikatai tarp `train` ir `test` — `df.duplicated()` **prieš** skaidymą |
+| **Išpūsti rezultatai be matomos klaidos** | ⭐ **33,1 % eilučių — tikslūs dublikatai.** Šalinti pagal **visą eilutę**, **prieš** imtį ir skaidymą |
+| Tikslumas „įstringa“ ties ~95 % | Taip ir turi būti: **4,98 % eilučių turi prieštaringas etiketes** — teorinė riba ~95 %, ne 100 % |
 
 ### Aplinka
 

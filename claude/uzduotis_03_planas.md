@@ -82,10 +82,24 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
 | ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **rikiuotė išliko ta pati 8 atvejais iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
 | ~~**T6**~~ | ~~**Užrakinti eksperimento protokolą**~~ | ✅ **Atlikta.** 3.6 poskyris. Trys sąlyginiai punktai išmatuoti ir tapo faktais: **dublikatai 33,1 %**, **teorinė riba ~95 %**, nematytų klasių trys scenarijai įvardyti vardais | — |
-| **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
+| ~~**T7**~~ | ~~Parašyti `03_parinkimas.tex`~~ | ✅ **Atlikta.** 7 poskyriai, 4 lentelės, 1 092 žodžiai prozos. ⚠️ **~5 psl. vietoj 4,5** | — |
 | **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
+
+### T7 rezultatas — apimtis viršyta trečią kartą, bet mažiausiai ⚠️
+
+| Skyrius | Taikinys | Faktas | Perviršis |
+|---|---:|---:|---:|
+| 1 užd. | 4–5 psl. | 9 psl. | **+90 %** |
+| 2 užd. | 5–6 psl. | 9,7 psl. | **+62 %** |
+| **3 užd.** | **4,5 psl.** | **~5 psl.** | **+11 %** |
+
+**Tendencija teisingos krypties, bet taikinys vis tiek nepataikytas.** Perviršį duoda 3.6 (protokolas) — jis vienas užima apie 1,2 psl. Trumpinti jo neverta: jame yra dublikatų radinys ir teorinė riba, t. y. medžiaga, kuria remsis 5 ir 6 skyriai.
+
+**Kas suveikė šįkart:** keturios lentelės vietoj penkių, protokolas tekstu (o ne penkta lentele), 3.1 ir 3.7 rašyti paskutiniai ir sąmoningai trumpi (~150 ir ~300 žodžių).
+
+**Įvardyta, ne nutylėta** — tai ir buvo priėmimo kriterijaus prasmė.
 
 ### T6 rezultatas — dublikatų patikra pakeitė protokolą ⭐⭐
 
@@ -369,15 +383,15 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] Kiekvienas iš 4 svorių nurodo konkrečią `tab:reikalavimai` eilutę
 - [x] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka — atkartojamumas patikrintas (du paleidimai, tas pats md5)
 - [x] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**; papildomai įvardyta, kad ±10 p. p. zondas per siauras
-- [ ] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas, o ne kaip balų rezultatas
+- [x] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas — 3.7 poskyryje
 - [x] **Visi protokolo punktai turi konkrečią reikšmę.** Trys anksčiau sąlyginiai (dublikatų slenkstis, požymių šalinimas, nematytos klasės) išmatuoti realiais duomenimis
 - [x] `rezultatai.csv` stulpelių schema užrašyta (plano 5.11) ir suderinta su `i_latex.py`
 - [x] Nematytos klasės testui **klasės įvardytos vardais**: `DDOS-SLOWLORIS`, `RECON-PORTSCAN`, `DICTIONARYBRUTEFORCE`
 - [x] Dublikatų sprendimas užrašytas: šalinama **pagal visą eilutę**, **prieš** skaidymą; prieštaringos etiketės **paliekamos** kaip tikras dviprasmiškumas
-- [ ] Skyrius kompiliuojasi be klaidų · TODO nėra · **≤ 4,5 psl.** *(laiko, ne formato biudžetas — žr. 12 sk.)*
+- [x] Skyrius kompiliuojasi be klaidų (0 klaidų, 0 neišspręstų nuorodų) · TODO nėra · ⚠️ **~5 psl. vietoj 4,5** — perviršis įvardytas, ne nutylėtas
 - [x] ⭐ **Numeracijos atitikimas patikrintas `.aux` faile:** `\section{Įvadas}` yra 1, todėl **N užduotis = N+1 skyrius** (3 užd. → 4 skyrius). Poslinkis nuoseklus visiems skyriams; ar palikti taip — ⚠️ **tavo sprendimas**, žr. žurnalą
-- [ ] ⭐ **3.7 poskyryje matomas užduoties rezultatas** — kas pasirinkta ir kas užrakinta — neverčiant skaityti viso skyriaus
-- [ ] Automatinė patikra praleista: kirilica · `\SI` reikšmės · `\section` skyrių failuose · dubliuoti `\label`
+- [x] ⭐ **3.7 poskyryje matomas užduoties rezultatas** — keturi metodai su vaidmenimis + kas užrakinta
+- [x] Automatinė patikra praleista: kirilica 0 · `\SI`/`\num` argumentai sutikrinti su kitais skyriais · `\section` 0 · dubliuotų `\label` ir kabančių nuorodų nėra
 - [ ] `git push` · `DARBO_ZURNALAS.md` papildytas · `STRUKTURA.md` atnaujinta
 
 ---

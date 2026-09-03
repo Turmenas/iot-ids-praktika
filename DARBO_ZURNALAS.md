@@ -795,11 +795,47 @@ Buvau parašęs `\num{0,737}` ir `\numrange{99,5}{99,6}` — siunitx kablelį į
 
 **Patikslinta taisyklė:** tikrinti ne tik *ar* komanda naudota, bet ir *kaip* ji kviečiama. Kartu pašalinti du `\percent` — darbe procentai visur rašomi `~\%`.
 
-### Ką darysiu toliau (rugs. 3 d. popietė)
+#### 22. T7: skyrius baigtas, apimtis viršyta trečią kartą — bet mažiausiai
 
-T0 uždarytas, T1 atšauktas, **T2–T6 atlikti**. Liko **T7** — skyriaus tekstas (3.1 įžanga ir 3.7 apibendrinimas) ir `build.ps1`.
+| Skyrius | Taikinys | Faktas | Perviršis |
+|---|---:|---:|---:|
+| 1 užd. | 4–5 psl. | 9 psl. | +90 % |
+| 2 užd. | 5–6 psl. | 9,7 psl. | +62 % |
+| **3 užd.** | **4,5 psl.** | **~5 psl.** | **+11 %** |
 
-⚠️ **Prieš T7 verta paleisti kompiliavimą:** 3 skyrius nuo paskutinio build'o paaugo trimis poskyriais, dviem generuojamomis lentelėmis ir `\num`/`\numrange` komandomis. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
+Perviršį duoda 3.6 (protokolas) — vienas užima ~1,2 psl. **Trumpinti neverta:** jame dublikatų radinys ir teorinė riba, t. y. medžiaga, kuria remsis 5 ir 6 skyriai. Perviršis įvardijamas, ne nutylimas — tai ir buvo priėmimo kriterijaus prasmė.
+
+**Kas suveikė:** keturios lentelės vietoj penkių; protokolas **tekstu**, ne penkta lentele; 3.1 ir 3.7 rašyti paskutiniai ir sąmoningai trumpi (~150 ir ~300 žodžių). Rugsėjo 2 d. taisyklė „lentelės pigios rašyti, bet brangios puslapiais“ pirmą kartą pritaikyta iš anksto, o ne po fakto.
+
+#### 23. 3.7 turėjo pasakyti tai, ko lentelė nesako
+
+Skyriuje liko akivaizdus prieštaravimas: `tab:matrica` rikiuotė neveda prie ketverto. Palikti jį be paaiškinimo reikštų, kad skaitytojas pats ras nesutapimą ir padarys blogiausią išvadą.
+
+**3.7 poskyris tą prieštaravimą pasiima kaip savo turinį**, o ne slepia: pasakoma, kad rikiuotė aibės neduoda, ir įvardijamos trys sudedamosios — rikiuotės viršūnė, paradigmų padengimas, sudėtingumo gradientas. Tik pirmoji remiasi balais.
+
+Kartu ten pateko du dalykai, kurių pradiniame plane nebuvo, nes jie **atsirado iš pačios matricos**: LightGBM lygus XGBoost (todėl atkrenta ne dėl silpnumo), ir sprendimų medis lenkia Random Forest (todėl lieka vertas dėmesio kaip pigus, savaime paaiškinamas atskaitos modelis). **Abu — matricos produktas, ne prielaida.**
+
+### 3 UŽDUOTIS BAIGTA — suvestinė
+
+| Kas | Rezultatas |
+|---|---|
+| Skyrius | `03_parinkimas.tex`, 7 poskyriai, 4 lentelės, ~5 psl. |
+| Atranka | 18 metodų → 8 (vartai) → **4 pasirinkti** |
+| Atmetimų kilmė | K1 duomenų struktūra — 4, K2 prielaida — 1, K3 mokymo kaina — 2, K4 delsa — 1 |
+| Svoriai | 30/30/25/15, kiekvienas iš `tab:reikalavimai` eilutės |
+| Jautrumas | 8 iš 8 stabilu; dvi poros sprendžiamos **dominavimo** |
+| Protokolas | Užrakintas; dublikatai 33,1 %, **teorinė riba ~95 %** |
+| Kompiliavimas | 30 psl., **0 klaidų, 0 neišspręstų nuorodų** |
+
+**Vertingiausias dienos rezultatas nėra metodų aibė** — ji buvo žinoma vakar. Vertingiausia yra tai, kad (a) atmetimų priežastys pasirodė esančios duomenų, o ne resursų, (b) dvi svarbiausios poros sprendžiamos dominavimo, tad nepriklauso nuo jokių svorių, ir (c) **išmatuota teorinė tikslumo riba, kuri yra žemiau už literatūroje skelbiamus skaičius.**
+
+### Ką darysiu rytoj (rugs. 4, penktadienis)
+
+**4 užduotis — DI pagrįsto aptikimo sprendimo kūrimas.** Pradinė medžiaga jau paruošta: protokolo punktai yra `pozymiai.py` ir `balansavimas.py` specifikacija, o `rezultatai.csv` schema suderinta su `i_latex.py`.
+
+Pirmas žingsnis — **įkėlimo grandinė su dublikatų šalinimu**, nes nuo jos priklauso visos imties charakteristikos. Tik po to modeliai.
+
+⚠️ **Neuždaryti likučiai:** titulinio puslapio fakultetas ir vadovas (reikia sprendimo dėl Aineros pavidalo); `houichi` metrikos (Wiley 403); `praktikos_planas.md` 4 sk. nepažymėta, kad 26–34 psl. norma neegzistuoja; skyrių numeracijos poslinkis (N užduotis = N+1 skyrius) — sprendimas neprimtas. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
 
 ✅ **Kompiliavimas praėjo be klaidų** su `tab:filtras` — 26 psl., lentelė 9-a, p. 21. `xltabular` ir `\SI` naujame faile suveikė iš pirmo karto, nes buvo kopijuotas `tab:metodai` šablonas, o ne rašyta iš naujo.
 
