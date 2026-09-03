@@ -621,8 +621,22 @@ Išnaša po lentele perrašyta: 46 → **39 požymiai**, įvardyti visi aštuoni
 
 `README.md` pažymėtas kaip tuščias, nors turi turinį; `requirements-lock.txt` žurnale laikomas neatliktu, nors failas yra nuo rugsėjo 1 d. **Abu pasenimai rodo darbą kaip mažiau padarytą, nei jis yra** — nekenksminga, bet reiškia, kad būklės žymos rašomos iš atminties. `src/` aplanke taip pat guli **9 tušti `.py` karkasai** (0 baitų): `pozymiai.py`, `balansavimas.py`, `paleisti.py` ir visi `modeliai/`. Tai atitinka ⬜ žymą, bet 4 užduotyje verta atsiminti, kad failai jau sukurti.
 
+#### 8. T1 atšauktas — priemonė be pagrindo ⭐
+
+`tab:reikalavimai` perkėlimas į 3 skyrių atrodė kaip turinio sprendimas („kriterijai priklauso 3 skyriui“), bet peržiūrėjus paaiškėjo, kad jis **gimė kaip apimties priemonė** — rugsėjo 1 d. trumpinimo kandidatų sąraše, šalia „`tab:aprepis`, `tab:diegimas` → tekstas“. Kai normos nebeliko, dingo ir pagrindas, o kaina liko matoma:
+
+- 1.5 poskyris netektų savo centrinio objekto, nors **reikalavimai yra pats jo dalykas**;
+- 1.6 įžanga remiasi 1.5 išvada;
+- penkios nuorodos 1 skyriuje virstų nuorodomis **pirmyn**.
+
+**Vietoj to 3 skyriuje bus sava `tab:kriterijai`** (kriterijus | svoris | iš kurios `tab:reikalavimai` eilutės kyla). Trečiasis stulpelis padaro tą patį, ką būtų padaręs perkėlimas — parodo paveldėjimą — tik nieko negriaudamas ir ~0,3 psl. vietoj ~1 psl.
+
+**Pamoka:** kai priemonė lieka plane po to, kai jos priežastis dingo, ji ima atrodyti kaip savarankiškas sprendimas. **Vertinant kiekvieną likusį punktą verta paklausti, kuriai dingusiai priežasčiai jis tarnavo.** Tas pats klausimas laukia ir kitų rugsėjo 1 d. trumpinimo kandidatų.
+
+**Pasekmė apimčiai:** 1 skyrius nebesusitrauks, tad ~23 psl. teorijos prognozė galioja be išlygų.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas. Pagal `claude/uzduotis_03_planas.md` 7 sk. biudžetą lieka: `tab:reikalavimai` perkėlimas → `tab:filtras` → matrica ir jautrumas → **eksperimento protokolas** → skyriaus tekstas → `build.ps1`, commit.
+T0 uždarytas, T1 atšauktas (susilieja su T3). Pagal `claude/uzduotis_03_planas.md` 7 sk. biudžetą lieka: `tab:filtras` → `tab:kriterijai` su svoriais → sprendimų matrica ir jautrumas → **eksperimento protokolas** → skyriaus tekstas → `build.ps1`, commit. Atšauktas T1 atlaisvina pusvalandį, kuris atitenka protokolui.
 
 **Neišspręsta, reikia sprendimo:** titulinio puslapio fakultetas (`% TODO` 127 eil.) ir praktikos vadovas (`Vardas Pavardė`). Kadangi dokumentas teikiamas **Aineros** vadovui, klausimas platesnis nei užpildyti du laukus — ar titulinis apskritai turi būti universitetinio pavidalo.

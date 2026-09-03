@@ -74,7 +74,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | Nr. | Tikslas | Išmatuojamas rezultatas | Prior. |
 |---|---|---|---|
 | **T0** | Uždaryti 2 užduoties likučius — **trys skirtingos būklės, žr. žemiau** | `tab:atakos` pataisyta; kodas patikrintas paleidus; smulkmenų būklė sutikrinta | **P0** |
-| **T1** | Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk. | 1 sk. susitraukia ~1 psl.; visos `\ref` nuorodos veikia; 0 klaidų | **P0** |
+| ~~**T1**~~ | ~~Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk.~~ | ❌ **Atšaukta 2026-09-03.** Perkėlimas buvo apimties priemonė, o normos nėra. Vietoj to 3 skyriuje kuriama sava `tab:kriterijai` — **susilieja su T3** | — |
 | **T2** | Formalizuoti kietųjų apribojimų filtrą | `tab:filtras`: 17 eilučių × 4 vartai; 17 → 9; kiekvienas ✗ su priežastimi | **P0** |
 | **T3** | Pagrįsti kriterijų svorius | 5 svoriai, kiekvienas su nuoroda į konkrečią `tab:reikalavimai` eilutę | **P0** |
 | **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 9 metodai × 5 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
@@ -109,9 +109,10 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
    3.2. Kietieji apribojimai                                (~0,7 psl.)
         --> tab:filtras (17 metodų x K1-K4)
         - 8 atmetimai, iš kurių tik 2 dėl resursų
-   3.3. Vertinimo kriterijai ir jų svoriai                  (~0,8 psl.)
-        --> tab:reikalavimai (PERKELTA iš 1 skyriaus)
-        - kiekvienas svoris <- konkreti tab:reikalavimai eilute
+   3.3. Vertinimo kriterijai ir jų svoriai                  (~0,7 psl.)
+        --> tab:kriterijai (NAUJA, kompaktiska: kriterijus | svoris |
+            is kurios tab:reikalavimai eilutes kyla)
+        - tab:reikalavimai LIEKA 1 skyriuje; cia i ja tik nurodoma
    3.4. Sprendimų matrica                                   (~0,7 psl.)
         --> tab:matrica (9 metodai x 5 kriterijai)
         - balu skale apibrezta pries balus
@@ -167,11 +168,19 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 > ⭐ **Matrica generuojama iš CSV, ne rašoma ranka.** `rezultatai/darbiniai/sprendimu_matrica.csv` → `tab:matrica`. Priežastis praktinė: jautrumo analizė (T5) perskaičiuoja svertines sumas, ir perrašinėti jas ranka reiškia įvesti klaidų klasę, kurios visame darbe sąmoningai atsisakyta (žr. `praktikos_planas.md` „Svarbiausias triukas“). Tas pats `i_latex.py` principas, tik anksčiau nei planuota.
 
-### `tab:reikalavimai` — **perkeliama**, ne kuriama (T1)
+### `tab:kriterijai` — nauja, kompaktiška (T3) ⭐
 
-Lentelė jau egzistuoja `01_atakos.tex`. Perkėlimas numatytas dar pradiniame plane, ir jis sprendžia du dalykus vienu veiksmu: **1 skyrius susitraukia**, o 3 skyrius gauna savo kriterijų pagrindą į savo vietą, o ne per nuorodą atgal.
+**Pakeičia atšauktą `tab:reikalavimai` perkėlimą.** Trys stulpeliai, penkios eilutės:
 
-⚠️ **Techninė seka, kad nesulūžtų:** perkelti bloką → patikrinti, kad `\label{tab:reikalavimai}` liko **vienas** visame darbe → surasti visas `\ref{tab:reikalavimai}` 1 skyriuje → perrašyti sakinius, kurie dabar rodo pirmyn, ne atgal → `build.ps1` → **0 neišspręstų nuorodų**. Rugs. 2 d. dubliuoto `\label` pamoka: `.aux` failas parodo problemą, jei jo išvestį skaitai *ieškodamas dublikatų*, o ne ko kito.
+| Stulpelis | Turinys |
+|---|---|
+| Kriterijus | Tikslumo potencialas · atsparumas disbalansui · resursai · interpretuojamumas · realizavimo rizika |
+| Svoris | 30 / 25 / 20 / 15 / 10 % |
+| **Iš ko kyla** | Konkreti `\ref{tab:reikalavimai}` eilutė — IoT savybė, iš kurios reikalavimas išvestas |
+
+> **Trečiasis stulpelis atlieka visą darbą, kurį būtų atlikęs perkėlimas.** Paveldėjimas iš 1 skyriaus lieka matomas vienu žvilgsniu, bet 1 skyriaus analitinė išvada nesubyra ir penkios nuorodos nevirsta nuorodomis pirmyn. **~0,3 psl. vietoj ~1 psl. perkeltos lentelės.**
+
+⚠️ **`tab:reikalavimai` lieka 1 skyriuje.** Į ją 3 skyriuje tik nurodoma. Vienintelis `\label` — `01_atakos.tex`, nieko keisti nereikia.
 
 ---
 
@@ -272,7 +281,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 |---|---|---|---|
 | 12:45–13:15 | **T0:** `tab:atakos` eilutės, mininčios `flow_duration` ir asimetriją → `Number`/`IAT`/`Rate` arba žyma „nepadengta duomenimis“ | 1 sk. atitinka realius duomenis | **P0** |
 | 13:15–13:35 | **T0:** kodo likučiai — patikrinti `ikelimas.py` / `etiketes.py` (`Label`, `.upper()`, `BENIGN`); paleisti `python -m src.duomenys.etiketes` | `assert` praeina | **P0** |
-| 13:35–14:05 | **T1:** `tab:reikalavimai` perkėlimas + nuorodų taisymas + `build.ps1` | 0 klaidų, 0 neišspręstų nuorodų | **P0** |
+| ~~13:35–14:05~~ | ~~**T1:** perkėlimas~~ — **atšaukta**, laikas atitenka T6 protokolui | — | — |
 | *14:05–14:35* | *Pietūs* | | |
 | 14:35–15:15 | **T2:** `tab:filtras` — pildoma **mechaniškai** iš `metodu_apzvalga.md` 7 sk. atmetimo lentelės | 17 eilučių, tuščių langelių nėra | **P0** |
 | 15:15–15:45 | **T3 + T4:** balų skalė (5 eilutės) → `sprendimu_matrica.csv` → `tab:matrica` | CSV + generuota lentelė | **P0** |
@@ -293,7 +302,8 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 
 - [ ] `tab:atakos` neminimi požymiai, kurių 39 požymių leidime nėra
 - [ ] `python -m src.duomenys.etiketes` praeina be `AssertionError`
-- [ ] `tab:reikalavimai` yra 3 skyriuje; `\label{tab:reikalavimai}` visame darbe **vienas**; 0 neišspręstų nuorodų
+- [ ] `tab:kriterijai` sudaryta; **kiekvienoje eilutėje užpildytas stulpelis „Iš ko kyla“** su nuoroda į `tab:reikalavimai`
+- [ ] `tab:reikalavimai` **nepajudinta** iš 1 skyriaus; `\ref` nuorodos iš 2 ir 3 skyrių veikia
 - [ ] `tab:filtras` — **17 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**
 - [ ] Balų skalė (1–5) apibrėžta **kiekvienam** iš 5 kriterijų **prieš** balus
 - [ ] Kiekvienas iš 5 svorių turi sakinį, nurodantį konkrečią `tab:reikalavimai` eilutę
@@ -318,7 +328,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 |---|---|---|
 | ⭐ **Matrica virsta jau priimto sprendimo pagražinimu** | Balai suvedami taip, kad „išeitų“ ketvertas | Dviejų pakopų filtras + jautrumo analizė + atviras pripažinimas, kad autokoderis balais pralaimi. **Tai visos dienos metodinė ašis** |
 | **Protokolas lieka pusiau atviras** | Punkte parašyta „reikės nuspręsti“ | Priėmimo kriterijus to neleidžia. Neužrakintas punktas = rugs. 9 d. spėliojimas |
-| `tab:reikalavimai` perkėlimas sulaužo nuorodas | Neišspręsta nuoroda `build.ps1` išvestyje | Prieš perkeliant — `\ref{tab:reikalavimai}` paieška visame darbe. Po — `.aux` tikrinamas **ieškant dublikatų**, ne ko kito (rugs. 2 d. pamoka) |
+| ~~`tab:reikalavimai` perkėlimas sulaužo nuorodas~~ | — | **Rizika dingo su atšauktu T1.** Lentelė lieka vietoje, nuorodos nejudinamos |
 | **Skyrius išplinta trečią kartą iš eilės** | 17:00 tekstas > 4,5 psl. | Protokolas **tekstu**, ne lentele. Pjaunama 3.1 (į 3.2) ir 3.4 proza |
 | Jautrumo analizė paneigia ketvertą | Rikiuotė keičiasi > 3 kartus iš 10 | **Rašoma, kaip yra.** Ketvertas nesikeičia — jį gina paradigmų padengimas, ne balai. Bet rikiuotės nestabilumas turi būti įvardytas |
 | Dienos likutis trumpas (prasidedama 12:45) | 16:05 protokolas nepradėtas | **T7 tekstas persikelia į rugs. 4 d.** Protokolas — ne. Tekstą galima parašyti bet kada, protokolas blokuoja 4 užduotį |
@@ -380,5 +390,17 @@ Puslapiai nebeturi kam atsiskaityti, todėl **4 psl. taikinys lieka, bet kito pa
 - **Trumpinimo klausimas uždaromas visai.** Ne atidedamas — uždaromas. Rugsėjo 17 d. jam nebegrįžtame; jei kas nors trumpinama, tai tik todėl, kad netarnauja skaitytojui, ne dėl skaičiaus.
 - **Eilučių intervalas nekeičiamas.** Matavimas (−6 psl.) buvo teisingas ir dabar nereikalingas.
 - ⭐ **Vienintelė likusi apimties rizika yra priešinga tai, kurios bijojau:** ne per ilgas dokumentas, o **~23 psl. teorijos prieš plonus 4–6 skyrius.** Tai vienintelė proporcija, kuri iš tikrųjų svarbi, ir ji sako **nemažinti 4–6 skyrių**, kai rugsėjo 9–17 d. spaus laikas.
+
+### Pirma pasekmė pasirodė iškart: T1 atšauktas ⭐
+
+`tab:reikalavimai` perkėlimas į 3 skyrių buvo **apimties priemonė** — jis atsirado rugsėjo 1 d. trumpinimo kandidatų sąraše, šalia „`tab:aprepis`, `tab:diegimas` → tekstas“. Kai norma dingo, priemonė prarado pagrindą, o **kaina liko:**
+
+- 1.5 poskyris („IoT specifika ir iš jos kylantys reikalavimai“) netektų savo centrinio objekto, nors reikalavimai yra pats jo dalykas;
+- 1.6 poskyrio įžanga tiesiogiai remiasi 1.5 išvada („nustatyta, kad aptikimas turi remtis tinklo srautu“);
+- penkios `\ref` nuorodos 1 skyriuje virstų nuorodomis **pirmyn**, į dar neperskaitytą skyrių.
+
+**Vietoj to 3 skyriuje kuriama sava `tab:kriterijai`** (4 sk.) su stulpeliu „Iš ko kyla“. Paveldėjimas iš 1 skyriaus lieka matomas, bet niekas nejudinama.
+
+**Apimties patikslinimas:** 1 skyrius **nebesusitrauks** ~1 psl. Prognozė ~23 psl. teorijos galioja be išlygų, ir atsakas į ją tas pats — **nemažinti 4–6 skyrių**.
 
 ⚠️ **Taisytina kituose failuose:** 26–34 psl. norma tebeguli `praktikos_planas.md` 4 skyriuje („Realistinė apimtis“) ir žurnalo rugsėjo 2 d. 24 punkte. **Žurnalo įrašas pažymėtas**; `praktikos_planas.md` — dar ne. Kol nepažymėta, po savaitės vėl bus skaičiuojama nuo neegzistuojančio skaičiaus.
