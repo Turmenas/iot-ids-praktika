@@ -647,10 +647,53 @@ Rašydamas `tab:filtras` sutikrinau su `tab:metodai` ir radau, kad plane paveld�
 
 **Techninė pastaba:** varnelei naudojau `$\surd$`, ne `\checkmark` — `amssymb` preambulėje nėra. Patikrinau prieš rašydamas, o ne po kompiliavimo klaidos.
 
+#### 10. T3: penktas kriterijus iškrito, ir tai lentelę sustiprino ⭐
+
+Plane buvo penki kriterijai su svoriais 30/25/20/15/10. Bandant kiekvienam nurodyti `tab:reikalavimai` eilutę, **penktasis — „realizavimo rizika“ — jos neturi.** Ir negali turėti: tai ne IoT savybė, o mano kalendorius.
+
+**Bet lemiamas argumentas pasirodė kitas, empirinis.** Visi aštuoni po filtro likę metodai turi standartines bibliotekų realizacijas — `sklearn`, `xgboost`, `keras`. Kriterijus, kuris visiems duoda tą patį balą, svertinės sumos nekeičia: jis tik atrodo kaip vertinimas. **Pašalintas.**
+
+Tai tas pats redagavimo principas, kurį rugsėjo 2 d. taikiau 2 skyriui: „realizavimo rizika“ buvo kriterijaus pavidalu užrašytas nerimas, ko nespėsiu.
+
+**Nauji svoriai — keturi, suma 100:**
+
+| Kriterijus | Svoris | Iš kurios `tab:reikalavimai` eilutės |
+|---|---:|---|
+| Aptikimo kokybė | 30 % | 4 eil.: pažeidžiamumai lieka neištaisyti → aptikimas yra **vienintelė likusi apsauga** |
+| Klaidingi teigiami ir disbalansas | 30 % | 5 eil.: 1 % klaidingų teigiamų = ~1000 signalų per parą → sistema išjungiama |
+| Resursų poreikis | 25 % | 1 eil., kuri **pati sako**, kad tai „atrankos kriterijus, ne antraeilis rodiklis“ |
+| Interpretuojamumas | 15 % | ta pati 5 eil., **antroji jos pasekmė**: ribotą pajėgumą turintis analitikas turi galėti signalą pagrįsti |
+
+**Klaidingiems teigiamiems daviau tiek pat, kiek tikslumui (30 %),** nes 1 skyriaus skaičiavimas rodo ne pablogėjimą, o sistemos išjungimą. Tai ne kokybės laipsnis, o dvejetainis eksploatacijos rezultatas.
+
+#### 11. Du reikalavimai kriterijaus neduoda — ir tai verta pasakyti
+
+`tab:reikalavimai` antra eilutė (aptikimas remiasi tinklo srautu) ir trečia (be per-įrenginio konfigūravimo) **jokio kriterijaus neduoda**: jas vienodai tenkina visi po filtro likę metodai. Reikalavimas, kurio visi kandidatai laikosi, yra **prielaida, ne skiriamasis požymis**.
+
+Įrašiau tai į lentelės išnašą. Priešingu atveju skaitytojas klaustų, kodėl iš penkių reikalavimų liko keturi kriterijai, ir teisingai įtartų, kad vienas dingo pakeliui.
+
+⚠️ **Atkreiptinas dėmesys į 1 skyriaus teiginį.** 1.5 poskyrio pabaigoje parašyta, kad „aptikimo kokybė, klaidingų teigiamų lygis, resursų poreikis ir interpretuojamumas kyla tiesiogiai iš `tab:reikalavimai` lentelės“. **Interpretuojamumas lentelėje neminimas nė karto** — jis išvedamas iš penktos eilutės antrosios pasekmės, o ne skaitomas iš jos tiesiogiai. Dabar tas išvedimas užrašytas `tab:kriterijai`, tad teiginys tapo teisingas; bet iki šiandien jis buvo per stiprus.
+
+#### 12. Numeracija: N užduotis yra N+1 skyrius ⚠️
+
+Tikrindamas, kur PDF'e atsidūrė `tab:filtras`, pažiūrėjau į `.aux` ir pamačiau: `sec:atakos` = **2**, `sec:di_metodai` = **3**, `sec:parinkimas` = **4**. Priežastis paprasta — `\section{Įvadas}` yra pirmas.
+
+**Poslinkis nuoseklus ir techniškai teisingas**, bet susikerta su tuo, kas nuspręsta šiandien: vienintelis vadovo turimas kriterijus yra užduočių sąrašas, o jis ieškos „3 užduoties“ ir ras ją 4 skyriuje. Savo priėmimo kriterijų („3 skyrius PDF'e yra trečias“) buvau užrašęs nepatikrinęs — jis nuo pat pradžių buvo neįvykdomas.
+
+**Sprendimo nepriimu vienas** — variantai: palikti kaip yra (įvadas numeruojamas, tai įprasta); `\section*{Įvadas}` be numerio, kad N užduotis = N skyrius; arba į skyrių antraštes įrašyti užduoties numerį.
+
+**Pamoka:** priėmimo kriterijus, parašytas nepažiūrėjus į `.aux`, yra toks pat spėjimas kaip duomenų aprašas, sudarytas neatidarius failo.
+
+#### 13. Trečias kartas su ta pačia escape klaida
+
+Vėl parašiau `r"...\n..."` ir gavau literal backslash-n vietoj eilutės lūžio — dabar keitiniuose. Pagavo `assert`, ne kompiliavimas. Rugsėjo 3 d. jau turėjau tą patį su `re.escape` ir tarpais. **Sprendimas nustojo būti ad hoc:** keitiniams naudoju `pat()` funkciją, kuri tarpus paverčia `\s+`, tad eilučių lūžiai nebesvarbūs.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas, T1 atšauktas (susilieja su T3), T2 atliktas. Lieka: `tab:kriterijai` su svoriais (T3) → sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit. Atšauktas T1 atlaisvina pusvalandį, kuris atitenka protokolui.
+T0 uždarytas, T1 atšauktas (susiliejo su T3), T2 ir T3 atlikti. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
 
-⚠️ **Kompiliavimas nepaleistas nuo rugsėjo 2 d.** `03_parinkimas.tex` iki šiol buvo tuščias, dabar jame yra lentelė su `xltabular` ir `\SI` — abu jau kartą laužė kompiliavimą. **Verta paleisti `build.ps1` dabar, o ne po T7**, kad klaida, jei tokia yra, būtų viename naujame faile, o ne penkiuose poskyriuose.
+✅ **Kompiliavimas praėjo be klaidų** su `tab:filtras` — 26 psl., lentelė 9-a, p. 21. `xltabular` ir `\SI` naujame faile suveikė iš pirmo karto, nes buvo kopijuotas `tab:metodai` šablonas, o ne rašyta iš naujo.
+
+**Prieš rašant `tab:kriterijai` išvengta dviejų klaidų:** `\SI{10}{\mega\byte}` pakeista į paprastą `10~MB` (`\byte` darbe niekur nenaudotas, tad nepatikrintas), o nuoroda į dar neegzistuojantį jautrumo poskyrį perrašyta be `\ref` — kitaip būtų atsiradusi neišspręsta nuoroda. **Abi rastos peržiūrint prieš rašymą, ne po kompiliavimo.**
 
 **Neišspręsta, reikia sprendimo:** titulinio puslapio fakultetas (`% TODO` 127 eil.) ir praktikos vadovas (`Vardas Pavardė`). Kadangi dokumentas teikiamas **Aineros** vadovui, klausimas platesnis nei užpildyti du laukus — ar titulinis apskritai turi būti universitetinio pavidalo.

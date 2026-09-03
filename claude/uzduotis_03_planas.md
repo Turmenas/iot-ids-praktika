@@ -17,7 +17,7 @@
 | Ketvertas | ✅ **RF, XGBoost, MLP, autokoderis** — fiksuota T7 | `02_di_metodai.tex` 2.8 |
 | Atmetimo priežastys | ✅ **8 atmesti, kiekvienas su tipu** (resursai / delsa / prielaida / duomenų struktūra) | `metodu_apzvalga.md` 7 sk. |
 | Atrankos kriterijai | ✅ **Išvesti iš IoT savybių**, ne pasirinkti | 1 užd. `tab:reikalavimai` |
-| Kriterijų svoriai | ❌ **Nepagrįsti** — plane duoti skaičiai (30/25/20/15/10 %), bet be argumento | — |
+| Kriterijų svoriai | ✅ **Pagrįsti 09-03** — **30/30/25/15 %**, keturi kriterijai, kiekvienas su `tab:reikalavimai` eilute | `03_parinkimas.tex` `tab:kriterijai` |
 | Užduoties detalumas | ✅ **8 kategorijos** (~20 paleidimų vietoj ~70) | `02_di_metodai.tex` 2.8 |
 | Metrikos pasirinkimas | ✅ macro-F1 + PR-AUC; accuracy netinka (41,8:1 ir 5 764:1) | Žurnalas, rugs. 2 d. |
 | Realistinis taikinys | ✅ macro-F1 **0,85–0,90**, ne 0,99 | `almahaqeri2026gradient` |
@@ -78,8 +78,8 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T0**~~ | ~~Uždaryti 2 užduoties likučius~~ | ✅ **Atlikta 13:40–14:30.** 15 `tab:atakos` taisymų + 3 pasenę skaičiai; `etiketes.py` — 34/34 prieš realias etiketes; smulkmenos sutikrintos. Commit `f324772` | — |
 | ~~**T1**~~ | ~~Perkelti `tab:reikalavimai` iš 1 sk. į 3 sk.~~ | ❌ **Atšaukta 2026-09-03.** Perkėlimas buvo apimties priemonė, o normos nėra. Vietoj to 3 skyriuje kuriama sava `tab:kriterijai` — **susilieja su T3** | — |
 | ~~**T2**~~ | ~~Formalizuoti kietųjų apribojimų filtrą~~ | ✅ **Atlikta.** `tab:filtras`: **18 eilučių × 4 vartai; 18 → 8 praeina, 8 atmesti, 2 už darbo ribų.** Atmetimai: K1 — 4, K2 — 1, K3 — 2, K4 — 1 | — |
-| **T3** | Pagrįsti kriterijų svorius | 5 svoriai, kiekvienas su nuoroda į konkrečią `tab:reikalavimai` eilutę | **P0** |
-| **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 8 metodai × 5 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
+| ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
+| **T4** | Sudaryti sprendimų matricą | `tab:matrica`: 8 metodai × 4 kriterijai; balų skalė apibrėžta **prieš** balų rašymą | **P0** |
 | **T5** | Jautrumo analizė | Svoriai keičiami ±10 p. p. → ar keičiasi ketvertas; rezultatas įrašytas nepriklausomai nuo to, koks jis | **P0** |
 | **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
@@ -120,7 +120,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
             is kurios tab:reikalavimai eilutes kyla)
         - tab:reikalavimai LIEKA 1 skyriuje; cia i ja tik nurodoma
    3.4. Sprendimų matrica                                   (~0,7 psl.)
-        --> tab:matrica (8 metodai x 5 kriterijai)
+        --> tab:matrica (8 metodai x 4 kriterijai)
         - balu skale apibrezta pries balus
    3.5. Jautrumo analizė ir aibės pilnumo taisyklė          (~0,5 psl.)
         - +-10 p. p. rezultatas
@@ -162,11 +162,10 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | Stulpelis | Turinys |
 |---|---|
 | Metodas | 8 likę po filtro |
-| Tikslumo potencialas (w₁) | Balas 1–5 |
-| Atsparumas disbalansui (w₂) | Balas 1–5 |
-| Resursai: inferencija + dydis (w₃) | Balas 1–5 |
-| Interpretuojamumas (w₄) | Balas 1–5 |
-| Realizavimo rizika (w₅) | Balas 1–5 |
+| Aptikimo kokybė (w₁ = 30 %) | Balas 1–5 |
+| Klaidingi teigiami ir disbalansas (w₂ = 30 %) | Balas 1–5 |
+| Resursai: delsa + dydis (w₃ = 25 %) | Balas 1–5 |
+| Interpretuojamumas (w₄ = 15 %) | Balas 1–5 |
 | **Svertinė suma** | 1,00–5,00, du skaitmenys |
 | Šaltinis | `\cite{}` arba **(aut.)** |
 
@@ -263,10 +262,10 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 **Procedūra:**
 
-1. Bazinis rinkinys: w = (0,30 · 0,25 · 0,20 · 0,15 · 0,10).
-2. Kiekvienam kriterijui atskirai: **+10 p. p.** ir **−10 p. p.**, likusieji perskirstomi proporcingai (suma visada 1,00). Gaunama **10 alternatyvių rinkinių**.
+1. Bazinis rinkinys: **w = (0,30 · 0,30 · 0,25 · 0,15)** — keturi kriterijai, žr. `tab:kriterijai`.
+2. Kiekvienam kriterijui atskirai: **+10 p. p.** ir **−10 p. p.**, likusieji perskirstomi proporcingai (suma visada 1,00). Gaunama **8 alternatyvūs rinkiniai** (4 kriterijai × 2 kryptys).
 3. Kiekvienam — perskaičiuojama svertinė suma ir rikiuotė.
-4. Fiksuojama: **kiek kartų iš 10 keičiasi pirmieji trys prižiūrimi metodai.**
+4. Fiksuojama: **kiek kartų iš 8 keičiasi pirmieji trys prižiūrimi metodai.**
 
 **Ką rašyti į ataskaitą — abiem atvejais:**
 
@@ -308,11 +307,11 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 
 - [x] `tab:atakos` neminimi požymiai, kurių 39 požymių leidime nėra *(T0, 15 taisymų)*
 - [x] `python -m src.duomenys.etiketes` praeina be `AssertionError` *(be to: 34/34 prieš realias etiketes)*
-- [ ] `tab:kriterijai` sudaryta; **kiekvienoje eilutėje užpildytas stulpelis „Iš ko kyla“** su nuoroda į `tab:reikalavimai`
+- [x] `tab:kriterijai` sudaryta; **kiekvienoje eilutėje užpildytas stulpelis „Iš ko kyla“**; svorių suma = 100 %
 - [x] `tab:reikalavimai` **nepajudinta** iš 1 skyriaus *(T1 atšauktas)*; `\ref` nuorodos iš 2 sk. veikia
 - [x] `tab:filtras` — **18 eilučių**; kiekvienas ✗ turi priežastį; atmetimų suma = **8**, praeina **8**, už ribų **2**
-- [ ] Balų skalė (1–5) apibrėžta **kiekvienam** iš 5 kriterijų **prieš** balus
-- [ ] Kiekvienas iš 5 svorių turi sakinį, nurodantį konkrečią `tab:reikalavimai` eilutę
+- [x] Balų skalė (1–5) apibrėžta **kiekvienam** iš 4 kriterijų **prieš** balus — `tab:kriterijai` ketvirtame stulpelyje
+- [x] Kiekvienas iš 4 svorių nurodo konkrečią `tab:reikalavimai` eilutę
 - [ ] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka
 - [ ] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**
 - [ ] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas, o ne kaip balų rezultatas
@@ -321,7 +320,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [ ] Nematytos klasės testui **klasės įvardytos vardais**, ne „2–3 klasės“
 - [ ] Dublikatų patikros sprendimas (slenkstis, veiksmas) užrašytas prieš skaidymą
 - [ ] Skyrius kompiliuojasi be klaidų · TODO nėra · **≤ 4,5 psl.** *(laiko, ne formato biudžetas — žr. 12 sk.)*
-- [ ] ⭐ **3 skyrius PDF'e yra trečias** — numeracija atitinka užduočių sąrašą, nes tai vienintelis vadovo turimas kriterijus
+- [x] ⭐ **Numeracijos atitikimas patikrintas `.aux` faile:** `\section{Įvadas}` yra 1, todėl **N užduotis = N+1 skyrius** (3 užd. → 4 skyrius). Poslinkis nuoseklus visiems skyriams; ar palikti taip — ⚠️ **tavo sprendimas**, žr. žurnalą
 - [ ] ⭐ **3.7 poskyryje matomas užduoties rezultatas** — kas pasirinkta ir kas užrakinta — neverčiant skaityti viso skyriaus
 - [ ] Automatinė patikra praleista: kirilica · `\SI` reikšmės · `\section` skyrių failuose · dubliuoti `\label`
 - [ ] `git push` · `DARBO_ZURNALAS.md` papildytas · `STRUKTURA.md` atnaujinta

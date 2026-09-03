@@ -122,3 +122,84 @@ Vartai taikomi iš eilės, todėl sprendžiantys yra pirmieji, ties
 kuriais atsiranda $\times$; pažymimi visi neįveikti.
 \par}
 \endgroup
+
+\subsection{Vertinimo kriterijai ir jų svoriai}
+\label{sec:kriterijai}
+
+% ---------------------------------------------------------------------
+%  tab:kriterijai — kriterijai, svoriai, kilmė ir balų skalė (T3)
+% ---------------------------------------------------------------------
+%  PAKEITĖ atšauktą tab:reikalavimai perkėlimą iš 1 skyriaus:
+%  lentelė lieka savo vietoje, čia į ją tik nurodoma.
+%
+%  Stulpelis „Iš ko kyla“ yra visa šios lentelės vertė — be jo
+%  svoriai būtų nuomonė. Balų skalė apibrėžiama ČIA, prieš balus
+%  (tab:matrica), o ne po jų.
+% ---------------------------------------------------------------------
+
+\begin{table}[htbp]
+\centering
+\caption{Metodų vertinimo kriterijai, jų svoriai ir kilmė}
+\label{tab:kriterijai}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}
+  >{\raggedright\arraybackslash}p{2.9cm}
+  >{\centering\arraybackslash}p{0.9cm}
+  >{\raggedright\arraybackslash}X
+  >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Kriterijus} & \textbf{Svoris} & \textbf{Iš ko kyla}
+  & \textbf{Balų skalė} \\
+\midrule
+
+Aptikimo kokybė (macro-F1 potencialas)
+  & 30~\%
+  & \ref{tab:reikalavimai} lentelės ketvirta eilutė: pažeidžiamumai
+    lieka neištaisyti visą įrenginio tarnavimo laiką, todėl aptikimas
+    yra kompensacinė priemonė --- ir vienintelė likusi apsauga
+  & 5 --- ant CICIoT2023 skelbiama macro-F1 $\geq 0{,}89$
+    \cite{almahaqeri2026gradient}; 1 --- žemiau $0{,}70$ \\
+\addlinespace
+
+Klaidingi teigiami ir atsparumas disbalansui
+  & 30~\%
+  & \ref{tab:reikalavimai} lentelės penkta eilutė: 100 įrenginių tinkle
+    net 1~\% klaidingų teigiamų duoda apie 1000 signalų per parą ---
+    sistema praktiškai išjungiama
+  & 5 --- disbalansas sprendžiamas klasių svoriais, nedubliuojant
+    duomenų; 1 --- mokymo metu disbalansas blogėja \\
+\addlinespace
+
+Resursų poreikis (inferencijos delsa, modelio dydis)
+  & 25~\%
+  & \ref{tab:reikalavimai} lentelės pirma eilutė, kuri pati nurodo, kad
+    tai „atrankos kriterijus, ne antraeilis rodiklis“
+  & 5 --- inferencija mikrosekundžių eilės, modelis $<$~10~MB;
+    1 --- delsa artėja prie \SI{20}{\milli\second} biudžeto \\
+\addlinespace
+
+Interpretuojamumas
+  & 15~\%
+  & Ta pati penkta eilutė, antroji jos pasekmė: ribotas analitikų
+    pajėgumas reiškia, kad signalą reikia mokėti pagrįsti, o ne tik
+    iškelti
+  & 5 --- savaiminis; 3 --- per XAI su papildoma kaina
+    \cite{mohale2025xai}; 1 --- juodoji dėžė \\
+\bottomrule
+\end{tabularx}
+
+\vspace{2pt}
+\raggedright\footnotesize
+\textbf{Svoriai yra vienintelis subjektyvus šio skyriaus elementas},
+todėl jų įtaka rezultatui atskirai tikrinama jautrumo analize
+(žr. toliau šiame skyriuje).
+Dvi \ref{tab:reikalavimai} lentelės eilutės --- antra (aptikimas remiasi
+tinklo srautu) ir trečia (veikimas be per-įrenginio konfigūravimo) ---
+kriterijaus neduoda: jas vienodai tenkina visi po filtro likę metodai,
+todėl jos nieko neskiria.
+Realizavimo rizika kaip kriterijus nenaudojama dėl tos pačios
+priežasties: visi aštuoni likę metodai turi standartines bibliotekų
+realizacijas, todėl visiems gautų tą patį balą ir rikiuotės nekeistų.
+\normalsize
+\end{table}
