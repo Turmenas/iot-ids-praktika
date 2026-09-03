@@ -43,7 +43,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\01_atakos.tex` | **1 užd.** Baigta. **2026-09-03: `tab:atakos` suderinta su 39 požymių leidimu** (15 taisymų). `tab:reikalavimai` **lieka čia** — perkėlimas atšauktas |
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
 | ⚠️ `skyriai\ciciot2023_pozymiai.md` | **Ne skyrius** — duomenų dokumentas tarp `.tex` failų. Vieta svarstytina |
-| ✅ `skyriai\03_parinkimas.tex` | **3 užd.** ← dabartinis darbas. `tab:filtras`, `tab:kriterijai`, `tab:matrica` ✅; lieka jautrumas, protokolas, tekstas |
+| ✅ `skyriai\03_parinkimas.tex` | **3 užd.** ← dabartinis darbas. 4 poskyriai: `tab:filtras`, `tab:kriterijai`, `tab:matrica`, `tab:jautrumas` ✅; lieka protokolas (T6) ir tekstas (T7) |
 | ⬜ `skyriai\04..07_*.tex` | 4–6 užd. ir išvados |
 | ✅ `lenteles\rezultatai.tex` | **Generuojama** — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
