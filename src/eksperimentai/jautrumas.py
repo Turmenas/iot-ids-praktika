@@ -99,7 +99,9 @@ def main() -> None:
             w = perskirstyti(k, SVORIAI[k] + delta)
             top3 = [m for m, _ in rikiuote(priz, w)[:3]]
             pokyciai += top3 != baze_top3
-    print(f"A dalis: pirmi trys pasikeite {pokyciai} kartus is 8\n")
+    stabilu = 8 - pokyciai
+    print(f"A dalis: rikiuote ISLIKO TA PATI {stabilu} atvejais is 8 "
+          f"(pasikeitimu: {pokyciai})\n")
 
     # --- B dalis: tikros ribos ---
     isvados = []

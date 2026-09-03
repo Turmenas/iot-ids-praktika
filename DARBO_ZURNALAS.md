@@ -729,7 +729,7 @@ Papildomai reikėjo užrašyti, ką neprižiūrimiems metodams reiškia stulpeli
 
 #### 17. T5: „nepasikeitė“ nėra išvada ⭐⭐
 
-Aštuoni svorių rinkiniai po ±10 p. p. — **rikiuotė nepasikeitė nė karto.** Rašiau tai kaip rezultatą ir sustojau: **0 iš 8 atrodo per gerai.**
+Aštuoni svorių rinkiniai po ±10 p. p. — **visais aštuoniais atvejais rikiuotė išliko ta pati (8/8).** Rašiau tai kaip rezultatą ir sustojau: pilnas stabilumas atrodo per gerai.
 
 Patikrinus paaiškėjo, kad tai ne rikiuotės stabilumo, o **zondo siaurumo** matas. ±10 p. p. tiesiog nepasiekia nė vienos ribos. Todėl paskaičiavau, kur tos ribos iš tikrųjų yra:
 
@@ -748,7 +748,17 @@ Likusioms dviem ribos konkrečios ir įsimenamos: sprendimų medis aplenktų XGB
 
 **Skriptas kviečia `svertine()` iš `matrica.py`, ne savo kopiją** — svoriai ir balai turi vieną šaltinį. Po refaktoringo `matrica.tex` `md5sum` nepakito, tad išvestis tikrai ta pati.
 
-#### 18. Dar dvi klaidos, pagautos prieš kompiliavimą
+#### 18. „0 iš 8“ suklaidino patį autorių ⭐⭐
+
+Rodiklį buvau užrašęs kaip **„pirmi trys pasikeitė 0 kartų iš 8“**. Perskaičius po kelių minučių jis nuskambėjo kaip **„niekas netiko“** — nors reiškia priešingą dalyką: rikiuotė išliko ta pati visais aštuoniais atvejais.
+
+**Priežastis struktūrinė, ne stilistinė.** Rodiklis skaičiuoja *nesėkmes* (pokyčius), o skaitomas instinktyviai kaip *sėkmės*. Kai geras rezultatas yra nulis, kiekvienas skaitytojas turi tą nulį mintyse apversti — ir kartais neapverčia.
+
+**Pataisyta visur teigiama forma:** „rikiuotė išliko ta pati 8 atvejais iš 8“. Skripto išvestis, skyriaus tekstas, planas ir šis įrašas.
+
+**Taisyklė 5 ir 6 užduotims, kur tokių rodiklių bus daug:** jei geriausia reikšmė yra nulis, rodiklį reikia performuluoti taip, kad geriausia reikšmė būtų maksimumas. Tai galioja klaidingų teigiamų skaičiui, neišspręstų nuorodų skaičiui ir bet kuriam „kiek kartų nepavyko“ tipo matui. **Formuluotė, kurią autorius perskaito neteisingai, yra defektas, ne smulkmena.**
+
+#### 19. Dar dvi klaidos, pagautos prieš kompiliavimą
 
 **`\percent` darbe niekur nenaudotas.** Buvau parašęs `\SI{42}{\percent}`, bet 1 ir 2 skyriuose procentai rašomi `42~\%`. `siunitx` `\percent` greičiausiai būtų suveikęs, bet taisyklė aiški: naudoti tik tai, kas šiame darbe jau įrodyta veikiant. Pakeista į `~\%`.
 

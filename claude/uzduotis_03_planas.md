@@ -80,7 +80,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T2**~~ | ~~Formalizuoti kietųjų apribojimų filtrą~~ | ✅ **Atlikta.** `tab:filtras`: **18 eilučių × 4 vartai; 18 → 8 praeina, 8 atmesti, 2 už darbo ribų.** Atmetimai: K1 — 4, K2 — 1, K3 — 2, K4 — 1 | — |
 | ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
 | ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
-| ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **0 pokyčių iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
+| ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **rikiuotė išliko ta pati 8 atvejais iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
 | **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
 | **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
@@ -89,7 +89,9 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 ### T5 rezultatas — ±10 p. p. buvo per siauras zondas ⭐
 
-**A dalis (plane numatyta):** aštuoni rinkiniai po ±10 p. p. — **pirmi trys prižiūrimi metodai nepasikeitė nė karto.** Tai atrodo kaip patvirtinimas, bet iš tikrųjų reiškia tik tiek, kad zondas nesiekė nė vienos ribos.
+**A dalis (plane numatyta):** aštuoni rinkiniai po ±10 p. p. — **visais aštuoniais atvejais pirmi trys prižiūrimi metodai išliko tie patys (8/8 stabilu).** Tai atrodo kaip patvirtinimas, bet iš tikrųjų reiškia tik tiek, kad zondas nesiekė nė vienos ribos.
+
+> ⚠️ **Formuluotės pamoka.** Pirmiausia buvau užrašęs „0 pokyčių iš 8“, ir tai **suklaidino patį autorių** — skamba kaip „niekas netiko“. Rodiklis skaičiuoja *pokyčius*, bet skaitomas kaip *sėkmės*. **Visur rašoma teigiama forma: „8 iš 8 — rikiuotė nepakito“.** Jei formuluotė suklaidino mane, ji suklaidins ir vadovą.
 
 **B dalis (pridėta pamačius A rezultatą):** kiekvienai porai apskaičiuota tikroji riba.
 
