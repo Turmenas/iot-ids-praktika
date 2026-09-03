@@ -727,9 +727,36 @@ Papildomai reikėjo užrašyti, ką neprižiūrimiems metodams reiškia stulpeli
 
 **Skripte pagauta klaida:** `"..." % (...) .replace(...)` — `.replace` prilipo prie tuple, ne prie suformatuotos eilutės. Be to pati mintis buvo bloga: `.replace(".", ",")` visai eilutei būtų sugadinęs žymą `(aut.)` → `(aut,)`. **Kablelis dabar keičiamas tik pačiame skaičiuje.** Klaidą parodė `AttributeError`, bet tylųjį `(aut,)` variantą būčiau pamatęs tik PDF'e.
 
+#### 17. T5: „nepasikeitė“ nėra išvada ⭐⭐
+
+Aštuoni svorių rinkiniai po ±10 p. p. — **rikiuotė nepasikeitė nė karto.** Rašiau tai kaip rezultatą ir sustojau: **0 iš 8 atrodo per gerai.**
+
+Patikrinus paaiškėjo, kad tai ne rikiuotės stabilumo, o **zondo siaurumo** matas. ±10 p. p. tiesiog nepasiekia nė vienos ribos. Todėl paskaičiavau, kur tos ribos iš tikrųjų yra:
+
+| Palyginimas | Skirtumas | Kada apsiverstų |
+|---|---:|---|
+| XGBoost prieš Random Forest | +1,15 | **Niekada** — dominavimas |
+| Random Forest prieš MLP | +0,30 | **Niekada** — dominavimas |
+| XGBoost prieš sprendimų medį | +0,90 | Interpretuojamumo svoris → **0,42** (dabar 0,15) |
+| Sprendimų medis prieš Random Forest | +0,25 | Kokybės svoris → **0,44**, arba interpretuojamumas → 0,01 |
+
+⭐ **Dominavimas pasirodė stipresnis argumentas už bet kokį jautrumo procentą.** XGBoost nėra blogesnis už Random Forest nė pagal vieną kriterijų, o RF nėra blogesnis už MLP — tokioms poroms jautrumo analizė **apskritai nereikalinga**, nes jokių svorių derinys rezultato nekeičia. Dvi iš keturių svarbiausių porų yra būtent tokios.
+
+Likusioms dviem ribos konkrečios ir įsimenamos: sprendimų medis aplenktų XGBoost tik tada, jei interpretuojamumui skirtume beveik tris kartus daugiau svorio nei dabar.
+
+**Pamoka, kuri galioja ir 5–6 užduotims:** „rezultatas nepasikeitė“ savaime nieko nesako — reikia žinoti, **kiek toli buvo iki pokyčio**. Būčiau parašęs „rikiuotė stabili“ ir tai būtų buvęs tuščias sakinys, apsimetantis patikra. Tas pats principas kaip su vienos eilutės „patikra“ rugsėjo 2 d.
+
+**Skriptas kviečia `svertine()` iš `matrica.py`, ne savo kopiją** — svoriai ir balai turi vieną šaltinį. Po refaktoringo `matrica.tex` `md5sum` nepakito, tad išvestis tikrai ta pati.
+
+#### 18. Dar dvi klaidos, pagautos prieš kompiliavimą
+
+**`\percent` darbe niekur nenaudotas.** Buvau parašęs `\SI{42}{\percent}`, bet 1 ir 2 skyriuose procentai rašomi `42~\%`. `siunitx` `\percent` greičiausiai būtų suveikęs, bet taisyklė aiški: naudoti tik tai, kas šiame darbe jau įrodyta veikiant. Pakeista į `~\%`.
+
+**Korektūros riktas** „kiekvienai poroai“ → „porai“. Abi rastos peržiūrint failą po įrašymo — patikra dabar apima ir `\SI` argumentų sutikrinimą su tuo, kas jau naudota kituose skyriuose.
+
 ### Ką darysiu toliau (rugs. 3 d. popietė)
 
-T0 uždarytas, T1 atšauktas (susiliejo su T3), T2–T4 atlikti. Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
+T0 uždarytas, T1 atšauktas (susiliejo su T3), T2–T5 atlikti. Liko **T6 (eksperimento protokolas — dienos svarbiausias)** ir T7 (skyriaus tekstas). Lieka: sprendimų matrica (T4) ir jautrumas (T5) → **eksperimento protokolas** (T6) → skyriaus tekstas (T7) → `build.ps1`, commit.
 
 ✅ **Kompiliavimas praėjo be klaidų** su `tab:filtras` — 26 psl., lentelė 9-a, p. 21. `xltabular` ir `\SI` naujame faile suveikė iš pirmo karto, nes buvo kopijuotas `tab:metodai` šablonas, o ne rašyta iš naujo.
 

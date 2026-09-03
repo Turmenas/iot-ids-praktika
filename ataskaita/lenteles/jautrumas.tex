@@ -1,0 +1,20 @@
+% GENERUOJAMA: python -m src.eksperimentai.jautrumas
+% Ranka NELIESTI.
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.4cm}>{\centering\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Palyginimas} & \textbf{Skirtumas} & \textbf{Kada apsiverstų} \\
+\midrule
+XGBoost prieš Random Forest & $+$1,15 & \textbf{Niekada.} Pirmasis ne blogesnis pagal visus keturis kriterijus, todėl jokie svoriai rezultato nekeičia \\
+\addlinespace[2pt]
+Random Forest prieš MLP & $+$0,30 & \textbf{Niekada.} Pirmasis ne blogesnis pagal visus keturis kriterijus, todėl jokie svoriai rezultato nekeičia \\
+\addlinespace[2pt]
+XGBoost prieš Sprendimų medis & $+$0,90 & interpretuojamumo svoris turėtų pasiekti 0,42 (dabar 0,15) \\
+\addlinespace[2pt]
+Sprendimų medis prieš Random Forest & $+$0,25 & aptikimo kokybės svoris turėtų pasiekti 0,44 (dabar 0,30); interpretuojamumo svoris turėtų pasiekti 0,01 (dabar 0,15) \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabularx}
+\endgroup

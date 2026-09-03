@@ -238,3 +238,52 @@ problema jiems \emph{nekyla} --- mokoma tik iš gerybinio srauto --- o ne kad
 ji išspręsta.
 \normalsize
 \end{table}
+
+\subsection{Jautrumo analizė}
+\label{sec:jautrumas}
+
+% ---------------------------------------------------------------------
+%  tab:jautrumas — svorių jautrumas (T5), GENERUOJAMA
+%      python -m src.eksperimentai.jautrumas
+%  Procedūra užrašyta plane PRIEŠ paleidžiant, kartu su abiem galimais
+%  rezultatais — kad nekiltų pagundos derinti svorius prie atsakymo.
+% ---------------------------------------------------------------------
+
+Svoriai yra vienintelis šio skyriaus subjektyvus elementas, todėl būtina
+patikrinti, kiek nuo jų priklauso rezultatas. Kiekvienam kriterijui
+atskirai buvo pridėta ir atimta po 10~\% punktų, likusius
+svorius perskirstant proporcingai --- iš viso aštuoni alternatyvūs
+rinkiniai. \textbf{Nė viename iš jų pirmi trys prižiūrimi metodai
+nepasikeitė.}
+
+Toks rezultatas dar nereiškia, kad rikiuotė teisinga --- jis reiškia, kad
+zondas buvo per siauras. Todėl kiekvienai porai papildomai nustatyta
+\emph{tikroji} riba: ar ją apskritai galima apversti ir, jei taip, kokio
+svorio tam reikėtų.
+
+\begin{table}[htbp]
+\centering
+\caption{Jautrumo analizė: kada rikiuotė apsiverstų}
+\label{tab:jautrumas}
+\lentele{jautrumas.tex}
+
+\vspace{2pt}
+\raggedright\footnotesize
+Stulpelis „Skirtumas“ --- svertinių sumų skirtumas prie bazinių svorių.
+\textbf{Dominavimas} reiškia, kad pirmasis metodas nėra blogesnis nė pagal
+vieną kriterijų; tokios poros rezultatas nepriklauso nuo jokio svorių
+derinio, todėl jam jautrumo analizė apskritai nereikalinga.
+\normalsize
+\end{table}
+
+Iš lentelės matyti trys dalykai. Pirma, \textbf{XGBoost pranašumas prieš
+Random Forest ir Random Forest pranašumas prieš daugiasluoksnį perceptroną
+yra dominavimo, o ne svorių pasekmė} --- jų apversti neįmanoma. Antra,
+sprendimų medis aplenktų XGBoost tik tuomet, jei interpretuojamumui būtų
+skiriama daugiau kaip 42~\% svorio, t.\,y. beveik tris kartus
+daugiau nei dabar. Trečia, sprendimų medžio pranašumas prieš Random Forest
+išnyktų tik tada, jei aptikimo kokybei būtų skiriama 44~\% arba
+interpretuojamumas taptų praktiškai bevertis.
+
+Vadinasi, svorių parinkimas rezultatui turi mažiau įtakos, nei būtų galima
+tikėtis: atrankos rezultatą lemia balų struktūra, o ne jų sveriamoji dalis.

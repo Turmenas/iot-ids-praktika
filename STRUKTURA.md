@@ -46,7 +46,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\03_parinkimas.tex` | **3 užd.** ← dabartinis darbas. `tab:filtras`, `tab:kriterijai`, `tab:matrica` ✅; lieka jautrumas, protokolas, tekstas |
 | ⬜ `skyriai\04..07_*.tex` | 4–6 užd. ir išvados |
 | ✅ `lenteles\rezultatai.tex` | **Generuojama** — ranka neliesti |
-| ✅ `lenteles\matrica.tex` | **Generuojama** iš CSV per `matrica.py` — ranka neliesti |
+| ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
 | ⬜ `paveikslai\` · `skaidres\` | Grafikai, skaidrės |
 
 ## `src\`
@@ -61,7 +61,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ⬜ `modeliai\random_forest.py` · `autoencoder.py` · `cnn.py` | Sukurti, 0 baitų. ⚠️ **Ketvertas yra RF, XGBoost, MLP, autokoderis** — `cnn.py` nebeatitinka, reikės `xgboost.py` ir `mlp.py` |
 | ⬜ `eksperimentai\paleisti.py` | Konfigas → mokymas → metrikos. 0 baitų |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
-| ⬜ `eksperimentai\jautrumas.py` | **3 užd. (T5):** svorių jautrumo analizė ±10 p. p. |
+| ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
 | ✅ `eksperimentai\i_latex.py` | CSV → `ataskaita\lenteles\` |
 
 ## Duomenys, konfigūracijos, rezultatai
@@ -109,7 +109,7 @@ python -m src.duomenys.ikelimas imtis
 python -m src.duomenys.etiketes
 
 python -m src.eksperimentai.matrica     # CSV -> lenteles/matrica.tex
-python -m src.eksperimentai.jautrumas   # T5
+python -m src.eksperimentai.jautrumas   # T5: svoriu jautrumas
 python -m src.eksperimentai.i_latex
 
 git add . ; git commit -m "..." ; git push

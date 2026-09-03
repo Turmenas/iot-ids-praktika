@@ -42,8 +42,11 @@ def ikelti(kelias: Path = CSV) -> list[dict]:
     return eilutes
 
 
-def svertine(e: dict) -> float:
-    return sum(SVORIAI[k] * e[k] for k in SVORIAI)
+def svertine(e: dict, svoriai: dict[str, float] | None = None) -> float:
+    """Svertine suma. Svoriai parametru — kad jautrumo analize (T5)
+    naudotu TA PACIA funkcija, o ne savo kopija."""
+    sv = SVORIAI if svoriai is None else svoriai
+    return sum(sv[k] * e[k] for k in sv)
 
 
 def _saltinis(zyma: str) -> str:

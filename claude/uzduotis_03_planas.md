@@ -80,12 +80,29 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T2**~~ | ~~Formalizuoti kietųjų apribojimų filtrą~~ | ✅ **Atlikta.** `tab:filtras`: **18 eilučių × 4 vartai; 18 → 8 praeina, 8 atmesti, 2 už darbo ribų.** Atmetimai: K1 — 4, K2 — 1, K3 — 2, K4 — 1 | — |
 | ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
 | ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
-| **T5** | Jautrumo analizė | Svoriai keičiami ±10 p. p. → ar keičiasi ketvertas; rezultatas įrašytas nepriklausomai nuo to, koks jis | **P0** |
+| ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **0 pokyčių iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
 | **T6** | **Užrakinti eksperimento protokolą** | 14 punktų (5 sk.), kiekvienas su konkrečia reikšme, ne su „reikės nuspręsti“ | **P0** ⭐ |
 | **T7** | Parašyti `03_parinkimas.tex` | ~3,5–4 psl., 3 lentelės, kompiliuojasi be klaidų | **P0** |
 | **T8** | Papildyti šaltinius | 18 → 20 įrašų (SMOTE, statistinis palyginimas), DOI patikrinti, anotacijos parašytos | P1 |
 
 **Ne šios užduoties tikslai:** joks kodas modeliams, joks duomenų įkėlimas, jokia požymių inžinerija (→ 4 užd.). **Vienintelė leistina išimtis** — 20 eilučių jautrumo skaičiavimo skriptas, nes be jo T5 yra nuomonė.
+
+### T5 rezultatas — ±10 p. p. buvo per siauras zondas ⭐
+
+**A dalis (plane numatyta):** aštuoni rinkiniai po ±10 p. p. — **pirmi trys prižiūrimi metodai nepasikeitė nė karto.** Tai atrodo kaip patvirtinimas, bet iš tikrųjų reiškia tik tiek, kad zondas nesiekė nė vienos ribos.
+
+**B dalis (pridėta pamačius A rezultatą):** kiekvienai porai apskaičiuota tikroji riba.
+
+| Palyginimas | Skirtumas | Kada apsiverstų |
+|---|---:|---|
+| XGBoost prieš Random Forest | +1,15 | **Niekada** — dominavimas |
+| Random Forest prieš MLP | +0,30 | **Niekada** — dominavimas |
+| XGBoost prieš sprendimų medį | +0,90 | Interpretuojamumo svoris → **0,42** (dabar 0,15) |
+| Sprendimų medis prieš Random Forest | +0,25 | Kokybės svoris → **0,44**, arba interpretuojamumas → 0,01 |
+
+⭐ **Dominavimas yra stipresnis rezultatas už bet kokį jautrumo procentą.** Kai metodas nėra blogesnis nė pagal vieną kriterijų, jokie svoriai nieko nekeičia — jautrumo analizė tokiai porai apskritai nereikalinga. **Dvi iš keturių svarbiausių porų yra būtent tokios.**
+
+> **Pamoka, kurią verta atsiminti 5–6 užduotims:** „rezultatas nepasikeitė“ dar nėra išvada. Reikia žinoti, **kiek toli** buvo iki pokyčio. Jei nebūčiau paskaičiavęs ribų, būčiau parašęs „rikiuotė stabili“ ir tai būtų buvęs tuščias teiginys.
 
 ### T4 rezultatas — rikiuotė ketverto nepatvirtina ⚠️⭐
 
@@ -332,7 +349,7 @@ Diena prasideda 12:45, todėl biudžetas trumpesnis nei įprastas. **Tai įmanom
 - [x] Balų skalė (1–5) apibrėžta **kiekvienam** iš 4 kriterijų **prieš** balus — `tab:kriterijai` ketvirtame stulpelyje
 - [x] Kiekvienas iš 4 svorių nurodo konkrečią `tab:reikalavimai` eilutę
 - [x] `tab:matrica` sugeneruota iš CSV, ne surinkta ranka — atkartojamumas patikrintas (du paleidimai, tas pats md5)
-- [ ] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**
+- [x] Jautrumo rezultatas įrašytas — **nesvarbu, patvirtina jis ketvertą ar ne**; papildomai įvardyta, kad ±10 p. p. zondas per siauras
 - [ ] Autokoderio įtraukimas pagrįstas **atvirai** kaip funkcinis reikalavimas, o ne kaip balų rezultatas
 - [ ] **Visi 24 protokolo punktai turi konkrečią reikšmę.** Nė viename nėra „bus nuspręsta vėliau“
 - [ ] `rezultatai.csv` stulpelių schema užrašyta ir suderinta su `i_latex.py`
