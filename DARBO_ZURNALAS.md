@@ -836,6 +836,32 @@ Pridėti du įrašai (18 → **20**), abu su Crossref patikrintais DOI:
 
 **Patikra:** 20 `.bib` raktų, dublikatų nėra, skliaustai subalansuoti, be DOI tik `antonakakis2017mirai` (USENIX, jo neturi). Anotacijos padengia **20 iš 20**.
 
+#### 25. Vadovas: procesas ataskaitoje neturi ko veikti ⭐⭐⭐
+
+Peržiūrėjęs 3 skyrių vadovas nurodė esminį dalyką: **darbe nerašoma apie savo klaidas, dvejones ir atmestas alternatyvas.** Toks turinys priklauso žurnalui.
+
+**Rugsėjo 2 d. tą taisyklę pats užsirašiau** (įrašas „kur rašiau prieš save“) ir per dieną sulaužiau dešimtyje vietų. Pašalinta:
+
+| Kur | Kas buvo | Kodėl blogai |
+|---|---|---|
+| 3.1 | „svertinė matrica, kurios rezultatas sutampa su iš anksto žinomu atsakymu, yra retorinė priemonė“ | Gynyba nuo priekaišto, kurio niekas nepareiškė — ir pati **pasiūlo** skaitytojui tokį įtarimą |
+| 3.1 | „subjektyvumas lieka vieninteliame taške“ | Savęs komentavimas |
+| 3.5 | „toks rezultatas nereiškia, kad rikiuotė teisinga — zondas buvo per siauras“ | Mano metodo savikritika; skaitytojui rūpi riba, ne mano zondas |
+| 3.6 | „Priežastis metodinė: jei metrikos pasirenkamos matant rezultatus…“ | Pasiaiškinimas, kodėl elgiuosi sąžiningai |
+| 3.6 | „Dublikatai — **svarbiausias šio protokolo punktas**“ | Aš sprendžiu, kas skaitytojui svarbiausia |
+| 3.7 | „ir tai pasakytina atvirai“, „tai matyti iš lentelės“ | Retorika, ne turinys |
+| `tab:kriterijai` | atmesto penkto kriterijaus apskaita | Skaitytojas apie jį nieko nežino |
+| 3.6 | „apribojimas įvardijamas atvirai“ | Pagyrimas sau; dabar pasakyta per **pasekmę** — ko rezultatai negali parodyti |
+
+**−109 žodžiai, ir skyrius nuo to sustiprėjo.** Apribojimai liko visi; dingo tik pasakojimas apie tai, kaip aš prie jų priėjau.
+
+**Skirtis, kurią reikia laikyti galvoje 4–6 skyriuose:**
+
+- **Į darbą** — kas išmatuota, kas pasirinkta, kokia to pasekmė rezultatams. Apribojimas rašomas kaip **duomenų ar metodo savybė**: „rinkinyje nėra laiko žymos, todėl rezultatai nieko nesako apie elgseną laikui bėgant“.
+- **Į žurnalą** — kaip prie to priėjau, ką bandžiau, kur suklydau, kodėl persigalvojau.
+
+⚠️ **Pataisytas ir per stiprus teiginys.** Buvau parašęs, kad literatūros 99,5–99,6 % „greičiausiai lieka dublikatų nutekėjimas“ — **neperskaitęs tų darbų metodikos**. Dabar: skaičiai yra aukščiau už ribą, o ar dublikatai buvo šalinami, iš straipsnių nematyti. Kartu pridėta, kad riba matuota 1,9 mln. eilučių imtyje ir bus tikslinama.
+
 ### 3 UŽDUOTIS BAIGTA — suvestinė
 
 | Kas | Rezultatas |

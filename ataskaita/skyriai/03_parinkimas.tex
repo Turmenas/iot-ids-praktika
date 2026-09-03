@@ -16,20 +16,15 @@
 \label{sec:remas}
 
 Ankstesnis skyrius baigėsi kandidatų aibe; čia ji siaurinama iki galutinės.
-Tokia atranka turi žinomą silpnybę: svertinė matrica, kurios rezultatas
-sutampa su iš anksto žinomu atsakymu, o svoriai parinkti be pagrindimo, yra
-retorinė priemonė, o ne metodas.
-
-Todėl atranka skaidoma į dvi pakopas su skirtinga logika. Pirmoji ---
+Atranka atliekama dviem pakopomis. Pirmoji ---
 kietieji apribojimai: metodas arba taikytinas šiems duomenims ir šiai
 diegimo vietai, arba ne. Kompromiso čia nėra, todėl nėra nei svorių, nei
 balų. Antroji --- svertiniai balai, taikomi \emph{tik} pirmąją pakopą
 įveikusiems metodams.
 
-Toks skaidymas turi konkrečią pasekmę: didžiąją atrankos dalį atlieka
-duomenų savybės, o ne autoriaus prioritetai. Subjektyvumas lieka
-vieninteliame taške --- kriterijų svoriuose, --- ir todėl jis atskirai
-pažymimas bei tikrinamas \ref{sec:jautrumas} poskyryje.
+Toks skaidymas turi konkrečią pasekmę: didžiąją atrankos dalį lemia duomenų
+savybės, o ne kriterijų svoriai. Svorių įtaka rezultatui atskirai vertinama
+\ref{sec:jautrumas} poskyryje.
 
 \subsection{Kietieji apribojimai}
 \label{sec:filtras}
@@ -210,16 +205,9 @@ Interpretuojamumas
 
 \vspace{2pt}
 \raggedright\footnotesize
-\textbf{Svoriai yra vienintelis subjektyvus šio skyriaus elementas},
-todėl jų įtaka rezultatui atskirai tikrinama
-\ref{sec:jautrumas} poskyryje.
-Dvi \ref{tab:reikalavimai} lentelės eilutės --- antra (aptikimas remiasi
-tinklo srautu) ir trečia (veikimas be per-įrenginio konfigūravimo) ---
-kriterijaus neduoda: jas vienodai tenkina visi po filtro likę metodai,
-todėl jos nieko neskiria.
-Realizavimo rizika kaip kriterijus nenaudojama dėl tos pačios
-priežasties: visi aštuoni likę metodai turi standartines bibliotekų
-realizacijas, todėl visiems gautų tą patį balą ir rikiuotės nekeistų.
+Svorių įtaka rezultatui vertinama \ref{sec:jautrumas} poskyryje.
+Likusios dvi \ref{tab:reikalavimai} lentelės eilutės kriterijaus neduoda:
+jas vienodai tenkina visi po filtro likę metodai.
 \normalsize
 \end{table}
 
@@ -268,15 +256,13 @@ ji išspręsta.
 %  rezultatais — kad nekiltų pagundos derinti svorius prie atsakymo.
 % ---------------------------------------------------------------------
 
-Svoriai yra vienintelis šio skyriaus subjektyvus elementas, todėl būtina
-patikrinti, kiek nuo jų priklauso rezultatas. Kiekvienam kriterijui
-atskirai buvo pridėta ir atimta po 10~\% punktų, likusius
+Svorių įtaka rezultatui vertinama dviem būdais. Pirma, kiekvienam kriterijui
+atskirai pridėta ir atimta po 10~\% punktų, likusius
 svorius perskirstant proporcingai --- iš viso aštuoni alternatyvūs
 rinkiniai. \textbf{Visais aštuoniais atvejais pirmi trys prižiūrimi metodai išliko tie patys.}
 
-Toks rezultatas dar nereiškia, kad rikiuotė teisinga --- jis reiškia, kad
-zondas buvo per siauras. Todėl kiekvienai porai papildomai nustatyta
-\emph{tikroji} riba: ar ją apskritai galima apversti ir, jei taip, kokio
+Antra, kadangi toks pokytis nė vienos rikiuotės ribos nepasiekia, kiekvienai
+porai atskirai nustatyta, ar ją apskritai galima apversti ir, jei taip, kokio
 svorio tam reikėtų.
 
 \begin{table}[htbp]
@@ -316,10 +302,7 @@ tikėtis: atrankos rezultatą lemia balų struktūra, o ne jų sveriamoji dalis.
 %  TEKSTU, ne ketvirta lentele — apimties biudžetas.
 % ---------------------------------------------------------------------
 
-Eksperimento sąlygos fiksuojamos \emph{prieš} pirmąjį mokymą. Priežastis
-metodinė: jei duomenų skaidymas, metrikos ar kartojimų skaičius
-pasirenkami jau matant pirmuosius rezultatus, kiekvienas vėlesnis
-pasirinkimas tampa neatskiriamas nuo derinimo prie norimo atsakymo.
+Eksperimento sąlygos fiksuojamos \emph{prieš} pirmąjį mokymą.
 
 \textbf{Duomenys.} Naudojama stratifikuota imtis, ne daugiau kaip
 \num{100000} eilučių klasei; retos klasės imamos visos. Valymo tvarka
@@ -332,7 +315,7 @@ lieka \textbf{36}. Automatinis koreliacijos filtras čia netinka: poros
 \texttt{Variance}--\texttt{Std} tiesinė koreliacija tėra \num{0.737},
 nors ryšys yra tikslus.
 
-\textbf{Dublikatai --- svarbiausias šio protokolo punktas.} Patikra
+\textbf{Dublikatai.} Patikra
 1,9~mln. eilučių imtyje parodė, kad \textbf{33,1~\% eilučių yra tikslūs
 dublikatai}. Jie susitelkę potvynio klasėse (\texttt{DDOS-ICMP\_FLOOD} --- 50~\%), o retose klasėse jų nėra visai. Atsitiktinai
 skaidant tos pačios eilutės kopijos patektų ir į mokymo, ir į testavimo
@@ -347,20 +330,18 @@ jie sudaro \textbf{4,98~\% eilučių, kurių teisingai suklasifikuoti
 neįmanoma iš principo}, taigi \textbf{teorinė tikslumo riba šiame
 rinkinyje yra apie 95~\%}, o ne 100~\%.
 
-Šis skaičius keičia rezultatų vertinimo atskaitos tašką. Literatūroje
-skelbiami \numrange{99.5}{99.6}~\% tikslumai
-\cite{almahaqeri2026gradient} yra \emph{aukščiau} už čia išmatuotą ribą,
-o tai reiškia, kad juose greičiausiai lieka dublikatų nutekėjimas.
-Kartu būtina išlyga: naudojamame leidime yra 39 požymiai vietoj 46, o
-pašalintieji (srauto kryptis ir trukmė) kaip tik ir skirtų dalį dabar
-sutampančių vektorių --- todėl riba galioja \emph{šiam} leidimui, o
-tiesioginis palyginimas su 46 požymių darbais lieka ribotas.
+Šis skaičius yra atskaitos taškas rezultatams vertinti. Literatūroje
+skelbiami \numrange{99.5}{99.6}~\% tikslumai \cite{almahaqeri2026gradient}
+yra aukščiau už jį; ar tuose darbuose dublikatai buvo šalinami, iš straipsnių
+nematyti. Riba galioja \emph{šiam} leidimui: jame 39 požymiai vietoj 46, o
+pašalintieji (srauto kryptis ir trukmė) skirtų dalį dabar sutampančių
+vektorių. Ji išmatuota 1,9~mln. eilučių imtyje ir tikslinama sudarius
+darbinę imtį.
 
 \textbf{Skaidymas.} Stratifikuotas atsitiktinis \num{70}/\num{15}/\num{15}
 su fiksuotu pradiniu dydžiu; indeksai išsaugomi ir įkeliami, o ne
-perskaičiuojami kiekvieno paleidimo metu. Chronologinis skaidymas
-neįmanomas --- rinkinyje nėra laiko žymos; apribojimas įvardijamas
-atvirai. Normalizavimas ir klasių balansavimas taikomi \emph{tik} mokymo
+perskaičiuojami kiekvieno paleidimo metu. Chronologinis skaidymas negalimas: rinkinyje nėra laiko žymos, todėl
+rezultatai negali pasakyti nieko apie modelio elgseną laikui bėgant. Normalizavimas ir klasių balansavimas taikomi \emph{tik} mokymo
 aibei.
 
 \textbf{Vertinimas.} Pagrindinė metrika --- macro-F1; šalia jos per-klasę
@@ -383,9 +364,8 @@ nes prižiūrimas modelis tokios kategorijos etiketės neturi iš principo.
 \subsection{Galutinė aibė ir apibendrinimas}
 \label{sec:parinkimas_isvados}
 
-\ref{tab:matrica} lentelės rikiuotė galutinės aibės \emph{neduoda}, ir tai
-pasakytina atvirai: iš keturių pasirinktų metodų rikiuotės viršūnėje yra
-tik XGBoost. Aibė sudaroma pagal tris sudedamąsias --- rikiuotės viršūnę,
+\ref{tab:matrica} lentelės rikiuotė galutinės aibės \emph{neduoda}: iš
+keturių pasirinktų metodų rikiuotės viršūnėje yra tik XGBoost. Aibė sudaroma pagal tris sudedamąsias --- rikiuotės viršūnę,
 mokymosi paradigmų padengimą ir sudėtingumo gradientą, --- iš kurių tik
 pirmoji remiasi balais.
 
@@ -397,8 +377,7 @@ matuojamas prieaugis. \textbf{Daugiasluoksnis perceptronas} --- gilaus
 mokymosi atstovas, be kurio liktų neatsakytas ankstesniame skyriuje
 iškeltas klausimas, ar sudėtingumas lentelinei įvesčiai apsimoka.
 \textbf{Autokoderis} --- vienintelis, aptinkantis atakas be jų pavyzdžių;
-jis įtraukiamas dėl funkcinio reikalavimo, o ne dėl balo, ir tai matyti iš
-lentelės.
+jis įtraukiamas dėl funkcinio reikalavimo, ne dėl balo.
 
 Dvi pastabos, kylančios iš pačios matricos. Pirma, \textbf{LightGBM balais
 lygus XGBoost}; jis neįtraukiamas ne dėl silpnesnio rezultato, o dėl to,
