@@ -877,6 +877,21 @@ Peržiūrėjęs 3 skyrių vadovas nurodė esminį dalyką: **darbe nerašoma api
 
 **Vertingiausias dienos rezultatas nėra metodų aibė** — ji buvo žinoma vakar. Vertingiausia yra tai, kad (a) atmetimų priežastys pasirodė esančios duomenų, o ne resursų, (b) dvi svarbiausios poros sprendžiamos dominavimo, tad nepriklauso nuo jokių svorių, ir (c) **išmatuota teorinė tikslumo riba, kuri yra žemiau už literatūroje skelbiamus skaičius.**
 
+#### 26. Trys žinomos 3 skyriaus silpnybės — perkeliamos, ne užmirštamos ⚠️
+
+Skyrius atitinka abu planus, bet po kritinės peržiūros liko trys dalykai, kurių **planai nereikalavo** ir kurie todėl liktų neužrašyti. Jie nėra klaidos ataskaitoje — tai žinomos jos ribos.
+
+**1. Tikrinau ne tą subjektyvumą.** Jautrumo analizė vertino **svorius** (4 skaičiai su pagrindimu), o ne **balus** (32 skaičiai be jo). Patikrinta: „dominavimas“ RF prieš MLP griūva nuo **vieno balo** pakeitimo — jie sutampa trijuose kriterijuose iš keturių ir skiriasi tik interpretuojamumu. Teiginys formaliai teisingas, bet silpnesnis, nei skamba.
+→ *Veiksmas:* paleisti tą pačią procedūrą ±1 balui. Skriptas jau yra.
+
+**2. `tab:matrica` „Šalt.“ stulpelis nurodo eilutę, ne balą.** 2 užduotyje pats užsirašiau taisyklę, kad kiekvienas įvertinimas turi turėti šaltinį arba `(aut.)`. Publikuotus CICIoT2023 skaičius turi tik XGBoost ir LightGBM; RF, medžio, MLP ir 1D-CNN kokybės balai yra mano vertinimai skaičiaus pavidalu.
+→ *Veiksmas:* arba per-balo žymos, arba aiškiai pasakyti, kad balai yra autoriaus vertinimas pagal `tab:metodai`.
+
+**3. Sprendimų medis prieš Random Forest — neišspręsta.** Matrica sako, kad medis geresnis (3,80 prieš 3,55). Ataskaitoje parašyta „vertas dėmesio“, ir tiek. Pagrindimas „sudėtingumo gradientas“ yra kriterijus, kurio niekas neišvedė iš `tab:reikalavimai` — ta pati yda, kurią pats įžvelgiau svoriuose.
+→ *Veiksmas:* arba penktas metodas 4 užduotyje, arba pagrindimas, kuris remiasi kuo nors, o ne patogumu.
+
+**Ketvirtas, techninis:** 62,6 pt overfull 24 psl. — lentelė kyšo ~2,2 cm už paraštės. Kompiliavimą praeina, bet spaudinyje matyti. Didžiausias visame darbe (anksčiau 38,6 pt 1 skyriuje).
+
 ### Ką darysiu rytoj (rugs. 4, penktadienis)
 
 **4 užduotis — DI pagrįsto aptikimo sprendimo kūrimas.** Pradinė medžiaga jau paruošta: protokolo punktai yra `pozymiai.py` ir `balansavimas.py` specifikacija, o `rezultatai.csv` schema suderinta su `i_latex.py`.
