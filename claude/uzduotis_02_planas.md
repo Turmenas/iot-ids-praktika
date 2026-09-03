@@ -314,7 +314,7 @@ Ne šios užduoties dalis, bet pigu padaryti tarp darbų:
 **Pagrindimas — trys nepriklausomos priežastys:**
 
 1. **Skirtingos požymių aibės ir struktūros.** Kiekvienas rinkinys turi savo antraštę, savo etikečių schemą ir savo kodavimą. Kaip tik parodė rugsėjo 2 d. patikra, net **to paties** rinkinio kitas leidimas skiriasi 8 stulpeliais, etikečių registru ir pavadinimu. Antras rinkinys reikštų antrą tokią patikrą, antrą įkėlimo grandinę ir antrą požymių derinimo sluoksnį.
-2. **Kiekvienam rinkiniui reikėtų atskirų modelių.** Nesutampant požymiams, modelio perkelti negalima — reikia mokyti iš naujo ant bendro poaibio. Tai dauginа 4 ir 5 užduotis iš dviejų.
+2. **Kiekvienam rinkiniui reikėtų atskirų modelių.** Nesutampant požymiams, modelio perkelti negalima — reikia mokyti iš naujo ant bendro poaibio. Tai daugina 4 ir 5 užduotis iš dviejų.
 3. **Resursai.** 14 darbo dienų, vienas žmogus, viena darbo vietos mašina be GPU (TensorFlow Windows'e GPU nebepalaiko nuo 2.11). Tai ne komanda su serveriu, mokančiu modelius visą parą.
 
 > **Ribojantis veiksnys yra kalendorius, ne skaičiavimai** — ir tai reikia pasakyti tiesiai. Pirmoji ir antroji priežastys yra metodologinės; trečioji viena nepateisintų apimties mažinimo, bet kartu su jomis sudaro nuoseklų argumentą.
