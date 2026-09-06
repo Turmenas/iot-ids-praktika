@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-03 — **3 užduotis baigta**; sutikrinta su realiu aplanko turiniu
+**Atnaujinta:** 2026-09-06 — **4 užduoties planas sudarytas**; sutikrinta su realiu aplanko turiniu
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -28,6 +28,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 |---|---|
 | ✅ `uzduotis_02_planas.md` | **2 užd.** tikslų planas |
 | ✅ `uzduotis_03_planas.md` | **3 užd.** tikslų planas — **dviejų pakopų filtras + eksperimento protokolas** *(2026-09-03)* |
+| ✅ `uzduotis_04_planas.md` | **4 užd.** tikslų planas — **įkėlimo grandinė, modelių kontraktas, 3 dienų biudžetas** *(2026-09-06)* |
 | ⬛ `uzduotis_01_planas.md` · `praktikos_planas.md` · `kontekstas.md` | Kol kas tik Claude projekte |
 
 ## `ataskaita\`
@@ -44,7 +45,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
 | ⚠️ `skyriai\ciciot2023_pozymiai.md` | **Ne skyrius** — duomenų dokumentas tarp `.tex` failų. Vieta svarstytina |
 | ✅ `skyriai\03_parinkimas.tex` | **3 užd. BAIGTA** — 7 poskyriai, 4 lentelės, ~5 psl. Protokolas 3.6 poskyryje |
-| ⬜ `skyriai\04_sprendimas.tex` | **4 užd.** ← **kitas darbas.** Metodika rašoma iš 3.6 protokolo |
+| ⬜ `skyriai\04_sprendimas.tex` | **4 užd.** ← **vykdoma rugs. 7–9 d.** Metodika rašoma iš 3.6 protokolo; planas — `claude\uzduotis_04_planas.md` |
 | ⬜ `skyriai\05..07_*.tex` | 5–6 užd. ir išvados |
 | ✅ `lenteles\rezultatai.tex` | **Generuojama** — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
@@ -54,16 +55,16 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 
 | Kelias | Kas tai |
 |---|---|
-| ✅ `duomenys\ikelimas.py` | Patikra, stratifikuota imtis. **2026-09-02: `Label`, kelias `raw/archive/`** |
+| ⚠️ `duomenys\ikelimas.py` | Patikra, stratifikuota imtis. **2026-09-06: NEATITINKA protokolo** — `FRAKCIJA=0.05` vietoj ribos 100 000 klasei; nėra dublikatų šalinimo, `dropna`/`inf`. Perrašomas T1 metu |
 | ✅ `duomenys\etiketes.py` | ⭐ 34 etiketės → 8 kategorijos. **2026-09-02: registro normalizavimas + `BENIGN` alias** |
 | ⬜ `duomenys\pozymiai.py` | Požymių inžinerija — **rašoma iš protokolo 5.3 punktų**. Failas sukurtas, 0 baitų |
 | ⬜ `duomenys\balansavimas.py` | `class_weight` / SMOTE — **tik ant `train`**. Failas sukurtas, 0 baitų |
 | ⬜ `modeliai\bazinis.py` | Bendra klasė: `fit` / `predict` / `predict_proba`. 0 baitų |
-| ⬜ `modeliai\random_forest.py` · `autoencoder.py` · `cnn.py` | Sukurti, 0 baitų. ⚠️ **Ketvertas yra RF, XGBoost, MLP, autokoderis** — `cnn.py` nebeatitinka, reikės `xgboost.py` ir `mlp.py` |
+| ⬜ `modeliai\random_forest.py` · `autoencoder.py` · `cnn.py` | Sukurti, 0 baitų. ⚠️ **Ketvertas yra RF, XGBoost, MLP, autokoderis** — `cnn.py` **ištrintinas**; reikės `gradientinis.py` (⚠️ **ne** `xgboost.py` — uždengtų biblioteką) ir `mlp.py` |
 | ⬜ `eksperimentai\paleisti.py` | Konfigas → mokymas → metrikos. 0 baitų |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
-| ✅ `eksperimentai\i_latex.py` | CSV → `ataskaita\lenteles\` |
+| ⚠️ `eksperimentai\i_latex.py` | CSV → `ataskaita\lenteles\`. **2026-09-06: schema NEATITINKA protokolo** — sutampa 3 stulpeliai iš 15. Perrašomas T0 metu (agregavimas per seed'us, dvi lentelės) |
 
 ## Duomenys, konfigūracijos, rezultatai
 
@@ -71,7 +72,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 |---|---|
 | ✅ `duomenys\README.md` | ⭐ **CICIoT2023: 39 požymiai + `Label`, 45,0 mln. eilučių, spąstai** |
 | ✅ `duomenys\raw\archive\Merged01..63.csv` | **8,7 GB — ne Git'e** |
-| ⬛ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e |
+| 🗑 `duomenys\raw\archive.zip` | **~2,3 GB** — CSV išpakuoti, archyvas nebereikalingas |
+| ⬛ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. ⚠️ Kodas dabar rašo `ciciot2023_imtis.parquet` — suvienodinti |
 | ⬛ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai — **išsaugomi**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |

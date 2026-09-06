@@ -905,3 +905,64 @@ Pirmas žingsnis — **įkėlimo grandinė su dublikatų šalinimu**, nes nuo jo
 **Prieš rašant `tab:kriterijai` išvengta dviejų klaidų:** `\SI{10}{\mega\byte}` pakeista į paprastą `10~MB` (`\byte` darbe niekur nenaudotas, tad nepatikrintas), o nuoroda į dar neegzistuojantį jautrumo poskyrį perrašyta be `\ref` — kitaip būtų atsiradusi neišspręsta nuoroda. **Abi rastos peržiūrint prieš rašymą, ne po kompiliavimo.**
 
 **Neišspręsta, reikia sprendimo:** titulinio puslapio fakultetas (`% TODO` 127 eil.) ir praktikos vadovas (`Vardas Pavardė`). Kadangi dokumentas teikiamas **Aineros** vadovui, klausimas platesnis nei užpildyti du laukus — ar titulinis apskritai turi būti universitetinio pavidalo.
+
+---
+
+## Rugsėjo 6 d. (sekmadienis) — 4 užduoties planas
+
+### Ką padariau
+
+**Peržiūrėta visa turima medžiaga** — projekto dokumentai (`praktikos_planas.md`, trys užduočių planai, šis žurnalas, `STRUKTURA.md`) **ir realus repozitorijos turinys**, ne tik būklės žymos.
+
+**Sudarytas 4 užduoties tikslų planas** (`claude/uzduotis_04_planas.md`): tikslai T0–T9, dublikatų šalinimo algoritmas, modelių sąsajos kontraktas, skyriaus struktūra, trijų dienų laiko biudžetas, priėmimo kriterijai, rizikos.
+
+**Rugsėjo 4–5 d. nedirbta** (paskutinis commit — `96ef95a`, rugs. 3 d.). Grafikas vis tiek 5 dienomis priekyje pradinio plano.
+
+### Priimti sprendimai
+
+- **4 užduotis vykdoma rugsėjo 7–9 d.** (pradiniame plane — rugs. 9–14). Trys dienos: duomenų grandinė · modeliai ir pirmas ciklas · prototipas ir skyrius.
+- **Prototipas su vizualizacija įeina į užduotį** (Streamlit), bet **P1 prioritetu**: po rugs. 9 d. 11:30 jis stabdomas, koks bebūtų — skyrius svarbiau.
+- **Skyrių numeracija paliekama kaip yra** — „Įvadas“ lieka 1 skyrius, todėl N užduotis = N+1 skyrius. Klausimas, atviras nuo rugs. 3 d., **uždarytas**. Kadangi vienintelis vadovo turimas kriterijus yra užduočių sąrašas, atitikimą turi užtikrinti kas kita nei numeriai — skyrių antraštės jau atkartoja užduočių formuluotes.
+- **`i_latex.py` perrašomas, ne protokolas** (žr. žemiau). Kartu keičiasi jo vaidmuo: iš „CSV → lentelė“ į **agregavimo žingsnį** (vidurkis ± std per seed'us, dvi išvesties lentelės).
+- **Dublikatai šalinami klasės viduje, srautu, per eilučių maišas** — protokolo reikalavimas „prieš imtį“ išlaikomas, bet be 14 GB atminties poreikio.
+- **4 skyriaus apimties taikinys nemažinamas.** 1–3 skyriuose taikinys buvo stabdis; čia jis yra grindys. Vienintelė likusi apimties rizika yra ~23 psl. teorijos prieš plonus 4–6 skyrius.
+
+### Ką radau
+
+#### 1. Trys priėmimo kriterijai pažymėti atliktais neatidarius failo ⚠️⭐
+
+Visi trys — tas pats klaidos tipas, kuris darbe kartojasi **ketvirtą kartą**: rugsėjo 2 d. tai buvo duomenų aprašas, sudarytas neatidarius duomenų; rugsėjo 3 d. — priėmimo kriterijus, parašytas nepažiūrėjus į `.aux`.
+
+**`rezultatai.csv` schema su `i_latex.py` NĖRA suderinta.** Kriterijus teigia priešingai. Sutikrinus: sutampa **3 stulpeliai iš 15**. Skriptas laukia `f1_macro`, `precision_macro`, `recall_macro`, `inferencijos_ms`; protokolas fiksuoja `macro_f1`, `pr_auc`, `roc_auc`, `mcc`, `inferencija_us` ir dar aštuonis. Paleistas skriptas mestų `SystemExit`.
+
+**`ikelimas.py` neįgyvendina užrakinto protokolo.** Kode `FRAKCIJA = 0.05`, `MIN_EILUCIU = 5000`; protokole — riba 100 000 eilučių klasei. Retoms klasėms sutampa, gausioms ne: proporcinga frakcija **disbalanso nemažina** (~288:1 vietoj 84:1), o būtent jo sumažinimas buvo pusė ribos pagrindimo. Kode taip pat nėra dublikatų šalinimo, `dropna`/`inf` tvarkymo ir skaidymo išsaugojimo — visa tai aprašyta protokole ir `duomenys/README.md`, bet neegzistuoja.
+
+**Dublikatų matavimo skripto nėra.** 33,1 % ir ~95 % teorinė riba yra stipriausi darbo radiniai, kuriais remiasi trys skyriai, bet `rezultatai/darbiniai/` juos pagrindžiančio failo nėra — skaičiai gauti ad hoc ir **neatkartojami**.
+
+> **Pamoka:** priėmimo kriterijus, pažymėtas atliktu nepaleidus komandos, yra **spėjimas apie savo paties darbą**. Nuo šiol kriterijus, kurio patikra yra viena komanda, žymimas tik po tos komandos.
+
+#### 2. „Dublikatai prieš imtį“ ir RAM — konfliktas su sprendimu ⭐⭐
+
+`df.duplicated()` ant 45,0 mln. eilučių × 39 `float64` požymių yra ~14 GB vien duomenų. Protokolo 9 punktas, kaip parašytas, nešiojamame kompiuteryje neįvykdomas.
+
+Trys pastebėjimai jį panaikina: dublikatas visada yra **klasės viduje** (kitos klasės sutapimas yra prieštaringa etiketė, kurią protokolas liepia palikti); palyginti reikia **maišų**, ne eilučių (45 mln. × 8 B = 360 MB vietoj 14 GB); o klasėms, kurios po šalinimo vis tiek viršija 100 000 ribą, **tvarka „prieš/po“ duoda tą patį rezultatą**. Tvarka svarbi tik toms, kurios nukrenta žemiau ribos.
+
+Lieka vienas nukrypimas, kurį reikia įvardyti: eilutės imamos failų tvarka, ne atsitiktinai iš viso rinkinio. Apsauga — surinkti iki 150 000 unikalių eilučių klasei ir atsitiktinai atrinkti 100 000.
+
+#### 3. Autokoderis į vienodą kontraktą telpa tik su išlyga ⭐
+
+Palyginimo asimetrija numatyta rugsėjo 2 d. (2.8 poskyris) ir įgyvendinta rugsėjo 3 d. matricos sandaroje. **Kode ji turi atsirasti trečią kartą:** `predict_proba` apibrėžiamas kaip „įvertis, kurio didesnė reikšmė reiškia didesnę atakos tikimybę“, ne kaip tikimybių matrica, o laukas `priziurimas = False` pasako `paleisti.py`, kad macro-F1 per 8 kategorijas šiam modeliui neskaičiuojamas. Jei to nebus kontrakte, tai išlįs rugsėjo 15 d. kaip `ValueError` viduryje ciklo.
+
+#### 4. Smulkmena, kuri būtų kainavusi valandą diagnostikos
+
+Failas `src/modeliai/xgboost.py` uždengtų biblioteką `import xgboost`. Pervadinta į `gradientinis.py` dar plane. `cnn.py` (0 B) nebeatitinka ketverto — ištrinti.
+
+#### 5. Pirmi paveikslai visame darbe
+
+`paveikslai/` tuščias, `\includegraphics` niekur nenaudotas, taigi **nepatikrintas**. Taisyklė „naudoti tik tai, kas darbe jau įrodyta veikiant“ čia neišvengiamai laužoma, todėl pirmas paveikslas dedamas rugsėjo 8 d., ne 9 d. — turint dieną atsargos.
+
+### Ką darysiu rytoj (rugs. 7, pirmadienis)
+
+**T0 → T1 → T2 → T3.** Pirma trys neatitikimai (`i_latex.py`, `ikelimas.py`, failo vardas), tada įkėlimo grandinė ir jos paleidimas fone, o tuo metu — požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
+
+⚠️ **Atskiras 15:30–16:15 langas:** sutikrinti gautus skaičius su 3 skyriumi. Jei faktinis dublikatų procentas ar patikslinta teorinė riba skiriasi nuo užrašytų, `03_parinkimas.tex` taisomas **tą pačią dieną**.
