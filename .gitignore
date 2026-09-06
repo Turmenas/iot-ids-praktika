@@ -12,6 +12,11 @@ duomenys/processed/
 *.csv
 # ...isskyrus eksperimentu metrikas - jos mazos ir jas verta versijuoti
 !rezultatai/rezultatai.csv
+# ...ir darbinius CSV: sprendimu_matrica.csv yra VIENINTELIS tab:matrica
+# saltinis, o imties pasiskirstymas - 4 skyriaus lenteles saltinis.
+# Be ju "lenteles generuojamos, o ne rasomos ranka" principas neveikia
+# svarioje repozitorijos kopijoje.
+!rezultatai/darbiniai/*.csv
 
 # ─── Apmokyti modeliai ───────────────────────────────────────
 rezultatai/apmokyti/*
