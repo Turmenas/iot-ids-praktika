@@ -315,28 +315,34 @@ lieka \textbf{36}. Automatinis koreliacijos filtras čia netinka: poros
 \texttt{Variance}--\texttt{Std} tiesinė koreliacija tėra \num{0.737},
 nors ryšys yra tikslus.
 
-\textbf{Dublikatai.} Patikra
-1,9~mln. eilučių imtyje parodė, kad \textbf{33,1~\% eilučių yra tikslūs
-dublikatai}. Jie susitelkę potvynio klasėse (\texttt{DDOS-ICMP\_FLOOD} --- 50~\%), o retose klasėse jų nėra visai. Atsitiktinai
-skaidant tos pačios eilutės kopijos patektų ir į mokymo, ir į testavimo
-aibę, todėl modelis būtų tikrinamas tuo, ką matė mokydamasis ---
-\textbf{rezultatas būtų išpūstas be jokios matomos klaidos}. Todėl
-tikslūs dublikatai šalinami \emph{prieš} skaidymą.
+\textbf{Dublikatai.} Patikra visame rinkinyje parodė, kad
+\textbf{53,3~\% eilučių yra tikslūs dublikatai}. Jie susitelkę potvynio
+klasėse (\texttt{DDOS-ICMP\_FLOOD} --- 72,3~\%,
+\texttt{DDOS-RSTFINFLOOD} --- 67,6~\%), o gerybiniame sraute ir retose
+atakų klasėse jų beveik nėra (\texttt{BENIGN} --- 0,4~\%; šešiose
+klasėse nė vieno). Atsitiktinai skaidant tos pačios eilutės kopijos
+patektų ir į mokymo, ir į testavimo aibę, todėl modelis būtų tikrinamas
+tuo, ką matė mokydamasis --- \textbf{rezultatas būtų išpūstas be jokios
+matomos klaidos}. Todėl tikslūs dublikatai šalinami \emph{prieš} imties
+sudarymą ir skaidymą.
 
-Šalinama pagal \emph{visą} eilutę, o ne pagal požymius: \num{55440}
-požymių vektorių turi daugiau nei vieną skirtingą etiketę, ir tai yra
-tikras duomenų dviprasmiškumas, o ne dubliavimas. Po dublikatų šalinimo
-jie sudaro \textbf{4,98~\% eilučių, kurių teisingai suklasifikuoti
-neįmanoma iš principo}, taigi \textbf{teorinė tikslumo riba šiame
-rinkinyje yra apie 95~\%}, o ne 100~\%.
+Šalinama pagal \emph{visą} eilutę, o ne pagal požymius: dalis vienodų
+požymių vektorių yra pažymėti skirtingomis etiketėmis, ir tai yra tikras
+duomenų dviprasmiškumas, o ne dubliavimas. Darbinėje imtyje tokių
+vektorių yra \num{5114} (\num{10435} eilutės, 0,43~\%). Geriausias
+įmanomas klasifikatorius kiekvienoje tokioje grupėje priskiria dažniausią
+etiketę ir dėl to suklysta \num{5321} kartą, taigi \textbf{teorinė
+tikslumo riba šioje imtyje yra 99,78~\%}, o ne 100~\%.
 
-Šis skaičius yra atskaitos taškas rezultatams vertinti. Literatūroje
-skelbiami \numrange{99.5}{99.6}~\% tikslumai \cite{almahaqeri2026gradient}
-yra aukščiau už jį; ar tuose darbuose dublikatai buvo šalinami, iš straipsnių
-nematyti. Riba galioja \emph{šiam} leidimui: jame 39 požymiai vietoj 46, o
-pašalintieji (srauto kryptis ir trukmė) skirtų dalį dabar sutampančių
-vektorių. Ji išmatuota 1,9~mln. eilučių imtyje ir tikslinama sudarius
-darbinę imtį.
+Ši riba yra atskaitos taškas rezultatams vertinti: už ją aukštesnis
+rezultatas reikštų nutekėjimą, o ne sėkmę. Ji galioja \emph{šiam} 39
+požymių leidimui --- pašalintieji krypties ir trukmės požymiai skirtų
+dalį dabar sutampančių vektorių --- ir \emph{dublikatų neturinčiai}
+imčiai. Literatūroje skelbiami \numrange{99.5}{99.6}~\% tikslumai
+\cite{almahaqeri2026gradient} gauti nenurodant, ar dublikatai buvo
+šalinami; rinkinyje, kuriame kas antra eilutė yra kitos kopija, dalis
+testavimo aibės modeliui yra matyta, todėl vienodomis sąlygomis tie
+skaičiai ir čia gaunamieji nėra.
 
 \textbf{Skaidymas.} Stratifikuotas atsitiktinis \num{70}/\num{15}/\num{15}
 su fiksuotu pradiniu dydžiu; indeksai išsaugomi ir įkeliami, o ne

@@ -144,8 +144,8 @@ Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1
 | sklearn: `Input contains infinity` | **991 eilutė** turi `Rate` = `Infinity` → `replace([inf,-inf], nan).dropna()` |
 | Tyliai atsiranda 35-a klasė | 9 failai baigiasi **nutrūkusia eilute** → `dropna(subset=["Label"])` |
 | Koreliacijos filtras palieka `Variance` | `Variance` = `Std`², bet tiesinė koreliacija 0,737 — šalinti **sąrašu** |
-| **Išpūsti rezultatai be matomos klaidos** | ⭐ **33,1 % eilučių — tikslūs dublikatai.** Šalinti pagal **visą eilutę**, **prieš** imtį ir skaidymą |
-| Tikslumas „įstringa“ ties ~95 % | Taip ir turi būti: **4,98 % eilučių turi prieštaringas etiketes** — teorinė riba ~95 %, ne 100 % |
+| **Išpūsti rezultatai be matomos klaidos** | ⭐ **53,3 % eilučių — tikslūs dublikatai** *(išmatuota visame rinkinyje 09-06; ankstesnis 33,1 % buvo iš 1,9 mln. imties)*. Šalinti pagal **visą eilutę**, **prieš** imtį ir skaidymą |
+| Rezultatas aukštesnis nei **99,78 %** | Teorinė riba darbinėje imtyje *(09-06)*: 0,43 % eilučių turi prieštaringas etiketes. Aukštesnis rezultatas = nutekėjimas |
 
 ### Aplinka
 

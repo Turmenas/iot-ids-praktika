@@ -266,24 +266,49 @@ def _atranka(maisos: dict[str, list]) -> tuple[np.ndarray, pd.DataFrame]:
 # ─── 3. Antras prejimas: eiluciu rinkimas ────────────────────────────
 
 def _antras_prejimas(failai: list[Path], pasirinktos: np.ndarray) -> pd.DataFrame:
+    """
+    Renka eilutes, kuriu maisa pateko i atranka.
+
+    Dublikatai salinami IS KARTO, gabalas po gabalo, o ne sudejus viska i
+    viena DataFrame ir tik tada iskvietus drop_duplicates. Skirtumas ne
+    kosmetinis: atrinktos 2,4 mln. maisu duomenyse pasikartoja ~4 mln.
+    kartu, todel sudetas rinkinys butu ~65 % didesnis uz galutini, o
+    concat dar padvigubina atminti. Pirmoji versija butent ties tuo ir
+    luzo (OOM) masinoje su 4 GB.
+
+    `matytos` yra ne daugiau kaip len(pasirinktos) maisu (~190 MB).
+    """
     print(f"\n2/2  Renkamos atrinktos eilutes ({len(pasirinktos):,} maisu)...")
-    dalys = []
+    dalys: list[pd.DataFrame] = []
+    matytos: set = set()
+    kartotiniu = 0
 
     for i, f in enumerate(failai, 1):
         for gabalas in pd.read_csv(f, chunksize=GABALAS, low_memory=False):
             gabalas = valyti(gabalas)
             if gabalas.empty:
                 continue
-            kauke = np.isin(_maisos(gabalas), pasirinktos)
-            if kauke.any():
-                dalys.append(gabalas[kauke])
+            h = _maisos(gabalas)
+            kauke = np.isin(h, pasirinktos)
+            if not kauke.any():
+                continue
+            gabalas, h = gabalas[kauke], h[kauke]
+
+            if matytos:                       # pandas isin su set - maisos paieska
+                nauji = ~pd.Index(h).isin(matytos)
+                kartotiniu += int((~nauji).sum())
+                if not nauji.any():
+                    continue
+                gabalas, h = gabalas[nauji], h[nauji]
+
+            matytos.update(h.tolist())
+            dalys.append(gabalas)
         print(f"     [{i}/{len(failai)}] {f.name}")
 
     df = pd.concat(dalys, ignore_index=True)
-    pries = len(df)
-    df = df.drop_duplicates(ignore_index=True)
-    print(f"\n     Surinkta {pries:,} -> po drop_duplicates {len(df):,}")
-    return df
+    print(f"\n     Surinkta {len(df):,} unikaliu "
+          f"(praleista {kartotiniu:,} kartotiniu pasirodymu)")
+    return df.drop_duplicates(ignore_index=True)
 
 
 # ─── 4. Teorine tikslumo riba ────────────────────────────────────────

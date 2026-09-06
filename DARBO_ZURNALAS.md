@@ -1009,10 +1009,93 @@ Sukurtas 34 klasių sintetinis rinkinys su **iš anksto žinomu** atsakymu: supl
 
 > **Pamoka, uždaranti šios dienos ratą.** Ryte užsirašiau, kad priėmimo kriterijus, pažymėtas atliktu nepaleidus komandos, yra spėjimas apie savo paties darbą. Vakare tą taisyklę pritaikiau pirmą kartą sąmoningai: **niekas nepažymėta atliktu, kol nepaleista.** Tai kainavo apie valandą ir sugavo dvi klaidas, kurios kitaip būtų išlindusios rugsėjo 8 d. viduryje eksperimentų.
 
+### Vėliau vakare — T1 taip pat atliktas ✅
+
+Prieš paleidžiant rasta viena kliūtis: **`sprendimu_matrica.csv` nebuvo Git'e.** `.gitignore` turi `*.csv` su viena išimtimi (`rezultatai/rezultatai.csv`), todėl failas, kurį `STRUKTURA.md` vadina „vieninteliu balų šaltiniu", egzistavo tik šioje mašinoje. Švarioje kopijoje `tab:matrica` būtų neatkuriama, o „lentelės generuojamos, o ne rašomos ranka" principas nustotų galioti. Pridėta išimtis `!rezultatai/darbiniai/*.csv`.
+
+**Įkėlimo grandinė paleista ant tikrų 63 failų.** Rezultatai — `rezultatai/darbiniai/imties_ataskaita.md`.
+
+### Ką radau — T1
+
+#### 11. Valymo skaitliukai sutapo su rugsėjo 2 d. radiniais tiksliai ⭐
+
+| Rodiklis | Rugs. 2 d. | Rugs. 6 d. |
+|---|---:|---:|
+| Eilučių iš viso | 45 019 243 | **45 019 243** |
+| Nutrūkusių eilučių | 9 | **9** |
+| `Rate = Infinity` | 991 | **991** |
+
+Tai nepriklausomas patvirtinimas, kad rugsėjo 2 d. skenavimas buvo teisingas. Vertinga ne dėl skaičių, o dėl to, kad pirmą kartą darbe **du nepriklausomi matavimai sutapo** — iki šiol kiekvienas patikslinimas ką nors paneigdavo.
+
+#### 12. Dublikatų ne 33,1 %, o 53,3 % ⭐⭐
+
+Rugsėjo 3 d. skaičius buvo iš 1,9 mln. eilučių imties. Visame rinkinyje — **53,34 %**: iš 45 018 243 eilučių unikalios tik 21 004 674.
+
+**Argumentas dėl nutekėjimo nuo to sustiprėjo**: rinkinyje, kur kas antra eilutė yra kitos kopija, atsitiktinis skaidymas be dublikatų šalinimo garantuoja, kad dalis testavimo aibės modeliui jau matyta.
+
+**Pasiskirstymas struktūrinis, ne atsitiktinis:**
+
+| Klasių grupė | Dublikatų |
+|---|---|
+| Potvynio (`DDOS-ICMP_FLOOD`, `DDOS-RSTFINFLOOD`, …) | **41–72 %** |
+| Mirai, MITM | 3,5–10 % |
+| `BENIGN` | **0,38 %** |
+| Retos atakų klasės (13 klasių) | vidutiniškai **0,49 %**; šešiose — **0 %** |
+
+Iš to seka dalykas, kurio plane nebuvo: **dublikatų šalinimas pats savaime mažina disbalansą**, nes traukiasi būtent gausiausios klasės. Riba 100 000 tik užbaigia tai, ką pradeda šalinimas.
+
+#### 13. Teorinė riba ne ~95 %, o 99,78 % ⚠️⚠️ — 3 skyrius pataisytas
+
+Tai didžiausias šios dienos pokytis, ir jis **panaikina vieną 3 skyriaus argumentą**.
+
+| | Rugs. 3 d. | Rugs. 6 d. |
+|---|---|---|
+| Ką matavau | dviprasmiškų eilučių dalį **su dublikatais** | Bajeso klaidą **be dublikatų** |
+| Prieštaringi vektoriai | 55 440 | **5 114** |
+| Dviprasmiškos eilutės | 4,98 % | **0,43 %** (10 435) |
+| Riba | ~95 % | **99,78 %** |
+
+**Dvi priežastys, ir abi mano.** Pirma, rugsėjo 3 d. skaičiavau dviprasmiškų eilučių dalį, o ne neišvengiamą klaidą: jei vektorius pažymėtas 9× `A` ir 1× `B`, klasifikatorius suklysta vieną kartą iš dešimties, o ne dešimt. Antra — ir tai svarbiau — **matavau prieš dublikatų šalinimą**. Dublikatai dviprasmiškumą pučia: vektorius, pasikartojantis 1000× kaip `A` ir 1000× kaip `B`, prieš šalinimą duoda 2000 „dviprasmiškų eilučių", o po jo — dvi eilutes ir vieną neišvengiamą klaidą.
+
+⚠️ **Pasekmė: teiginys „literatūros 99,5–99,6 % yra aukščiau už teorinę ribą" nebegalioja.** 99,5–99,6 yra **žemiau** 99,78. Argumentas buvo stipriausias 6 skyriaus koziris, ir jo nebėra tokio, koks buvo.
+
+**Kas lieka vietoj jo — ir tai švaresnis argumentas.** Palyginamumo problema kyla ne iš ribos, o iš dublikatų: mūsų imtis jų neturi, o ar cituojamuose darbuose jie buvo šalinami, iš straipsnių nematyti. Tai teiginys apie **eksperimento sąlygas**, o ne apie kitų autorių skaičių teisingumą — ir jam nereikia prielaidos, kurios negaliu patikrinti. 3.6 poskyris perrašytas būtent taip.
+
+> **Pamoka.** Rugsėjo 3 d. užsirašiau, kad riba „išmatuota 1,9 mln. imtyje ir bus tikslinama". Išlyga buvo teisinga, bet jos neužteko: skaičius jau buvo panaudotas kaip argumento pagrindas. **Skaičių su išlyga „bus patikslintas" galima rašyti į protokolą, bet ne daryti jo argumento ašimi.**
+
+#### 14. Modulis lūžo ties atmintimi — ir tai buvo tikra klaida, ne VM ypatybė ⭐
+
+Antrame prėjime `imtis()` sudėdavo visas surinktas eilutes į vieną `DataFrame` ir tik tada kviesdavo `drop_duplicates`. Atrinktos 2,43 mln. maišų duomenyse pasirodo **3,99 mln. kartų**, todėl sudėtas rinkinys buvo 65 % didesnis už galutinį, o `concat` atmintį dar padvigubino. Procesas buvo nužudytas (OOM).
+
+**Pataisyta modulyje, ne apėjime:** dublikatai dabar šalinami gabalas po gabalo, `dalys` sąraše visada tik unikalios eilutės. Praleista 1 164 221 kartotinių pasirodymų.
+
+Tai klaida, kurios sintetinis testas **negalėjo** pagauti — 537 eilutės telpa bet kur. Ją parodė tik tikras rinkinys. **Iš to seka taisyklė: testas su mažais duomenimis tikrina teisingumą, bet ne mastelį; abu reikia tikrinti atskirai.**
+
+Po pataisymo sintetinis testas paleistas iš naujo — **13 iš 13 tebepraeina.**
+
+#### 15. Maišų susidūrimų nebuvo nė vieno
+
+Surinkta **2 425 937** eilutės — lygiai tiek, kiek buvo atrinkta maišų. Modulio dokumentacijoje įvardyta ~5·10⁻⁸ susidūrimo tikimybė liko teorine. Patikra automatinė ir kartojasi kiekvieną paleidimą.
+
+#### 16. Imtis atitiko prognozes tiksliau, nei tikėjausi
+
+| Rodiklis | Planuota | Gauta |
+|---|---|---|
+| Eilučių | ~2 429 978 | **2 425 937** |
+| Dalis rinkinio | 5,40 % | **5,39 %** |
+| Disbalansas | 84:1 | **84:1** |
+| `BENIGN` (autokoderio mokymo aibė) | ~100 000 | **100 000** |
+
+**13 klasių iš 34 ribos nepasiekia** — joms imtis yra visa klasė po dublikatų šalinimo, ir daugiau tų duomenų neegzistuoja. Mažiausia — `UPLOADING_ATTACK`, 1 196 eilutės, po 70/15/15 liks **179 testavimo pavyzdžiai**.
+
+⭐ **Vienas dalykas nematytų klasių testui:** `DDOS-SLOWLORIS` turi **0 % dublikatų** ir visas 22 399 eilutes. Sunkiausias scenarijus bent jau nėra apsunkintas dar ir duomenų trūkumu.
+
 ### Ką darysiu rytoj (rugs. 7, pirmadienis)
 
-**T0 atliktas, todėl diena prasideda nuo paleidimo — atlaisvinta ~2 val.**
+**T0 ir T1 atlikti, todėl diena prasideda nuo T2 — atlaisvinta ~4 val.**
 
-**T1 → T2 → T3.** Pirmas veiksmas — `ikelimas.py imtis` paleidimas ant tikrų 63 failų, fone; tuo metu rašomas požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
+⚠️ **Pirmas veiksmas — `cd ataskaita ; .\build.ps1`.** 3 skyrius pataisytas, bet Windows pusėje nekompiliuotas: Linux mašinoje nėra lietuviško babel ir `siunitx`. Struktūrinės patikros (kirilica, `\num` argumentai, skliaustai, `\section`) praeitos.
+
+**T2 → T3 → T4.** Pirmas veiksmas — `ikelimas.py imtis` paleidimas ant tikrų 63 failų, fone; tuo metu rašomas požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
 
 ⚠️ **Atskiras 15:30–16:15 langas:** sutikrinti gautus skaičius su 3 skyriumi. Jei faktinis dublikatų procentas ar patikslinta teorinė riba skiriasi nuo užrašytų, `03_parinkimas.tex` taisomas **tą pačią dieną**.

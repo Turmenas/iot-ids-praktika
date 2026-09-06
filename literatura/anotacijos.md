@@ -298,7 +298,7 @@ Pirminis SMOTE šaltinis: mažumos klasė papildoma **sintetiniais** pavyzdžiai
 
 **Kam reikalingas šiame darbe.** 3.6 poskyryje SMOTE numatytas kaip **abliacija vienam modeliui**, ne kaip pagrindinis balansavimo būdas — pagrindinis yra klasių svoriai, nes jie duomenų nedubliuoja. Cituojamas pirminis, o ne naujesnis šaltinis: metodo aprašui tinka originalas, o `imani2025imbalance` lieka empiriniam SMOTE ir XGBoost derinio rezultatui.
 
-⚠️ **Svarbu mūsų duomenims:** SMOTE interpoliuoja tarp kaimynų, o mūsų rinkinyje **4,98 % eilučių turi prieštaringas etiketes**. Sintetiniai pavyzdžiai tokiose srityse tik sustiprintų dviprasmiškumą — dar viena priežastis laikyti SMOTE abliacija, o ne numatytuoju sprendimu.
+⚠️ **Svarbu mūsų duomenims:** SMOTE interpoliuoja tarp kaimynų, o dviprasmiškose srityse sintetiniai pavyzdžiai dviprasmiškumą sustiprintų. *(Patikslinta 2026-09-06: pašalinus dublikatus tokių eilučių darbinėje imtyje yra **0,43 %**, ne 4,98 %, todėl šis argumentas yra silpnas. Lieka du stiprūs: skaičiavimo biudžetas ir `imani2025imbalance` rezultatas, kad geriausias derinys yra suderintas XGBoost su SMOTE — t. y. vertas patikrinti, bet ne numatytasis.)*
 
 ### `dietterich1998tests` — Dietterich (1998), *Neural Computation* 10(7):1895–1923
 

@@ -81,7 +81,7 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 | ~~**T3**~~ | ~~Pagrįsti kriterijų svorius~~ | ✅ **Atlikta.** `tab:kriterijai`: **4 kriterijai** (ne 5) — 30/30/25/15 %, suma 100. Kiekvienas su `tab:reikalavimai` eilute ir balų skale. **Realizavimo rizika pašalinta** — visiems likusiems duotų tą patį balą | — |
 | ~~**T4**~~ | ~~Sudaryti sprendimų matricą~~ | ✅ **Atlikta.** `tab:matrica` **generuojama** iš CSV per `src/eksperimentai/matrica.py`. 8 metodai, du blokai. ⚠️ **Rikiuotė ketverto nepatvirtina** — žr. žemiau | — |
 | ~~**T5**~~ | ~~Jautrumo analizė~~ | ✅ **Atlikta.** ±10 p. p.: **rikiuotė išliko ta pati 8 atvejais iš 8**. Kadangi zondas pasirodė per siauras, papildomai apskaičiuotos **tikrosios ribos**: dvi poros sprendžiamos **dominavimo** (nepriklauso nuo jokių svorių) | — |
-| ~~**T6**~~ | ~~**Užrakinti eksperimento protokolą**~~ | ✅ **Atlikta.** 3.6 poskyris. Trys sąlyginiai punktai išmatuoti ir tapo faktais: **dublikatai 33,1 %**, **teorinė riba ~95 %**, nematytų klasių trys scenarijai įvardyti vardais | — |
+| ~~**T6**~~ | ~~**Užrakinti eksperimento protokolą**~~ | ✅ **Atlikta.** 3.6 poskyris. ⚠️ **Skaičiai patikslinti 2026-09-06** išmatavus visą rinkinį: dublikatai **53,3 %** (buvo 33,1 % iš 1,9 mln. imties), teorinė riba **99,78 %** (buvo ~95 %). Protokolo punktai nepasikeitė | — |
 | ~~**T7**~~ | ~~Parašyti `03_parinkimas.tex`~~ | ✅ **Atlikta.** 7 poskyriai, 4 lentelės, 1 092 žodžiai prozos. ⚠️ **~5 psl. vietoj 4,5** | — |
 | ~~**T8**~~ | ~~Papildyti šaltinius~~ | ✅ **Atlikta.** 18 → **20** įrašų: `chawla2002smote`, `dietterich1998tests`. DOI patikrinti per Crossref; abu **panaudoti 3.6 poskyryje**; anotacijos — 20/20 padengta | — |
 
@@ -120,11 +120,13 @@ Vien iš balų rikiuotės ketvertas **neišeitų**, ir tai reikia parašyti atvi
 
 Trys punktai plane buvo sąlyginiai („jei > 1 %…“). Išmatavus jie tapo faktais, ir vienas iš jų keičia ne tik protokolą, bet ir rezultatų vertinimo atskaitos tašką.
 
-| Punktas | Plane buvo | Išmatuota |
-|---|---|---|
-| Dublikatai | „jei > 1 %, šalinti“ | **33,1 %** — šalinimas privalomas |
-| Prieštaringos etiketės | nenumatyta | **55 440 vektorių**; 4,98 % eilučių neklasifikuojamos iš principo |
-| Teorinė tikslumo riba | nenumatyta | **~95 %**, ne 100 % |
+> ⚠️ **Patikslinta 2026-09-06.** Visi šios lentelės skaičiai buvo išmatuoti 1,9 mln. eilučių imtyje. Išmatavus visą rinkinį (`imties_ataskaita.md`) jie pasikeitė; galutinės reikšmės — dešiniame stulpelyje.
+
+| Punktas | Plane buvo | Išmatuota 09-03 (1,9 mln.) | **Išmatuota 09-06 (visas rinkinys)** |
+|---|---|---|---|
+| Dublikatai | „jei > 1 %, šalinti“ | 33,1 % | **53,3 %** — šalinimas privalomas |
+| Prieštaringos etiketės | nenumatyta | 55 440 vektorių; 4,98 % eilučių | **5 114 vektorių; 0,43 % eilučių** (imtyje, po dublikatų šalinimo) |
+| Teorinė tikslumo riba | nenumatyta | ~95 % | **99,78 %** |
 | Nematytos klasės | „2–3 klasės“ | `DDOS-SLOWLORIS`, `RECON-PORTSCAN`, `DICTIONARYBRUTEFORCE` |
 
 ⭐ **Svarbiausia pasekmė.** Literatūroje skelbiami 99,5–99,6 % tikslumai yra **aukščiau už čia išmatuotą teorinę ribą**. Vadinasi, juose greičiausiai lieka dublikatų nutekėjimas. Tai stipriausias turimas argumentas 6 skyriui — ir jis gautas ne iš literatūros, o iš savo duomenų.

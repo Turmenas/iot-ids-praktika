@@ -90,7 +90,7 @@ Kartu kode nėra: **dublikatų šalinimo**, `dropna(subset=["Label"])`, `replace
 | Nr. | Tikslas | Išmatuojamas rezultatas | Prior. |
 |---|---|---|---|
 | ~~**T0**~~ | ~~Uždaryti tris neatitikimus (1 sk.)~~ | ✅ **Atlikta 2026-09-06 vakare.** Abu moduliai perrašyti ir **išbandyti** sintetiniais duomenimis su nepriklausomu orakulu — 13 patikrų iš 13. Žr. 11 sk. | — |
-| **T1** | ⭐ **Įkėlimo grandinė:** valymas → dublikatai → imtis | `duomenys/processed/imtis.parquet` + `rezultatai/darbiniai/imties_ataskaita.md` su **realiais** skaičiais | **P0** |
+| ~~**T1**~~ | ~~Įkėlimo grandinė~~ | ✅ **Atlikta 2026-09-06.** 2 425 937 eilutės, dublikatai **53,3 %**, teorinė riba **99,78 %**. Žr. 12 sk. | — |
 | **T2** | Požymių paruošimas | `pozymiai.py`: 39 → **36** požymiai, šalinama sąrašu; normalizavimas `fit` tik ant `train` | **P0** |
 | **T3** | Skaidymas 70/15/15 + nutekėjimo patikros | `skaidymas.npz`; patikra, kad `train ∩ test = ∅` | **P0** |
 | **T4** | Balansavimas | `balansavimas.py`: `class_weight`/`scale_pos_weight` + SMOTE abliacijai | P1 |
@@ -219,12 +219,10 @@ Tai ta pati palyginimo asimetrija, numatyta rugsėjo 2 d. (2.8 poskyris) ir įgy
 
 | Laikas | Darbas | Rezultatas | Prior. |
 |---|---|---|---|
-| 09:00–09:15 | Aplinkos patikra: `python -m src.duomenys.ikelimas patikra` | Veidrodis nepakitęs | **P0** |
-| 09:15–11:00 | **T1:** paleidimas ant 63 failų *(fone; tuo metu — T2 kodas)*. Du prėjimai, ~20–40 min. | `imtis.parquet` + `imties_ataskaita.md` | **P0** |
+| 09:00–09:15 | `cd ataskaita ; .\build.ps1` — 3 skyrius pataisytas, bet Windows pusėje nekompiliuotas | 0 klaidų | **P0** |
 | 13:00–13:40 | *Pietūs* | | |
 | 13:40–14:40 | **T2:** `pozymiai.py` — 36 požymiai, normalizavimas | Modulis + patikra | **P0** |
 | 14:40–15:30 | **T3:** `skaidymas.npz` + nutekėjimo patikros | Indeksai išsaugoti; `train ∩ test = ∅` | **P0** |
-| 15:30–16:15 | ⭐ **Realių skaičių sutikrinimas su 3 skyriumi** — jei dublikatų % ar teorinė riba skiriasi, taisomas `03_parinkimas.tex` | 3 sk. atitinka duomenis | **P0** |
 | 16:15–17:00 | **T4:** `balansavimas.py` | Modulis | P1 |
 | 17:00–17:30 | `build.ps1` · commit · žurnalas | Kompiliuojasi | **P0** |
 
@@ -359,3 +357,33 @@ Sintetinis 34 klasių rinkinys su **iš anksto žinomu** atsakymu: suplanuoti du
 **13 patikrų iš 13:** valymo skaitliukai · imties dydis · klasių skaičius · dublikatų nebuvimas · riba neviršyta nė vienoje klasėje · prieštaringi vektoriai · neišvengiamos klaidos · teorinė riba · imtis yra rinkinio poaibis · prozos kableliai ataskaitoje nesugadinti · atkartojamumas prie dviejų gabalo dydžių · `i_latex.py` prie 3 ir 1 seed'ų · aiški klaida padavus seną schemą.
 
 ⚠️ **Ko patikra NEPADENGIA:** tikrųjų 8,7 GB, `to_parquet` su tikru dydžiu ir atminties elgsenos prie 45 mln. eilučių. Tai paaiškės rugsėjo 7 d. ryte — todėl paleidimas suplanuotas pirmas.
+
+---
+
+## 12. T1 atliktas — 2026-09-06 ✅
+
+Paleista ant tikrų 63 failų (8,7 GB). Pilna ataskaita — `rezultatai/darbiniai/imties_ataskaita.md`.
+
+| Rodiklis | Planuota | **Gauta** |
+|---|---|---|
+| Eilučių imtyje | ~2 429 978 | **2 425 937** |
+| Dalis rinkinio | 5,40 % | **5,39 %** |
+| Disbalansas | 84:1 | **84:1** |
+| `BENIGN` (autokoderiui) | ~100 000 | **100 000** |
+| Dublikatai | 33,1 % *(iš 1,9 mln.)* | **53,3 %** *(visas rinkinys)* |
+| Teorinė riba | ~95 % | **99,78 %** |
+| Klasių žemiau ribos | nežinota | **13 iš 34** |
+
+### Trys dalykai, kuriuos parodė tik tikri duomenys
+
+**1. Teorinė riba pasikeitė iš esmės — 3 skyrius pataisytas tą pačią dieną.** Rugsėjo 3 d. skaičius matavo dviprasmiškų eilučių dalį **su dublikatais**; dabar matuojama Bajeso klaida **be jų**. Pasekmė: teiginys „literatūros 99,5–99,6 % yra aukščiau už ribą" **nebegalioja** ir pakeistas argumentu apie dublikatus, kuriam nereikia neįrodomos prielaidos apie kitų autorių metodiką.
+
+**2. Modulis lūžo ties atmintimi (OOM).** Antras prėjimas sudėdavo 3,99 mln. eilučių ir tik tada šalindavo dublikatus. Pataisyta modulyje: šalinama gabalas po gabalo. **Sintetinis testas šios klaidos pagauti negalėjo** — 537 eilutės telpa bet kur. Testas su mažais duomenimis tikrina teisingumą, bet ne mastelį.
+
+**3. Dublikatai pasiskirstę struktūriškai** — potvynio klasėse 41–72 %, `BENIGN` 0,38 %, šešiose retose klasėse 0 %. Vadinasi, **šalinimas pats savaime mažina disbalansą**, o riba 100 000 tik užbaigia tai, ką jis pradeda. Plane to nebuvo.
+
+### Prieš T1 rasta ir uždaryta
+
+⚠️ **`sprendimu_matrica.csv` nebuvo Git'e** — `.gitignore` `*.csv` šabloną turėjo vienintelę išimtį. Failas, kurį `STRUKTURA.md` vadina „vieninteliu balų šaltiniu", egzistavo tik vienoje mašinoje. Pridėta `!rezultatai/darbiniai/*.csv`.
+
+⚠️ **Nekompiliuota Windows pusėje.** `03_parinkimas.tex` pataisytas, struktūrinės patikros praeitos, bet `build.ps1` nepaleistas — Linux pusėje nėra lietuviško babel ir `siunitx`. **Pirmas rugsėjo 7 d. veiksmas.**
