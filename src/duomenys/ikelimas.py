@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
 """
-CICIoT2023 duomenu ikelimas: patikra, stratifikuota imtis, Parquet.
+CICIoT2023 ikelimas: patikra, valymas, dublikatu salinimas, stratifikuota imtis.
 
-Kodel reikia imties: pilnas rinkinys yra 45,0 mln. eiluciu / 8,7 GB (63 failai).
-Su pandas i RAM netilps, o 2,5 savaites projektui to ir nereikia.
+IGYVENDINA UZRAKINTA PROTOKOLA (claude/uzduotis_03_planas.md, 5 sk.):
+  5.2  valymo tvarka: nutrukusios eilutes -> registras -> begalybes
+  5.4  dublikatai salinami PRIES imti ir PRIES skaidyma, pagal VISA eilute
+  5.1  riba 100 000 eiluciu klasei; retos klases imamos visos
+       fiksuotas SEED; imtis sudaroma VIENA karta ir issaugoma
 
 Paleidimas (is projekto saknies, aktyvavus iot-ids aplinka):
 
@@ -10,15 +14,50 @@ Paleidimas (is projekto saknies, aktyvavus iot-ids aplinka):
     python -m src.duomenys.ikelimas imtis       # sukurti imti -> Parquet
     python -m src.duomenys.ikelimas             # abu is eiles
 
-Rezultatas: duomenys/processed/ciciot2023_imtis.parquet
+Rezultatai:
+    duomenys/processed/imtis.parquet
+    rezultatai/darbiniai/imties_ataskaita.md        <- skaiciai i 4 ir 5 skyrius
+    rezultatai/darbiniai/imties_pasiskirstymas.csv
+
+
+KODEL DU PREJIMAI PER DUOMENIS
+------------------------------
+Protokolas reikalauja salinti dublikatus PRIES imti: jie pasiskirste
+netolygiai (potvynio klasese 32-50 %, retose 0 %), todel salinimas keicia
+klasiu proporcijas, ir imtis, sudaryta pries salinima, jau butu iskreipta.
+
+Bet `df.duplicated()` ant viso rinkinio neimanomas: 45,0 mln. eiluciu x 39
+float64 pozymiu ~ 14 GB vien duomenu. Sprendimas - lyginti ne eilutes, o ju
+maisas (uint64): 45 mln. x 8 B = 360 MB.
+
+  1 prejimas: skaiciuojamos eiluciu maisos, kaupiamos pagal klase.
+              np.unique duoda TIKSLU unikaliu eiluciu skaiciu (= dublikatu
+              statistika visam rinkiniui) ir leidzia atsitiktinai atrinkti
+              iki 100 000 UNIKALIU maisu klasei.
+  2 prejimas: renkamos tik tos eilutes, kuriu maisa pateko i atranka.
+              Kartotiniai to paties maisos pasirodymai pasalinami galutiniu
+              drop_duplicates (imtis tik ~2,4 mln. eiluciu - pigu).
+
+Toks budas duoda TOLYGIAI ATSITIKTINE imti is unikaliu eiluciu, o ne
+pirmasias failo eilutes, ir neviriija ~0,5 GB atminties.
+
+Maisos susidurimo tikimybe prie 45 mln. eiluciu ir 64 bitu yra ~5e-8.
+Metodas yra apytikslis, ne tikslus; tai IVARDIJAMA ataskaitoje, o galutine
+patikra (ar surinktu eiluciu skaicius sutampa su atrinktu maisu skaiciumi)
+tokius atvejus parodo.
 """
 
 from __future__ import annotations
 
+import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+
+from src.duomenys import etiketes
 
 # ─── Nustatymai ──────────────────────────────────────────────────────
 
@@ -28,12 +67,15 @@ PROCESSED = SAKNIS / "duomenys" / "processed"
 DARBINIAI = SAKNIS / "rezultatai" / "darbiniai"
 
 SABLONAS = "Merged*.csv"      # shadman1028 veidrodzio failu pavadinimai
-ETIKETE = "Label"            # 2026-09-02: faile DIDZIOJI L, ne "label"
+ETIKETE = "Label"             # 2026-09-02: faile DIDZIOJI L, ne "label"
 
-FRAKCIJA = 0.05               # 5 % nuo kiekvienos klases
-MIN_EILUCIU = 5_000           # bet ne maziau nei tiek retoms klasems
+RIBA_KLASEI = 100_000         # protokolo 5.1: riba, NE frakcija
 GABALAS = 500_000             # kiek eiluciu skaityti vienu metu
 SEED = 42
+
+IMTIS = PROCESSED / "imtis.parquet"
+ATASKAITA = DARBINIAI / "imties_ataskaita.md"
+PASISKIRSTYMAS = DARBINIAI / "imties_pasiskirstymas.csv"
 
 
 def _failai() -> list[Path]:
@@ -46,6 +88,70 @@ def _failai() -> list[Path]:
             "cic-iot2023-official-iot-flow-feature-dataset --unzip -p duomenys/raw/"
         )
     return failai
+
+
+# ─── Valymas — protokolo 5.2, tvarka fiksuota ────────────────────────
+
+class Skaitliukai:
+    """Valymo statistika. Kaupiama abiejuose prejimuose, lyginama gale."""
+
+    def __init__(self) -> None:
+        self.perskaityta = 0
+        self.nutrukusios = 0      # tuscias Label: 9 failai baigiasi nepilna eilute
+        self.begalybes = 0        # Rate = Infinity: langas su 1-3 paketais
+        self.po_valymo = 0
+
+    def kaip_zodyna(self) -> dict[str, int]:
+        return {
+            "perskaityta": self.perskaityta,
+            "nutrukusios": self.nutrukusios,
+            "begalybes": self.begalybes,
+            "po_valymo": self.po_valymo,
+        }
+
+
+def valyti(df: pd.DataFrame, sk: Skaitliukai | None = None) -> pd.DataFrame:
+    """
+    Protokolo 5.2 valymas. Tvarka SVARBI ir nekeiciama:
+
+      1. dropna pagal Label  - nutrukusios eilutes virstu 35-a "klase"
+      2. registro normalizavimas - BENIGN, ne BENIGNTRAFFIC
+      3. pozymiai -> float64 - BUTINA maisu determinizmui (zr. zemiau)
+      4. inf -> nan -> dropna - sklearn kitaip luzta mokymo VIDURYJE
+
+    3 zingsnis nera kosmetinis. pandas tipa nustato KIEKVIENAM gabalui
+    atskirai, todel tas pats stulpelis viename gabale gali buti int64,
+    kitame float64 - ir vienodos reiksmes duotu SKIRTINGAS maisas.
+    Be sio kastinimo du prejimai nesutaptu.
+    """
+    if sk is not None:
+        sk.perskaityta += len(df)
+
+    n = len(df)
+    df = df.dropna(subset=[ETIKETE])
+    if sk is not None:
+        sk.nutrukusios += n - len(df)
+
+    df = df.copy()
+    # .astype(str) -> object dtype: vienodas elgesys pandas 2.x ir 3.x,
+    # ir maisos skaiciuojamos nuo paprastu Python eiluciu, ne StringDtype.
+    df[ETIKETE] = etiketes.normalizuoti_stulpeli(df[ETIKETE].astype(str))
+
+    pozymiai = [c for c in df.columns if c != ETIKETE]
+    df[pozymiai] = df[pozymiai].apply(pd.to_numeric, errors="coerce").astype("float64")
+
+    n = len(df)
+    df = df.replace([np.inf, -np.inf], np.nan).dropna()
+    if sk is not None:
+        sk.begalybes += n - len(df)
+        sk.po_valymo += len(df)
+
+    return df
+
+
+def _maisos(df: pd.DataFrame) -> np.ndarray:
+    """Vienos eilutes maisa (uint64) is VISU stulpeliu, iskaitant Label."""
+    return pd.util.hash_pandas_object(df, index=False).to_numpy()
 
 
 # ─── 1. Patikra ──────────────────────────────────────────────────────
@@ -63,7 +169,7 @@ def patikra() -> None:
     print(f"Rasta failu: {len(failai)}")
     print(f"Tikrinamas: {failai[0].name}\n")
 
-    df = pd.read_csv(failai[0], nrows=200_000)
+    df = pd.read_csv(failai[0], nrows=200_000, low_memory=False)
 
     print(f"Stulpeliu: {df.shape[1]}  (tiketasi 40 = 39 pozymiai + Label)")
     if df.shape[1] < 40:
@@ -79,7 +185,6 @@ def patikra() -> None:
     print("\nReciausios:")
     print(kiekiai.tail(5).to_string())
 
-    # Disbalanso santykis: tikrame CICIoT2023 jis turi buti didziulis
     santykis = kiekiai.max() / kiekiai.min()
     print(f"\nDisbalanso santykis (max/min): {santykis:,.0f}")
     if santykis < 50:
@@ -87,7 +192,6 @@ def patikra() -> None:
     else:
         print("  [OK] Stiprus disbalansas - toks ir turi buti")
 
-    # Skaitiniu pozymiu skale
     skaitiniai = df.select_dtypes("number")
     if not skaitiniai.empty:
         maks = skaitiniai.max().max()
@@ -97,85 +201,273 @@ def patikra() -> None:
         else:
             print("  [OK] Pozymiai neapdoroti")
 
+    etiketes.patikrinti(df[ETIKETE].unique())
+    print("  [OK] Visos etiketes yra zodyne")
 
-# ─── 2. Klasiu skaiciavimas (pirmas prejimas) ────────────────────────
 
-def _klasiu_kiekiai(failai: list[Path]) -> pd.Series:
-    """
-    Suskaiciuoja klasiu pasiskirstyma visame rinkinyje.
+# ─── 2. Pirmas prejimas: maisos ──────────────────────────────────────
 
-    Skaitomas TIK `Label` stulpelis (usecols) - todel 13 GB perziura
-    uztrunka minutes, o ne desimtis minuciu, ir netelpa i RAM problemos nera.
-    """
-    print("1/2  Skaiciuojamos klases (skaitomas tik 'Label' stulpelis)...")
-    dalys = []
+def _pirmas_prejimas(failai: list[Path]) -> tuple[dict[str, list], Skaitliukai]:
+    """Grazina {klase: [maisu masyvai]} ir valymo skaitliukus."""
+    print(f"1/2  Skaiciuojamos eiluciu maisos ({len(failai)} failai)...")
+    sk = Skaitliukai()
+    maisos: dict[str, list] = {}
+
     for i, f in enumerate(failai, 1):
-        s = pd.read_csv(f, usecols=[ETIKETE])[ETIKETE]
-        dalys.append(s.value_counts())
+        for gabalas in pd.read_csv(f, chunksize=GABALAS, low_memory=False):
+            gabalas = valyti(gabalas, sk)
+            if gabalas.empty:
+                continue
+            h = _maisos(gabalas)
+            for klase, idx in gabalas.groupby(ETIKETE, sort=False).indices.items():
+                maisos.setdefault(klase, []).append(h[idx])
         print(f"     [{i}/{len(failai)}] {f.name}")
-    return pd.concat(dalys).groupby(level=0).sum().sort_values(ascending=False)
+
+    return maisos, sk
 
 
-# ─── 3. Imtis (antras prejimas) ──────────────────────────────────────
+def _atranka(maisos: dict[str, list]) -> tuple[np.ndarray, pd.DataFrame]:
+    """
+    Is kiekvienos klases unikaliu maisu atsitiktinai atrenka iki RIBA_KLASEI.
+
+    Grazina: (surusiuotas atrinktu maisu masyvas, suvestines lentele).
+    """
+    rng = np.random.default_rng(SEED)
+    pasirinktos: list[np.ndarray] = []
+    eilutes = []
+
+    for klase in sorted(maisos):
+        visos = np.concatenate(maisos[klase])
+        unikalios = np.unique(visos)
+        n_visos, n_unik = len(visos), len(unikalios)
+
+        if n_unik > RIBA_KLASEI:
+            imti = rng.choice(unikalios, size=RIBA_KLASEI, replace=False)
+            riba_isijunge = True
+        else:
+            imti = unikalios
+            riba_isijunge = False
+
+        pasirinktos.append(imti)
+        eilutes.append({
+            "klase": klase,
+            "pilnas_rinkinys": n_visos,
+            "unikaliu": n_unik,
+            "dublikatu_proc": round((1 - n_unik / n_visos) * 100, 2),
+            "imtyje": len(imti),
+            "riba_isijunge": riba_isijunge,
+        })
+
+    suvestine = pd.DataFrame(eilutes).sort_values(
+        "pilnas_rinkinys", ascending=False).reset_index(drop=True)
+    return np.sort(np.concatenate(pasirinktos)), suvestine
+
+
+# ─── 3. Antras prejimas: eiluciu rinkimas ────────────────────────────
+
+def _antras_prejimas(failai: list[Path], pasirinktos: np.ndarray) -> pd.DataFrame:
+    print(f"\n2/2  Renkamos atrinktos eilutes ({len(pasirinktos):,} maisu)...")
+    dalys = []
+
+    for i, f in enumerate(failai, 1):
+        for gabalas in pd.read_csv(f, chunksize=GABALAS, low_memory=False):
+            gabalas = valyti(gabalas)
+            if gabalas.empty:
+                continue
+            kauke = np.isin(_maisos(gabalas), pasirinktos)
+            if kauke.any():
+                dalys.append(gabalas[kauke])
+        print(f"     [{i}/{len(failai)}] {f.name}")
+
+    df = pd.concat(dalys, ignore_index=True)
+    pries = len(df)
+    df = df.drop_duplicates(ignore_index=True)
+    print(f"\n     Surinkta {pries:,} -> po drop_duplicates {len(df):,}")
+    return df
+
+
+# ─── 4. Teorine tikslumo riba ────────────────────────────────────────
+
+def teorine_riba(df: pd.DataFrame) -> dict[str, float]:
+    """
+    Bajeso riba, kylanti is priestaringu etikeciu.
+
+    Tas pats POZYMIU vektorius kartais pazymetas skirtingomis etiketemis.
+    Geriausias imanomas klasifikatorius tokiai grupei parenka dazniausia
+    etikete, todel neisvengiama klaida yra (grupes dydis - dazniausios
+    etiketes daznis), susumuota per visas grupes.
+
+    Pastaba: cia lyginami TIK pozymiai, be Label - kitaip priestaringos
+    eilutes atrodytu kaip skirtingos ir riba butu 100 %.
+    """
+    pozymiai = [c for c in df.columns if c != ETIKETE]
+    h = pd.util.hash_pandas_object(df[pozymiai], index=False).to_numpy()
+
+    poros = (pd.DataFrame({"h": h, "lab": df[ETIKETE].to_numpy()})
+             .groupby(["h", "lab"], sort=False).size().rename("n").reset_index())
+    grupes = poros.groupby("h", sort=False)["n"].agg(["sum", "max", "count"])
+
+    klaidos = int((grupes["sum"] - grupes["max"]).sum())
+    dviprasmiskos = int(grupes.loc[grupes["count"] > 1, "sum"].sum())
+
+    return {
+        "eiluciu": len(df),
+        "unikaliu_vektoriu": int(len(grupes)),
+        "priestaringu_vektoriu": int((grupes["count"] > 1).sum()),
+        "dviprasmisku_eiluciu": dviprasmiskos,
+        "dviprasmisku_proc": round(dviprasmiskos / len(df) * 100, 2),
+        "neisvengiamu_klaidu": klaidos,
+        "teorine_riba_proc": round((1 - klaidos / len(df)) * 100, 2),
+    }
+
+
+# ─── 5. Ataskaita ────────────────────────────────────────────────────
+
+def _n(x: float, sk_po: int = 0) -> str:
+    """Skaicius su tarpais tarp tukstanciu. Kablelis TIK skaiciuje.
+
+    Anksciau ataskaita buvo formatuojama globaliu .replace(",", " ") per
+    visa teksta - jis butu isdarkes ir prozos kablelius.
+    """
+    return f"{x:,.{sk_po}f}".replace(",", "\u202f").replace(".", ",").replace("\u202f", " ")
+
+
+def _ataskaita(sk: Skaitliukai, suvestine: pd.DataFrame, df: pd.DataFrame,
+               riba: dict[str, float], laukta: int) -> str:
+    gerybine = int((df[ETIKETE] == etiketes.GERYBINE_NORM).sum())
+    kiekiai = df[ETIKETE].value_counts()
+    zemiau = int((~suvestine["riba_isijunge"]).sum())
+    po_valymo = int(suvestine["pilnas_rinkinys"].sum())
+    unikaliu = int(suvestine["unikaliu"].sum())
+    dubl_proc = (1 - unikaliu / po_valymo) * 100
+
+    e = [
+        "# Imties ataskaita",
+        "",
+        "**GENERUOJAMA** - `python -m src.duomenys.ikelimas imtis`. Ranka neliesti.",
+        f"**Sudaryta:** {datetime.now():%Y-%m-%d %H:%M}  |  **SEED:** {SEED}  "
+        f"|  **Riba klasei:** {_n(RIBA_KLASEI)}",
+        "",
+        "## 1. Valymas (protokolo 5.2)",
+        "",
+        "| Zingsnis | Eiluciu |",
+        "|---|---:|",
+        f"| Perskaityta is CSV | {_n(sk.perskaityta)} |",
+        f"| Pasalinta nutrukusiu (tuscias `Label`) | {_n(sk.nutrukusios)} |",
+        f"| Pasalinta su `inf` / trukstamomis reiksmemis | {_n(sk.begalybes)} |",
+        f"| **Po valymo** | **{_n(sk.po_valymo)}** |",
+        "",
+        "## 2. Dublikatai (protokolo 5.4, 9 punktas)",
+        "",
+        "| Rodiklis | Reiksme |",
+        "|---|---:|",
+        f"| Eiluciu po valymo | {_n(po_valymo)} |",
+        f"| Unikaliu eiluciu | {_n(unikaliu)} |",
+        f"| **Dublikatu dalis** | **{_n(dubl_proc, 2)} %** |",
+        f"| Klasiu, kuriose riba {_n(RIBA_KLASEI)} neisijunge | "
+        f"{zemiau} is {len(suvestine)} |",
+        "",
+        "## 3. Imtis",
+        "",
+        "| Rodiklis | Reiksme |",
+        "|---|---:|",
+        f"| Eiluciu imtyje | {_n(len(df))} |",
+        f"| Dalis viso rinkinio (po valymo) | "
+        f"{_n(len(df) / max(sk.po_valymo, 1) * 100, 2)} % |",
+        f"| Klasiu | {len(kiekiai)} |",
+        f"| Disbalansas (max/min) | {_n(kiekiai.max() / kiekiai.min())}:1 |",
+        f"| `{etiketes.GERYBINE_NORM}` eiluciu (autokoderio mokymo aibe) | "
+        f"{_n(gerybine)} |",
+        f"| Stulpeliu | {df.shape[1]} |",
+        "",
+        "## 4. Teorine tikslumo riba (protokolo 5.4 tikslinimas)",
+        "",
+        "| Rodiklis | Reiksme |",
+        "|---|---:|",
+        f"| Unikaliu pozymiu vektoriu | {_n(riba['unikaliu_vektoriu'])} |",
+        f"| Is ju priestaringu (>1 etikete) | {_n(riba['priestaringu_vektoriu'])} |",
+        f"| Dviprasmisku eiluciu | {_n(riba['dviprasmisku_eiluciu'])} "
+        f"({_n(riba['dviprasmisku_proc'], 2)} %) |",
+        f"| Neisvengiamu klaidu | {_n(riba['neisvengiamu_klaidu'])} |",
+        f"| **Teorine tikslumo riba** | **{_n(riba['teorine_riba_proc'], 2)} %** |",
+        "",
+        "> Riba galioja SIAM 39 pozymiu leidimui ir siai imciai. Aukstesnis uz",
+        "> ja rezultatas reiskia nutekejima, o ne sekme.",
+        "",
+        "## 5. Patikros",
+        "",
+    ]
+
+    if len(df) == laukta:
+        e.append(f"- [x] Surinktu eiluciu skaicius sutampa su atrinktu maisu "
+                 f"({_n(laukta)})")
+    else:
+        e.append(f"- [ ] **NESUTAMPA:** atrinkta {_n(laukta)} maisu, surinkta "
+                 f"{_n(len(df))} eiluciu (skirtumas {len(df) - laukta:+d}). "
+                 "Tiketina priezastis - maisos susidurimas; zr. modulio "
+                 "dokumentacija.")
+
+    e += [
+        f"- [x] Dublikatu imtyje nera: `duplicated().sum()` = "
+        f"{int(df.duplicated().sum())}",
+        f"- [x] Trukstamu reiksmiu nera: `isna().sum().sum()` = "
+        f"{int(df.isna().sum().sum())}",
+        "",
+        "Pasiskirstymas pagal klases - `imties_pasiskirstymas.csv`.",
+        "",
+    ]
+
+    return "\n".join(e)
+
+
+# ─── 6. Imtis ────────────────────────────────────────────────────────
 
 def imtis() -> None:
     failai = _failai()
-    kiekiai = _klasiu_kiekiai(failai)
 
-    print(f"\nIs viso eiluciu: {kiekiai.sum():,}")
-    print(f"Klasiu: {len(kiekiai)}\n")
+    maisos, sk = _pirmas_prejimas(failai)
+    etiketes.patikrinti(maisos.keys())
 
-    # Kiek imti is kiekvienos klases: FRAKCIJA, bet retoms - ne maziau MIN_EILUCIU
-    tikslai = {}
-    for etikete, n in kiekiai.items():
-        tikslai[etikete] = min(n, max(int(n * FRAKCIJA), min(MIN_EILUCIU, n)))
+    pasirinktos, suvestine = _atranka(maisos)
+    del maisos
 
-    # Kiekvienai klasei sava frakcija - kad retos klases nedingtu
-    frakcijos = {e: tikslai[e] / kiekiai[e] for e in kiekiai.index}
+    print(f"\n     Po valymo: {sk.po_valymo:,} eiluciu")
+    print(f"     Unikaliu:  {suvestine['unikaliu'].sum():,} "
+          f"(dublikatu {(1 - suvestine['unikaliu'].sum() / suvestine['pilnas_rinkinys'].sum()) * 100:.2f} %)")
+    print(f"     Atrinkta:  {len(pasirinktos):,} maisu")
 
-    print("2/2  Renkama imtis...")
-    dalys = []
-    for i, f in enumerate(failai, 1):
-        for gabalas in pd.read_csv(f, chunksize=GABALAS):
-            for etikete, grupe in gabalas.groupby(ETIKETE, observed=True):
-                fr = frakcijos.get(etikete, FRAKCIJA)
-                if fr >= 1.0:
-                    dalys.append(grupe)
-                else:
-                    n = max(1, int(len(grupe) * fr))
-                    dalys.append(grupe.sample(n=n, random_state=SEED))
-        print(f"     [{i}/{len(failai)}] {f.name}")
+    df = _antras_prejimas(failai, pasirinktos)
+    riba = teorine_riba(df)
 
-    rezultatas = pd.concat(dalys, ignore_index=True)
-
-    # Issaugojimas
     PROCESSED.mkdir(parents=True, exist_ok=True)
-    kelias = PROCESSED / "ciciot2023_imtis.parquet"
-    rezultatas.to_parquet(kelias, index=False)
-
-    # Ataskaita
-    galutiniai = rezultatas[ETIKETE].value_counts()
     DARBINIAI.mkdir(parents=True, exist_ok=True)
-    suvestine = pd.DataFrame({
-        "pilnas_rinkinys": kiekiai,
-        "imtis": galutiniai,
-    }).fillna(0).astype(int)
-    suvestine["dalis_proc"] = (suvestine["imtis"] / suvestine["pilnas_rinkinys"] * 100).round(2)
-    suvestine.to_csv(DARBINIAI / "imties_pasiskirstymas.csv")
+    df.to_parquet(IMTIS, index=False)
+    suvestine.to_csv(PASISKIRSTYMAS, index=False)
+    ATASKAITA.write_text(
+        _ataskaita(sk, suvestine, df, riba, len(pasirinktos)), encoding="utf-8")
 
-    dydis_mb = kelias.stat().st_size / 1024 / 1024
-    print(f"\nIssaugota: {kelias}")
-    print(f"  Eiluciu:   {len(rezultatas):,}  (is {kiekiai.sum():,})")
-    print(f"  Stulpeliu: {rezultatas.shape[1]}")
-    print(f"  Dydis:     {dydis_mb:.1f} MB")
-    print(f"\nPasiskirstymas: {DARBINIAI / 'imties_pasiskirstymas.csv'}")
+    (PROCESSED / "imtis_metadata.json").write_text(json.dumps({
+        "sudaryta": datetime.now().isoformat(timespec="seconds"),
+        "seed": SEED,
+        "riba_klasei": RIBA_KLASEI,
+        "eiluciu": len(df),
+        "stulpeliu": int(df.shape[1]),
+        "valymas": sk.kaip_zodyna(),
+        "teorine_riba": riba,
+    }, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    # Perspejimas del per retu klasiu
-    retos = galutiniai[galutiniai < 100]
+    print(f"\nIssaugota: {IMTIS.relative_to(SAKNIS)}")
+    print(f"  Eiluciu:   {len(df):,}  (is {sk.po_valymo:,} po valymo)")
+    print(f"  Stulpeliu: {df.shape[1]}")
+    print(f"  Dydis:     {IMTIS.stat().st_size / 1024 / 1024:.1f} MB")
+    print(f"\n  Teorine tikslumo riba: {riba['teorine_riba_proc']} %")
+    print(f"\nAtaskaita: {ATASKAITA.relative_to(SAKNIS)}")
+
+    retos = df[ETIKETE].value_counts()
+    retos = retos[retos < 100]
     if not retos.empty:
         print("\n[!] Sios klases turi < 100 pavyzdziu - ju metrikos bus triuksmas:")
         print(retos.to_string())
-        print("    Sprendimas: didinti MIN_EILUCIU arba jungti klases i kategorijas.")
 
 
 # ─── Paleidimas ──────────────────────────────────────────────────────

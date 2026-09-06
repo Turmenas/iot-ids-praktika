@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-06 — **4 užduoties planas sudarytas**; sutikrinta su realiu aplanko turiniu
+**Atnaujinta:** 2026-09-06 — **4 užduoties planas sudarytas; T0 atliktas** (`ikelimas.py`, `i_latex.py` perrašyti)
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -47,7 +47,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\03_parinkimas.tex` | **3 užd. BAIGTA** — 7 poskyriai, 4 lentelės, ~5 psl. Protokolas 3.6 poskyryje |
 | ⬜ `skyriai\04_sprendimas.tex` | **4 užd.** ← **vykdoma rugs. 7–9 d.** Metodika rašoma iš 3.6 protokolo; planas — `claude\uzduotis_04_planas.md` |
 | ⬜ `skyriai\05..07_*.tex` | 5–6 užd. ir išvados |
-| ✅ `lenteles\rezultatai.tex` | **Generuojama** — ranka neliesti |
+| ⬜ `lenteles\rezultatai.tex` · `lenteles\veikimas.tex` | **Generuojami** per `i_latex.py` — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
 | ⬜ `paveikslai\` · `skaidres\` | Grafikai, skaidrės |
 
@@ -55,7 +55,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 
 | Kelias | Kas tai |
 |---|---|
-| ⚠️ `duomenys\ikelimas.py` | Patikra, stratifikuota imtis. **2026-09-06: NEATITINKA protokolo** — `FRAKCIJA=0.05` vietoj ribos 100 000 klasei; nėra dublikatų šalinimo, `dropna`/`inf`. Perrašomas T1 metu |
+| ✅ `duomenys\ikelimas.py` | ⭐ **Perrašytas 09-06 (T0).** Įgyvendina protokolą: valymo tvarka, **dublikatų šalinimas per eilučių maišas** (du prėjimai), riba **100 000** klasei, teorinės ribos perskaičiavimas. Išveda `imtis.parquet` + `imties_ataskaita.md` |
 | ✅ `duomenys\etiketes.py` | ⭐ 34 etiketės → 8 kategorijos. **2026-09-02: registro normalizavimas + `BENIGN` alias** |
 | ⬜ `duomenys\pozymiai.py` | Požymių inžinerija — **rašoma iš protokolo 5.3 punktų**. Failas sukurtas, 0 baitų |
 | ⬜ `duomenys\balansavimas.py` | `class_weight` / SMOTE — **tik ant `train`**. Failas sukurtas, 0 baitų |
@@ -64,7 +64,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ⬜ `eksperimentai\paleisti.py` | Konfigas → mokymas → metrikos. 0 baitų |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
-| ⚠️ `eksperimentai\i_latex.py` | CSV → `ataskaita\lenteles\`. **2026-09-06: schema NEATITINKA protokolo** — sutampa 3 stulpeliai iš 15. Perrašomas T0 metu (agregavimas per seed'us, dvi lentelės) |
+| ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
 
 ## Duomenys, konfigūracijos, rezultatai
 
@@ -73,11 +73,14 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\README.md` | ⭐ **CICIoT2023: 39 požymiai + `Label`, 45,0 mln. eilučių, spąstai** |
 | ✅ `duomenys\raw\archive\Merged01..63.csv` | **8,7 GB — ne Git'e** |
 | 🗑 `duomenys\raw\archive.zip` | **~2,3 GB** — CSV išpakuoti, archyvas nebereikalingas |
-| ⬛ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. ⚠️ Kodas dabar rašo `ciciot2023_imtis.parquet` — suvienodinti |
+| ⬛ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. Vardas suvienodintas 09-06 |
+| ⬛ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
 | ⬛ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai — **išsaugomi**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
 | ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys |
+| ⬛ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
+| ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |
 | ✅ `rezultatai\darbiniai\sprendimu_matrica.csv` | ⭐ **3 užd.:** 8 metodai × 4 kriterijai. **Vienintelis balų šaltinis** — `matrica.tex` ranka neliesti |
 | ✅ `literatura\anotacijos.md` | Šaltinių anotacijos *(ne ataskaitos tekstas)*. Dublikatas ištrintas 09-03 |
@@ -114,7 +117,7 @@ python -m src.duomenys.etiketes
 
 python -m src.eksperimentai.matrica     # CSV -> lenteles/matrica.tex
 python -m src.eksperimentai.jautrumas   # T5: svoriu jautrumas
-python -m src.eksperimentai.i_latex
+python -m src.eksperimentai.i_latex        # -> rezultatai.tex + veikimas.tex
 
 git add . ; git commit -m "..." ; git push
 ```

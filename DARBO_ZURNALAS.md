@@ -961,8 +961,58 @@ Failas `src/modeliai/xgboost.py` uždengtų biblioteką `import xgboost`. Pervad
 
 `paveikslai/` tuščias, `\includegraphics` niekur nenaudotas, taigi **nepatikrintas**. Taisyklė „naudoti tik tai, kas darbe jau įrodyta veikiant“ čia neišvengiamai laužoma, todėl pirmas paveikslas dedamas rugsėjo 8 d., ne 9 d. — turint dieną atsargos.
 
+### Vakare — T0 atliktas, nelaukiant pirmadienio ✅
+
+Trys neatitikimai uždaryti tą pačią dieną, kai buvo rasti.
+
+**`i_latex.py` perrašytas.** Priimtas sprendimas taisyti skriptą, ne protokolą: protokolas užrakintas ir kiekvienas jo stulpelis turi pagrindimą, o skriptas rašytas rugsėjo 1 d., kai nieko iš to dar nebuvo nuspręsta. Kartu pasikeitė jo vaidmuo — iš „CSV → lentelė" į **agregavimo žingsnį**: 15 stulpelių į puslapį netelpa, o CSV turi po eilutę kiekvienam seed'ui, todėl skriptas grupuoja pagal modelį ir formuluotę, skaičiuoja vidurkį ± standartinį nuokrypį ir išveda **dvi** lenteles — `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, mokymo laikas, dydis).
+
+**`ikelimas.py` perrašytas.** Įgyvendina protokolo 5.1–5.4: valymo tvarką, dublikatų šalinimą, ribą 100 000 klasei, teorinės ribos perskaičiavimą. Trečias neatitikimas — neatkartojamas dublikatų matavimas — **išnyko kaip atskira problema**: matavimas dabar yra pačios grandinės dalis ir kaskart išvedamas į `imties_ataskaita.md`.
+
+### Ką radau rašydamas kodą
+
+#### 6. Vieno prėjimo per duomenis nepakanka ⭐
+
+Plane buvau numatęs vieną prėjimą su 1,5× atsarga (surinkti 150 000, atrinkti 100 000), kad kompensuočiau failų tvarkos šališkumą. Rašant paaiškėjo, kad tai apėjimas, o ne sprendimas: **kad imtis būtų tolygiai atsitiktinė iš unikalių eilučių, reikia iš anksto žinoti, kiek jų klasėje yra.**
+
+Todėl pirmas prėjimas skaičiuoja maišas ir atrenka, antras renka eilutes. Kaina — dvigubas skaitymas; nauda — imtis **nepriklauso nuo eilučių tvarkos failuose**, todėl atsargos nebereikia ir nukrypimo nuo protokolo, kurį plane ketinau įvardyti ataskaitoje, nebelieka.
+
+#### 7. `float64` kastinimas yra determinizmo sąlyga, ne kosmetika ⭐⭐
+
+`pandas` tipą nustato **kiekvienam gabalui atskirai**, todėl tas pats stulpelis viename gabale gali būti `int64`, kitame `float64` — ir vienodos reikšmės duotų **skirtingas maišas**. Du prėjimai tada nesutaptų, o klaida pasirodytų ne kaip klaida, o kaip nepaaiškinamai maža imtis.
+
+Tai tos pačios rūšies spąstai kaip `Duration` = TTL: dalykas, kurio supainiojimas nemeta klaidos. Patikrinta tiesiogiai — paleidus su gabalu 500 ir 137 rezultato `md5` sutampa.
+
+#### 8. Tikslumo ryškinti negalima ⚠️
+
+Pirma lentelės versija paryškindavo geriausią reikšmę **kiekviename** stulpelyje — įskaitant bendrą tikslumą, po kuriuo tos pačios lentelės išnaša sako, kad prie 41,8:1 santykio jis nėra rodiklis. Lentelė būtų prieštaravusi savo pačios išnašai.
+
+**Ryškinama tik macro-F1** — protokolo pagrindinė metrika. Kartu pašalinta `± 0,000`: kai sklaida rodomu tikslumu lygi nuliui, ji nerodoma, nes nulinis nuokrypis atrodo kaip informacija, kurios nėra.
+
+Abu radiniai atsirado **skaitant savo paties išvestį**, ne rašant kodą. Tai argumentas visada atspausdinti pavyzdinę lentelę, o ne pasitikėti, kad kodas teisingas.
+
+#### 9. Teorinė riba skaičiuojama tiksliau nei rugsėjo 3 d. ⭐
+
+Rugsėjo 3 d. ribą vertinau kaip „dviprasmiškų eilučių dalį" (4,98 % → ~95 %). Tai per grubu: jei vektorius pažymėtas 9 kartus `A` ir 1 kartą `B`, klasifikatorius suklysta **vieną** kartą iš dešimties, o ne dešimt.
+
+Dabar skaičiuojama **Bajeso riba**: kiekvienai prieštaringai grupei geriausias įmanomas klasifikatorius parenka dažniausią etiketę, todėl neišvengiama klaida yra *(grupės dydis − dažniausios etiketės dažnis)*. Ataskaitoje pateikiami abu skaičiai, nes 3 skyriuje cituojamas pirmasis.
+
+**Tikėtina pasekmė: patikslinta riba bus aukštesnė nei 95 %.** Jei taip, `03_parinkimas.tex` teiginys apie literatūros 99,5–99,6 % susilpnėja — ir tai reikės parašyti, o ne nutylėti.
+
+#### 10. Kaip patikrinau — sintetinis rinkinys su nepriklausomu orakulu ⭐
+
+Sukurtas 34 klasių sintetinis rinkinys su **iš anksto žinomu** atsakymu: suplanuoti dublikatai, viena `Rate = inf` eilutė, viena nutrūkusi eilutė failo gale, viena prieštaringų etikečių pora. Laukiami skaičiai apskaičiuoti **nenaudojant tikrinamo modulio**.
+
+**13 patikrų iš 13 praėjo.** Svarbiausia iš jų — atkartojamumas prie skirtingų gabalo dydžių: būtent ji būtų pagavusi 7 punkto klaidą, jei kastinimo nebūčiau padaręs.
+
+⚠️ **Ko patikra nepadengia:** tikrųjų 8,7 GB, `to_parquet` su tikru dydžiu ir atminties elgsenos prie 45 mln. eilučių. Paaiškės rytoj ryte.
+
+> **Pamoka, uždaranti šios dienos ratą.** Ryte užsirašiau, kad priėmimo kriterijus, pažymėtas atliktu nepaleidus komandos, yra spėjimas apie savo paties darbą. Vakare tą taisyklę pritaikiau pirmą kartą sąmoningai: **niekas nepažymėta atliktu, kol nepaleista.** Tai kainavo apie valandą ir sugavo dvi klaidas, kurios kitaip būtų išlindusios rugsėjo 8 d. viduryje eksperimentų.
+
 ### Ką darysiu rytoj (rugs. 7, pirmadienis)
 
-**T0 → T1 → T2 → T3.** Pirma trys neatitikimai (`i_latex.py`, `ikelimas.py`, failo vardas), tada įkėlimo grandinė ir jos paleidimas fone, o tuo metu — požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
+**T0 atliktas, todėl diena prasideda nuo paleidimo — atlaisvinta ~2 val.**
+
+**T1 → T2 → T3.** Pirmas veiksmas — `ikelimas.py imtis` paleidimas ant tikrų 63 failų, fone; tuo metu rašomas požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
 
 ⚠️ **Atskiras 15:30–16:15 langas:** sutikrinti gautus skaičius su 3 skyriumi. Jei faktinis dublikatų procentas ar patikslinta teorinė riba skiriasi nuo užrašytų, `03_parinkimas.tex` taisomas **tą pačią dieną**.

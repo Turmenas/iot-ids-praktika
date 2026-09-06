@@ -89,7 +89,7 @@ Kartu kode nėra: **dublikatų šalinimo**, `dropna(subset=["Label"])`, `replace
 
 | Nr. | Tikslas | Išmatuojamas rezultatas | Prior. |
 |---|---|---|---|
-| **T0** | Uždaryti tris neatitikimus (1 sk.) + likučius | `i_latex.py` perrašytas; `ikelimas.py` atitinka protokolą; `imtis.parquet` vardas suvienodintas | **P0** |
+| ~~**T0**~~ | ~~Uždaryti tris neatitikimus (1 sk.)~~ | ✅ **Atlikta 2026-09-06 vakare.** Abu moduliai perrašyti ir **išbandyti** sintetiniais duomenimis su nepriklausomu orakulu — 13 patikrų iš 13. Žr. 11 sk. | — |
 | **T1** | ⭐ **Įkėlimo grandinė:** valymas → dublikatai → imtis | `duomenys/processed/imtis.parquet` + `rezultatai/darbiniai/imties_ataskaita.md` su **realiais** skaičiais | **P0** |
 | **T2** | Požymių paruošimas | `pozymiai.py`: 39 → **36** požymiai, šalinama sąrašu; normalizavimas `fit` tik ant `train` | **P0** |
 | **T3** | Skaidymas 70/15/15 + nutekėjimo patikros | `skaidymas.npz`; patikra, kad `train ∩ test = ∅` | **P0** |
@@ -215,11 +215,12 @@ Tai ta pati palyginimo asimetrija, numatyta rugsėjo 2 d. (2.8 poskyris) ir įgy
 
 ### Rugsėjo 7 d. (pirmadienis) — duomenų grandinė
 
+> ⭐ **T0 atliktas rugsėjo 6 d. vakare, todėl diena prasideda nuo paleidimo.** Atlaisvinta ~2 val.
+
 | Laikas | Darbas | Rezultatas | Prior. |
 |---|---|---|---|
-| 09:00–09:45 | **T0:** `i_latex.py` perrašymas (agregavimas + 2 lentelės); `imtis.parquet` vardo suvienodinimas | Skriptas atitinka protokolo schemą | **P0** |
-| 09:45–11:30 | **T1:** `ikelimas.py` perrašymas — valymas + maišos + riba 100 000 | Skriptas paruoštas, paleidžiamas | **P0** |
-| 11:30–13:00 | **T1:** paleidimas ant 63 failų *(fone; tuo metu — T2 kodas)* | `imtis.parquet` + `imties_ataskaita.md` | **P0** |
+| 09:00–09:15 | Aplinkos patikra: `python -m src.duomenys.ikelimas patikra` | Veidrodis nepakitęs | **P0** |
+| 09:15–11:00 | **T1:** paleidimas ant 63 failų *(fone; tuo metu — T2 kodas)*. Du prėjimai, ~20–40 min. | `imtis.parquet` + `imties_ataskaita.md` | **P0** |
 | 13:00–13:40 | *Pietūs* | | |
 | 13:40–14:40 | **T2:** `pozymiai.py` — 36 požymiai, normalizavimas | Modulis + patikra | **P0** |
 | 14:40–15:30 | **T3:** `skaidymas.npz` + nutekėjimo patikros | Indeksai išsaugoti; `train ∩ test = ∅` | **P0** |
@@ -326,3 +327,35 @@ Užsirašyti dabar, kad rugsėjo 10 d. nereikėtų atkurti:
 - **Realistinis taikinys — macro-F1 0,85–0,90**, ne 0,99. Aukštesnis už patikslintą teorinę ribą rezultatas reiškia nutekėjimą, ne sėkmę
 - **Isolation Forest** — pigus etalonas autokoderiui, jei liks laiko
 - **SHAP → 6 užduotis**, ne 5
+
+---
+
+## 11. T0 atliktas — 2026-09-06 ✅
+
+Neatitikimai buvo rasti ir uždaryti tą pačią dieną, nelaukiant pirmadienio.
+
+| Neatitikimas | Sprendimas |
+|---|---|
+| `rezultatai.csv` schema vs `i_latex.py` | **Perrašytas skriptas, ne protokolas.** Protokolo 15 stulpelių, agregavimas per seed'us (vidurkis ± std), **dvi** lentelės: `rezultatai.tex` ir `veikimas.tex` |
+| `ikelimas.py` neatitiko protokolo | **Perrašytas.** Valymo tvarka, dublikatų šalinimas per eilučių maišas, riba 100 000 klasei, teorinės ribos perskaičiavimas |
+| Dublikatų matavimas neatkartojamas | **Panaikinta kaip atskira problema:** matavimas dabar yra įkėlimo grandinės dalis ir kaskart išvedamas į `imties_ataskaita.md` |
+
+### Kas paaiškėjo rašant kodą
+
+**1. Vieno prėjimo per duomenis nepakanka.** Kad imtis būtų tolygiai atsitiktinė iš *unikalių* eilučių, reikia iš anksto žinoti, kiek jų klasėje yra. Todėl: pirmas prėjimas skaičiuoja maišas ir atrenka, antras renka eilutes. Kaina — dvigubas skaitymas; nauda — imtis nepriklauso nuo eilučių tvarkos failuose, todėl plane numatytos 150 000 atsargos nebereikia.
+
+**2. `float64` kastinimas yra determinizmo sąlyga, ne kosmetika.** `pandas` tipą nustato kiekvienam gabalui atskirai, todėl tas pats stulpelis viename gabale gali būti `int64`, kitame `float64` — ir vienodos reikšmės duotų **skirtingas maišas**. Be kastinimo du prėjimai nesutaptų. Patikrinta: su gabalu 500 ir 137 rezultato `md5` sutampa.
+
+**3. Tikslumo ryškinti negalima.** Pirma versija lentelėje paryškindavo geriausią reikšmę kiekviename stulpelyje — įskaitant bendrą tikslumą, po kuriuo tos pačios lentelės išnaša sako, kad prie 41,8:1 santykio jis nėra rodiklis. **Ryškinama tik macro-F1.**
+
+**4. `± 0,000` yra triukšmas.** Kai sklaida rodomu tikslumu lygi nuliui, ji nerodoma — nulinis nuokrypis lentelėje atrodo kaip informacija, kurios nėra.
+
+**5. Teorinė riba skaičiuojama tiksliau nei rugsėjo 3 d.** Vietoj „dviprasmiškų eilučių dalies“ skaičiuojama **Bajeso riba**: kiekvienai prieštaringai grupei geriausias įmanomas klasifikatorius parenka dažniausią etiketę, todėl neišvengiama klaida yra *(grupės dydis − dažniausios etiketės dažnis)*. Ataskaitoje pateikiami **abu** skaičiai.
+
+### Kaip patikrinta
+
+Sintetinis 34 klasių rinkinys su **iš anksto žinomu** atsakymu: suplanuoti dublikatai, viena `Rate = inf` eilutė, viena nutrūkusi eilutė failo gale, viena prieštaringų etikečių pora. Orakulas skaičiuojamas **nenaudojant tikrinamo modulio**.
+
+**13 patikrų iš 13:** valymo skaitliukai · imties dydis · klasių skaičius · dublikatų nebuvimas · riba neviršyta nė vienoje klasėje · prieštaringi vektoriai · neišvengiamos klaidos · teorinė riba · imtis yra rinkinio poaibis · prozos kableliai ataskaitoje nesugadinti · atkartojamumas prie dviejų gabalo dydžių · `i_latex.py` prie 3 ir 1 seed'ų · aiški klaida padavus seną schemą.
+
+⚠️ **Ko patikra NEPADENGIA:** tikrųjų 8,7 GB, `to_parquet` su tikru dydžiu ir atminties elgsenos prie 45 mln. eilučių. Tai paaiškės rugsėjo 7 d. ryte — todėl paleidimas suplanuotas pirmas.
