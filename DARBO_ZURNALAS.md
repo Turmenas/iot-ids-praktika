@@ -1099,3 +1099,114 @@ Surinkta **2 425 937** eilutės — lygiai tiek, kiek buvo atrinkta maišų. Mod
 **T2 → T3 → T4.** Pirmas veiksmas — `ikelimas.py imtis` paleidimas ant tikrų 63 failų, fone; tuo metu rašomas požymių modulis. Dienos minimumas: `imtis.parquet` ir `skaidymas.npz` egzistuoja, realūs skaičiai užrašyti.
 
 ⚠️ **Atskiras 15:30–16:15 langas:** sutikrinti gautus skaičius su 3 skyriumi. Jei faktinis dublikatų procentas ar patikslinta teorinė riba skiriasi nuo užrašytų, `03_parinkimas.tex` taisomas **tą pačią dieną**.
+
+---
+
+## Rugsėjo 7 d. (pirmadienis) — T2, T3, T4
+
+### Ką padariau
+
+**Kompiliavimas patvirtintas:** `build.ps1` praėjo be klaidų, **31 psl.** Pataisytas 3 skyrius Windows pusėje veikia.
+
+Trys moduliai, kurie iki šiol buvo 0 baitų: **`pozymiai.py`** (36 požymiai), **`skaidymas.py`** (70/15/15), **`balansavimas.py`** (klasių svoriai + SMOTE abliacija). Visi trys turi savipatikras ir paleisti ant tikros imties.
+
+### Ką radau
+
+#### 17. Tapatybės patikrintos darbinėje imtyje, ne tik žaliuose duomenyse ⭐
+
+Rugsėjo 2 d. jos buvo tikrintos 500 000 eilučių. Dabar — visose 2 425 937:
+
+| Tapatybė | Nesutapimų |
+|---|---:|
+| `Variance` = `Std`² | **0** |
+| `Tot size` = `AVG` | **0** |
+| `Tot sum` = `AVG` × `Number` | **0** |
+| ~~`Rate` = 1/`IAT`~~ | **1 963 560 iš 2 425 937** (80,9 %) |
+
+Šalinimo pagrindas galioja, o `Rate` lieka — kaip ir buvo nuspręsta. Patikra įrašyta į `pozymiai.py` ir kviečiama **kaskart prieš šalinant**: jei imtis ar veidrodis pasikeistų, šalinimas taptų nepagrįstas, ir tai turi pasirodyti kaip klaida, o ne kaip prastesnis modelio rezultatas.
+
+#### 18. `Protocol Type` vos nepašalinau be pagrindo ⚠️
+
+Atrodė akivaizdžiai perteklinis: rinkinyje jau yra `TCP`, `UDP`, `ICMP`, `IGMP` stulpeliai, tad protokolo kodas turėtų būti jų kartojimas. Patikrinau prieš šalindamas:
+
+| | Sutapimas |
+|---|---:|
+| `Protocol Type` == 6 ↔ `TCP` == 1 | 69,78 % |
+| `Protocol Type` == 17 ↔ `UDP` == 1 | 84,86 % |
+| `Protocol Type` == 1 ↔ `ICMP` == 1 | 94,39 % |
+
+**Ne tapatybė, o koreliacija.** Stulpelis neša savarankišką informaciją ir lieka. Ketvirtas kartas, kai patikra prieš veiksmą sustabdo klaidingą sprendimą — ir pirmas, kai ji apsaugojo nuo **duomenų praradimo**, o ne nuo klaidos tekste.
+
+Kartu paaiškėjo smulkmena, kurios nežinojau: **nė vienas iš 39 stulpelių nėra dvejetainis.** „Vėliavėlių“ stulpeliai (`syn_flag_number` ir kt.) yra **dalys** 10/100 paketų lange, ne 0/1 požymiai. Tai keičia, kaip juos reikia skaityti 4 skyriuje.
+
+#### 19. Mažos dispersijos filtras pašalintų būtent tuos požymius, kurie skiria retas klases ⭐⭐
+
+Šeši stulpeliai daugiau nei 99,5 % eilučių turi tą pačią reikšmę: `ece_flag_number`, `cwr_flag_number`, `Telnet`, `SMTP`, `IRC`, `IGMP`. Automatinis filtras juos išmestų.
+
+Patikrinau jų vidurkius pagal klases:
+
+| Požymis | Kur didžiausias | Kiek kartų virš bendro vidurkio |
+|---|---|---:|
+| `IRC` | `BACKDOOR_MALWARE` | **×21,8** |
+| `cwr_flag_number` | `UPLOADING_ATTACK` | ×15,6 |
+| `IGMP` | `XSS` | ×11,9 |
+| `Telnet` | `RECON-HOSTDISCOVERY` | ×9,6 |
+| `SMTP` | `RECON-HOSTDISCOVERY` | ×9,0 |
+| `ece_flag_number` | `XSS` | ×7,7 |
+
+**Pasiskirstymas prasmingas, ne atsitiktinis.** `IRC` ties užpakalinių durų kenkėjiška programa yra klasikinis IRC valdymo kanalas; `Telnet` ir `SMTP` ties žvalgyba — prievadų skenavimas paliečia būtent tuos prievadus. Ir visos šešios klasės, kuriose požymiai sustiprėja, yra **rečiausios** — t. y. tos, kurios lemia macro-F1.
+
+⚠️ **Sąžininga išlyga:** absoliučios reikšmės mažos (~0,001), tad tai silpni signalai, esantys ~0,1 % langų. Argumentas yra prieš **automatinį** šalinimą, o ne teiginys, kad šie požymiai daug duos.
+
+Tai **antras nepriklausomas argumentas** ta pačia kryptimi kaip rugsėjo 2 d. koreliacijos radinys: pirmas rodo, kad filtras **nepašalina** to, ką turėtų; šis — kad **pašalina** tai, ko neturėtų. Abu eina į 4 skyrių, ir dabar poskyris apie požymius turi ką pasakyti be „pašalinome tris stulpelius“.
+
+Šeši stulpeliai įrašyti į `pozymiai.py` kaip `SAUGOMI` su priežastimis — kad būtų aišku, jog jie palikti sąmoningai, o ne pramiegoti.
+
+#### 20. Protokolo pataisa: `scale_pos_weight` daugiaklasėje užduotyje neveikia ⚠️
+
+Protokolo 10 punktas XGBoost'ui numato `scale_pos_weight`. Rašant modulį paaiškėjo, kad **tas parametras veikia tik dvejetainėje užduotyje** — daugiaklasėje jis tiesiog ignoruojamas. Pagrindinė mūsų formuluotė yra 8 kategorijos.
+
+Ekvivalentas — `sample_weight`, perduodamas `fit()` metu. Modulis grąžina eilučių svorių masyvą, o `scale_pos_weight` lieka tik dvejetainei formuluotei.
+
+**Būtų buvusi tyli klaida:** XGBoost nemeta įspėjimo, modelis mokosi, o disbalansas lieka neatsvertas. Pasirodytų kaip nepaaiškinamai prastas macro-F1 — ir aš greičiausiai kaltinčiau duomenis, ne konfigūraciją.
+
+#### 21. SMOTE būtų sintetinęs gerybinį srautą ⭐
+
+Paleidus balansavimo patikrą pamačiau, kad prie ribos 10 % keliamos **trys** kategorijos: `BruteForce`, `Web` ir — `Benign`. Formaliai teisinga: gerybinis srautas 8 kategorijų užduotyje yra tokia pat klasė kaip kitos.
+
+**Bet ne turinio prasme, ir dėl dviejų priežasčių.** Pirma, klaidingų teigiamų analizė (5 užduotis) turi remtis **tikru** gerybiniu srautu — interpoliuoti pavyzdžiai iškreiptų būtent tą rodiklį, kuriam atrankoje skirta 30 % svorio. Antra, autokoderio prielaida yra švarus gerybinio srauto profilis; sintetinis gerybinis srautas ją pažeistų.
+
+Gerybinis srautas įrašytas į `NESINTETINAMOS` su abiem priežastimis. Keliamos dvi kategorijos, ne trys.
+
+#### 22. Pilnas subalansavimas netelpa į biudžetą — riba 10 %
+
+| Variantas | Eilučių po SMOTE |
+|---|---:|
+| Pilnas subalansavimas (8 × 734 996) | **5 879 968** (~1,7 GB) |
+| Riba 10 % nuo gausiausios | **1 819 794** (+121 639) |
+
+Pilnas subalansavimas viršytų 30 min. mokymo biudžetą vienam modeliui. **Abliacijos tikslas — patikrinti, ar sintetiniai pavyzdžiai padeda, o ne pasiekti lygias klases**, todėl riba 10 %. Įvardyta modulyje, kad rugsėjo 15 d. nereikėtų atkurti pagrindimo.
+
+#### 23. Skaidymas pataikė į rugsėjo 2 d. prognozę tiksliai
+
+| | |
+|---|---|
+| train / val / test | 1 698 155 / 363 891 / 363 891 (70,00 / 15,00 / 15,00 %) |
+| Didžiausias klasės proporcijos nuokrypis | **0,0001 p. p.** |
+| `UPLOADING_ATTACK` | 837 / 180 / **179** |
+
+**179 testavimo pavyzdžiai** — lygiai tiek, kiek buvo suskaičiuota rugsėjo 2 d., dar neturint nei imties, nei skaidymo.
+
+**Stratifikuojama pagal 34 etiketes, ne 8 kategorijas.** Kategorija yra etiketės funkcija, todėl stratifikavimas pagal etiketę automatiškai išlaiko ir kategorijų proporcijas — atvirkščiai negalioja: stratifikuojant pagal kategoriją retos klasės galėtų pasiskirstyti netolygiai savo kategorijos viduje.
+
+**Keturios nutekėjimo patikros** įrašytos į modulį ir metamos kaip klaidos, ne įspėjimai: aibės nesikerta · padengia viską · **nėra vienodų eilučių tarp `train` ir `test`** · visos klasės visose aibėse. Trečioji imtyje be dublikatų yra savaime tenkinama, bet ji yra pagrindinė protokolo apsauga, todėl tikrinama tiesiogiai, o ne laikoma savaime suprantama.
+
+> **Diena be nė vienos klaidos, kurią būtų pagavęs tik tikras paleidimas.** Visi keturi radiniai (`Protocol Type`, mažos dispersijos filtras, `scale_pos_weight`, SMOTE ant gerybinio srauto) rasti **prieš** veiksmą — tikrinant prielaidą, o ne taisant pasekmę. Tai pirmas kartas darbe, kai taisyklė „patikra prieš veiksmą“ suveikė keturis kartus iš eilės.
+
+### Ką darysiu toliau (rugs. 8, antradienis)
+
+**T5 → T6 → T7.** Duomenų grandinė baigta, todėl diena skirta modeliams.
+
+Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
+
+⚠️ **Nepamiršti:** `src/modeliai/cnn.py` ištrinti, `xgboost.py` **nekurti** — failas tokiu vardu uždengtų biblioteką; vardas `gradientinis.py`.

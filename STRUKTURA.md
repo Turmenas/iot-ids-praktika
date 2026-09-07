@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-06 — **4 užduoties planas sudarytas; T0 atliktas** (`ikelimas.py`, `i_latex.py` perrašyti)
+**Atnaujinta:** 2026-09-07 — **T0–T4 atlikti**: imtis sudaryta, požymiai, skaidymas, balansavimas
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -57,8 +57,9 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 |---|---|
 | ✅ `duomenys\ikelimas.py` | ⭐ **Perrašytas 09-06 (T0).** Įgyvendina protokolą: valymo tvarka, **dublikatų šalinimas per eilučių maišas** (du prėjimai), riba **100 000** klasei, teorinės ribos perskaičiavimas. Išveda `imtis.parquet` + `imties_ataskaita.md` |
 | ✅ `duomenys\etiketes.py` | ⭐ 34 etiketės → 8 kategorijos. **2026-09-02: registro normalizavimas + `BENIGN` alias** |
-| ⬜ `duomenys\pozymiai.py` | Požymių inžinerija — **rašoma iš protokolo 5.3 punktų**. Failas sukurtas, 0 baitų |
-| ⬜ `duomenys\balansavimas.py` | `class_weight` / SMOTE — **tik ant `train`**. Failas sukurtas, 0 baitų |
+| ✅ `duomenys\pozymiai.py` | ⭐ **T2 (09-07).** 39 → **36** požymiai, šalinama sąrašu; tapatybės tikrinamos kaskart; `Skale` su apsauga (`fit` tik ant train, antras kvietimas meta klaidą) |
+| ✅ `duomenys\skaidymas.py` | ⭐ **T3 (09-07).** Stratifikuotas 70/15/15 pagal **34 etiketes**; **keturios nutekėjimo patikros**; indeksai išsaugomi |
+| ✅ `duomenys\balansavimas.py` | ⭐ **T4 (09-07).** Klasių svoriai (santykis 83,9), `sample_weight` XGBoost'ui, SMOTE abliacijai. **Gerybinis srautas nesintetinamas** |
 | ⬜ `modeliai\bazinis.py` | Bendra klasė: `fit` / `predict` / `predict_proba`. 0 baitų |
 | ⬜ `modeliai\random_forest.py` · `autoencoder.py` · `cnn.py` | Sukurti, 0 baitų. ⚠️ **Ketvertas yra RF, XGBoost, MLP, autokoderis** — `cnn.py` **ištrintinas**; reikės `gradientinis.py` (⚠️ **ne** `xgboost.py` — uždengtų biblioteką) ir `mlp.py` |
 | ⬜ `eksperimentai\paleisti.py` | Konfigas → mokymas → metrikos. 0 baitų |
@@ -73,13 +74,13 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\README.md` | ⭐ **CICIoT2023: 39 požymiai + `Label`, 45,0 mln. eilučių, spąstai** |
 | ✅ `duomenys\raw\archive\Merged01..63.csv` | **8,7 GB — ne Git'e** |
 | 🗑 `duomenys\raw\archive.zip` | **~2,3 GB** — CSV išpakuoti, archyvas nebereikalingas |
-| ⬛ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. Vardas suvienodintas 09-06 |
-| ⬛ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
-| ⬛ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai — **išsaugomi**, ne perskaičiuojami |
+| ✅ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. Vardas suvienodintas 09-06 |
+| ✅ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
+| ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
 | ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys |
-| ⬛ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
+| ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
 | ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |
 | ✅ `rezultatai\darbiniai\sprendimu_matrica.csv` | ⭐ **3 užd.:** 8 metodai × 4 kriterijai. **Vienintelis balų šaltinis** — `matrica.tex` ranka neliesti |
@@ -114,6 +115,10 @@ cd ataskaita ; .\build.ps1
 python -m src.duomenys.ikelimas patikra
 python -m src.duomenys.ikelimas imtis
 python -m src.duomenys.etiketes
+python -m src.duomenys.pozymiai          # 36 pozymiai + tapatybiu patikra
+python -m src.duomenys.skaidymas         # 70/15/15 -> skaidymas.npz
+python -m src.duomenys.skaidymas patikra # tik nutekejimo patikros
+python -m src.duomenys.balansavimas      # klasiu svoriai + SMOTE abliacija
 
 python -m src.eksperimentai.matrica     # CSV -> lenteles/matrica.tex
 python -m src.eksperimentai.jautrumas   # T5: svoriu jautrumas

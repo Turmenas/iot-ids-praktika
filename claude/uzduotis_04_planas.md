@@ -91,9 +91,9 @@ Kartu kode nėra: **dublikatų šalinimo**, `dropna(subset=["Label"])`, `replace
 |---|---|---|---|
 | ~~**T0**~~ | ~~Uždaryti tris neatitikimus (1 sk.)~~ | ✅ **Atlikta 2026-09-06 vakare.** Abu moduliai perrašyti ir **išbandyti** sintetiniais duomenimis su nepriklausomu orakulu — 13 patikrų iš 13. Žr. 11 sk. | — |
 | ~~**T1**~~ | ~~Įkėlimo grandinė~~ | ✅ **Atlikta 2026-09-06.** 2 425 937 eilutės, dublikatai **53,3 %**, teorinė riba **99,78 %**. Žr. 12 sk. | — |
-| **T2** | Požymių paruošimas | `pozymiai.py`: 39 → **36** požymiai, šalinama sąrašu; normalizavimas `fit` tik ant `train` | **P0** |
-| **T3** | Skaidymas 70/15/15 + nutekėjimo patikros | `skaidymas.npz`; patikra, kad `train ∩ test = ∅` | **P0** |
-| **T4** | Balansavimas | `balansavimas.py`: `class_weight`/`scale_pos_weight` + SMOTE abliacijai | P1 |
+| ~~**T2**~~ | ~~Požymių paruošimas~~ | ✅ **Atlikta 09-07.** 36 požymiai; tapatybės patvirtintos imtyje (0 nesutapimų iš 2,43 mln.); `Skale` su apsauga | — |
+| ~~**T3**~~ | ~~Skaidymas 70/15/15~~ | ✅ **Atlikta 09-07.** 1 698 155 / 363 891 / 363 891; keturios patikros; didžiausias proporcijos nuokrypis 0,0001 p. p. | — |
+| ~~**T4**~~ | ~~Balansavimas~~ | ✅ **Atlikta 09-07.** Svorių santykis 83,9; ⚠️ `scale_pos_weight` pakeistas `sample_weight` (protokolo pataisa); SMOTE be gerybinio srauto | — |
 | **T5** | ⭐ **Keturi modeliai su vienoda sąsaja** | `bazinis.py` + `random_forest.py`, `xgboost.py`, `mlp.py`, `autoencoder.py` | **P0** |
 | **T6** | Eksperimentų infrastruktūra | `paleisti.py` + 4 YAML konfigai → `rezultatai.csv` protokolo schema | **P0** |
 | **T7** | ⭐ **Kontrolinis taškas: pilnas ciklas** | RF, 1 seed, nuo `imtis.parquet` iki eilutės `rezultatai.csv` | **P0** |
