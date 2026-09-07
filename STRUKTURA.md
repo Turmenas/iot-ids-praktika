@@ -168,6 +168,8 @@ Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1
 | `.ps1` meta `Unexpected token` | Faile yra ne-ASCII simbolių |
 | `.gitignore` eilutė neveikia | Komentaras eilutės gale — perkelti į atskirą eilutę |
 | `ModuleNotFoundError` | Promptas rodo `(base)` — `conda activate iot-ids` |
+| ⚠️ **`NumPy 1.x cannot be run in NumPy 2.x`** | Paleista `(base)`, ne `(iot-ids)`. Base aplinkoje `%APPDATA%\Python\Python312\site-packages` uždengia anaconda paketus. `iot-ids` yra Python 3.11, todėl jos tai neliečia |
+| `pip install -r requirements-lock.txt` nesuveikia | PowerShell `>` rašo **UTF-16**, pip laukia UTF-8. Naudoti `\| Out-File -Encoding utf8` *(failas pataisytas 09-07)* |
 
 ### LaTeX
 

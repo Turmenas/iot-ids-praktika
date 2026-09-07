@@ -1270,9 +1270,33 @@ Duomenų paruošimas (parquet → 36 požymiai → normalizavimas) pasiekia **3,
 
 Įrašyta į paleidimo instrukciją: turint mažiau nei 8 GB, konfigus leisti po vieną.
 
+#### 31. Pirmas paleidimas Windows pusėje — aplinkos spąstai suveikė ⚠️⭐
+
+Patikros paleidimas praėjo, bet su dešimtimis `NumPy 1.x cannot be run in NumPy 2.4.3` įspėjimų. Rezultatas teisingas — **macro-F1 0,6657 prieš mano 0,6659** — bet priežastis verta dėmesio.
+
+**Paleista `(base)`, ne `(iot-ids)`.** Tai tiksliai tas atvejis, kurį `STRUKTURA.md` spąstų lentelėje užsirašiau rugsėjo 3 d., tik pasirodė ne kaip `ModuleNotFoundError`, o kaip numpy versijų konfliktas — todėl iš pirmo žvilgsnio neatpažįstamas.
+
+Klaidos pėdsakas rodo mišrią aplinką: `pandas` imamas iš `%APPDATA%\Python\Python312\site-packages`, o `numexpr` ir `bottleneck` — iš `C:\ProgramData\anaconda3`. Vartotojo lygio paketai uždengia anaconda base paketus, o jie sukompiliuoti su numpy 1.x. **`iot-ids` yra Python 3.11, todėl `Python312` aplankas jos nepasiekia** — aktyvavus aplinką problema dingsta savaime.
+
+⚠️ **Kodėl tai ne kosmetika.** `pandas` tyliai išjungia `numexpr` ir `bottleneck` ir skaičiuoja lėčiau, bet teisingai. Tikroji rizika kita: **rezultatai būtų gauti aplinkoje, kurios `requirements-lock.txt` neaprašo.** Atkartojamumo teiginys ataskaitoje remiasi tuo failu, o `(base)` turi kitas versijas. Kol rezultatai nerašomi į `rezultatai.csv`, nieko neprarasta — patikros režimas kaip tik tam ir skirtas.
+
+**Gera žinia:** dviejų platformų skaičiai sutapo iki trečio skaitmens (0,6657 / 0,6659), nors bibliotekų versijos skiriasi. Grandinė determinuota, o skirtumas — bibliotekų, ne kodo.
+
+#### 32. `requirements-lock.txt` buvo neįkeliamas — UTF-16 ⚠️⭐
+
+Tikrindamas, kokias versijas aprašo lock failas, radau, kad jis yra **UTF-16LE su BOM**. `pip install -r` tokio failo neperskaito.
+
+Priežastis ta pati kaip su `.ps1` failais rugsėjo 1 d.: **PowerShell `>` peradresavimas rašo UTF-16**, ne UTF-8. Rugsėjo 1 d. `pip freeze > requirements-lock.txt` sukūrė failą, kuris atrodo teisingas, atsidaro redaktoriuje ir yra Git'e — bet savo vienintelės funkcijos neatlieka.
+
+**Tai buvo tyli klaida devynias dienas.** Rugsėjo 3 d. dar pažymėjau punktą „`requirements-lock.txt` — jau atlikta 09-01“ kaip uždarytą; failo neatidariau. Penktas tos pačios rūšies atvejis: **byloja failo egzistavimas, ne turinys.**
+
+Failas perrašytas į UTF-8 (79 paketai, turinys nepakeistas). Iš jo matyti, kad `iot-ids` turi tai, ko reikia: numpy 2.4.6, pandas 3.0.5, scikit-learn 1.9.0, xgboost 3.2.0, tensorflow 2.21.0 — t. y. aplinka tvarkinga, tik nebuvo aktyvuota.
+
+**Taisyklė papildyta:** PowerShell'e failus rašyti su `| Out-File -Encoding utf8`, ne `>`.
+
 ### Ką darysiu toliau (rugs. 8, antradienis)
 
-**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų.
+**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų — **aktyvavus `iot-ids`**.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
