@@ -1203,9 +1203,76 @@ Pilnas subalansavimas viršytų 30 min. mokymo biudžetą vienam modeliui. **Abl
 
 > **Diena be nė vienos klaidos, kurią būtų pagavęs tik tikras paleidimas.** Visi keturi radiniai (`Protocol Type`, mažos dispersijos filtras, `scale_pos_weight`, SMOTE ant gerybinio srauto) rasti **prieš** veiksmą — tikrinant prielaidą, o ne taisant pasekmę. Tai pirmas kartas darbe, kai taisyklė „patikra prieš veiksmą“ suveikė keturis kartus iš eilės.
 
+### Vėliau — T5 ir T6 atlikti tą pačią dieną
+
+**Keturi modeliai su vienodu kontraktu ir eksperimentų paleidiklis.** Visi keturi patikrinti pilnu ciklu; mokymas perduotas paleisti Windows pusėje.
+
+#### 24. Kontraktas fiksuotas prieš pirmą modelį — ir iškart atsipirko ⭐
+
+`bazinis.py` parašytas **prieš** `random_forest.py`, kaip ir buvo suplanuota. Autokoderio išlyga įrašyta į kontraktą iš karto: laukas `priziurimas` ir `predict_proba`, apibrėžtas kaip „įvertis, kurio didesnė reikšmė reiškia didesnę atakos tikimybę“, o ne kaip tikimybių matrica.
+
+Tai **trečias kartas**, kai ta pati palyginimo asimetrija įgyvendinama: rugsėjo 2 d. ji buvo pastaba tekste, rugsėjo 3 d. — matricos sandara, dabar — kodas. Kiekvieną kartą pigiau nei būtų buvę ją atrasti vėliau.
+
+**Registras importuoja tik reikalingą modulį.** Pirma versija importavo visus keturis iš karto — tada `TensorFlow` būtų buvęs būtinas ir paleidžiant Random Forest. Pataisyta į `importlib` pagal raktą.
+
+#### 25. Keturios klaidos, pagautos paleidžiant, ne skaitant
+
+| Kas | Kaip pasirodė |
+|---|---|
+| `xgboost.py` uždengtų biblioteką | Numatyta plane; failas pavadintas `gradientinis.py` |
+| **MLP dydis 0,00 MB** | Keras modelis guli atskirame `.keras` faile, o `dydis_mb` matavo tik apvalkalą |
+| **MLP netilptų į biudžetą** | 30 epochų × batch 1024 ant 1,7 mln. → ~40 min. Pakeista į 20 × 4096 (13 s vietoj 42 s patikroje) |
+| **Patikros modeliai gulė į tikrą aplanką** | Nuo 50 000 eilučių apmokytas failas tuo pačiu vardu greta tikrojo — vėliau nebeatskirtum. Dabar `_patikra/` |
+
+Modelio dydis yra vienas iš keturių resursų kriterijaus rodiklių, tad **tyliai neteisingas nulis būtų buvęs blogiau už jo nebuvimą** — 6 skyriuje MLP atrodytų nemokamas.
+
+#### 26. Autokoderio slenkstis yra klaidingų teigiamų rankenėlė, ne konvencija ⭐⭐
+
+Numatytuoju buvau paėmęs 95-ąjį procentilį — įprastą pasirinkimą. Paleidus pamačiau `FPR = 0,05000` **lygiai**, ir tada supratau, kad tai ne sutapimas: slenkstis, nustatytas kaip *p*-asis gerybinio srauto procentilis, **pagal apibrėžimą** duoda (100−*p*) % klaidingų teigiamų.
+
+Vadinasi, rinkdamasis 95 iš anksto sutinku su 5 % klaidingų teigiamų — o 1 skyriuje pats suskaičiavau, kad **jau 1 % reiškia ~1000 signalų per parą ir sistema išjungiama**. Numatytasis pakeistas į **99**, kad atitiktų tą patį biudžetą, kuriuo remiasi atrankos kriterijai (klaidingiems teigiamiems skirta 30 % svorio).
+
+#### 27. Išmatuotas slenksčio kompromisas — ir jame yra skardis ⭐⭐⭐
+
+Kadangi slenkstis pasirodė esąs sprendimas, o ne detalė, išmatavau jį per visą rėžį (val aibė, 348 891 ataka / 15 000 gerybinių, autokoderis mokytas iš visų 70 000 mokymo gerybinių):
+
+| Procentilis | FPR | Atakų aptikta | macro-F1 |
+|---:|---:|---:|---:|
+| 90 | 10 % | **84,9 %** | 0,624 |
+| 95 | 5 % | **80,9 %** | 0,596 |
+| **99** | **1 %** | **11,8 %** | **0,150** |
+| 99,5 | 0,5 % | 5,4 % | 0,093 |
+| 99,9 | 0,1 % | 0,3 % | 0,042 |
+
+⭐ **Tarp 95 ir 99 yra skardis:** klaidingiems teigiamiems krentant nuo 5 % iki 1 %, aptikimas griūva nuo 80,9 % iki 11,8 %. Ne laipsniškas pablogėjimas, o lūžis.
+
+**Tai reikšmingiausias šios dienos rezultatas ir jis eina tiesiai į 5 ir 6 skyrius.** Autokoderis **rikiuoja gerai** — ROC-AUC 0,929, PR-AUC 0,995 prieš bazinį 0,959 — bet **negali pateikti naudingo aptikimo lygio to klaidingų teigiamų biudžeto viduje, kurį darbas pats laiko privalomu.** Tai stipresnis teiginys nei „autokoderis silpnesnis už XGBoost“: jis pasako, *kodėl*.
+
+Kreivė išsaugota — `rezultatai/darbiniai/autokoderio_slenkstis.csv`.
+
+#### 28. Maža imtis būtų davusi priešingą išvadą ⚠️⭐
+
+Greita patikra ant 60 000 eilučių (iš jų tik 2 441 gerybinė) rodė PR-AUC **0,944** — **žemiau** bazinio 0,959 lygio, t. y. rikiavimas blogesnis už atsitiktinį. Būčiau užrašęs, kad autokoderio prielaida neveikia.
+
+Pilna mokymo aibė (70 000 gerybinių) apvertė vaizdą: **PR-AUC 0,995**, o atkūrimo paklaidos mediana atakoms 0,376 prieš 0,028 gerybiniam srautui — atakos atkuriamos **blogiau**, kaip ir turi būti.
+
+**Pamoka yra rugsėjo 6 d. taisyklės antra pusė.** Tada užsirašiau, kad mažų duomenų testas tikrina teisingumą, bet ne mastelį. Dabar paaiškėjo ir atvirkščiai: **mažų duomenų testas gali duoti neteisingą dalykinę išvadą.** Ciklo veikimą tikrinti maža imtimi galima; modelio prielaidą — ne.
+
+#### 29. Ankstyvas rikiuotės ženklas atitinka sprendimų matricą
+
+Ant tos pačios 50 000 eilučių patikros imties: **XGBoost 0,692 · Random Forest 0,666 · MLP 0,527**. Sprendimų matricos balai buvo 4,70 · 3,55 · 3,25 — **ta pati tvarka**.
+
+⚠️ Tai 3 % mokymo duomenų ir vienas seed'as, todėl ne rezultatas, o ženklas. Bet jei pilnas paleidimas duotų kitą tvarką, tai būtų vertas dėmesio nesutapimas, ir gerai, kad turiu su kuo lyginti.
+
+#### 30. Atminties riba pasirodė esanti reali
+
+Duomenų paruošimas (parquet → 36 požymiai → normalizavimas) pasiekia **3,53 GB**. Mano pusėje tai riba, ir vienas pilnas autokoderio paleidimas dėl to nutrūko. Pati grandinė greita — 3,8 s — bet atmintis, o ne laikas, yra ribojantis veiksnys.
+
+Įrašyta į paleidimo instrukciją: turint mažiau nei 8 GB, konfigus leisti po vieną.
+
 ### Ką darysiu toliau (rugs. 8, antradienis)
 
-**T5 → T6 → T7.** Duomenų grandinė baigta, todėl diena skirta modeliams.
+**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
