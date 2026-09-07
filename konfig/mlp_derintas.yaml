@@ -1,0 +1,15 @@
+# MLP - SUDERINTA (derinimas 2026-09-07).
+# Platesnis tinklas be dropout ir didesnis mokymosi greitis:
+# paieskoje macro-F1 0,6274 pries 0,6165.
+modelis: mlp
+formuluote: 8kat
+
+hiperparametrai:
+  sluoksniai: [256, 128]
+  dropout: 0.0
+  batch_size: 2048
+  epochos: 20
+  kantrybe: 3
+  learning_rate: 0.003
+
+smote: false

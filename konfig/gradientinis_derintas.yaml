@@ -1,0 +1,19 @@
+# XGBoost - SUDERINTA (derinimas 2026-09-07, 20 bandymu ant 400 000 eiluciu).
+# Paieskoje macro-F1 0,7137 pries 0,6838 su numatytosiomis reiksmemis.
+# Alternatyva, atsiliekanti <1 %: n_estimators 200, 7,40 MB vietoj 27,82 MB.
+# Pasirinktas didesnis, nes 27,8 MB telpa i sliuzo biudzeta be islygu.
+modelis: gradientinis
+formuluote: 8kat
+
+hiperparametrai:
+  n_estimators: 800
+  max_depth: 10
+  learning_rate: 0.1
+  subsample: 0.6
+  colsample_bytree: 0.6
+  min_child_weight: 5
+  tree_method: hist
+  device: cuda
+  n_jobs: -1
+
+smote: false

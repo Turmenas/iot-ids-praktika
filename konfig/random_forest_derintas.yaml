@@ -1,0 +1,16 @@
+# Random Forest - SUDERINTA (derinimas 2026-09-07).
+# Svarbiausia ne kokybe, o DYDIS: 196 MB vietoj 558 MB, macro-F1 beveik
+# nepakites. Numatytasis max_depth=null davė modeli, kuris neisikelia i
+# 3,9 GB atminti - krastiniam sliuzui tai diskvalifikacija.
+modelis: random_forest
+formuluote: 8kat
+
+hiperparametrai:
+  n_estimators: 200
+  max_depth: 30
+  min_samples_leaf: 1
+  max_features: 0.3
+  n_jobs: -1
+  class_weight: balanced
+
+smote: false

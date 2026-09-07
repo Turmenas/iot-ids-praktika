@@ -10,7 +10,8 @@
 | | |
 |---|---|
 | ✅ **T0–T7** | Įkėlimo grandinė · 36 požymiai · skaidymas · balansavimas · keturi modeliai · paleidiklis · **12 paleidimų atlikta** |
-| 🔄 **Derinimas** | `derinti.bat` paruoštas, **dar nepaleistas** — protokolo 18 punktas |
+| ✅ **Derinimas** | Atliktas: 20 bandymų × 3 modeliai. Suderinti konfigai — `konfig/*_derintas.yaml` |
+| 🔄 **Permokymas** | `mokyti_derintus.bat` — **dar nepaleistas** |
 | ⬜ **T8** | Prototipas su vizualizacija |
 | ⬜ **T9** | `04_sprendimas.tex` |
 
@@ -20,17 +21,13 @@
 
 ## 2. Kas liko
 
-### 2.1. Hiperparametrų derinimas — `derinti.bat`
+### 2.1. Permokymas su suderintais parametrais — `mokyti_derintus.bat`
 
-Protokolo 18 punktas, iki šiol neįvykdytas: visi rezultatai gauti su numatytosiomis reikšmėmis.
+Derinimas atliktas; lieka permokyti ant **visos** aibės ir gauti operacinius taškus.
 
-- Paieška ant 400 000 eilučių imties (kad tilptų į 30 min. vienam modeliui), geriausia konfigūracija **permokoma ant visos aibės**.
-- Šalia macro-F1 fiksuojamas **modelio dydis** — dėl to, kad Random Forest netelpa į 3,9 GB atmintį.
-- XGBoost dalis eina GPU (`device: cuda`); MLP ir autokoderis — CPU, nes TensorFlow native Windows GPU nepalaiko.
+**Eiliškumas:** `mokyti_derintus.bat` → `slenkstis.bat` → `python -m src.eksperimentai.i_latex`
 
-**Po derinimo:** geriausios reikšmės įrašomos į `konfig/*.yaml` → `mokyti_viska.bat` → `slenkstis.bat` → `i_latex`.
-
-⚠️ **Rikiuotė imtyje ir pilnoje aibėje nebūtinai sutampa** — tai apytikslė paieška, ir taip ji vadinama ataskaitoje.
+⚠️ Paieškos skaičiai gauti ant 400 000 eilučių, tad su dabartiniais (1,7 mln.) tiesiogiai nepalyginami — permokymas tai ir išsprendžia.
 
 ### 2.2. T8 — prototipas su vizualizacija
 

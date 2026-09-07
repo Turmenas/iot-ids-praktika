@@ -1514,9 +1514,29 @@ Antrasis apribojimas ne mūsų pasirinkimas — jį praneša pats TensorFlow. Pr
 
 `gradientinis.py` GPU nebuvimą tikrina ir **tyliai grįžta į CPU, bet apie tai praneša**: tas pats konfigas veikia abiejose mašinose, o dešimteriopai lėtesnis mokymas nelieka nepaaiškintas.
 
+#### 48. Derinimas atliktas — XGBoost gauna daugiausia ⭐⭐
+
+Po 20 bandymų kiekvienam modeliui (400 000 eilučių imtis):
+
+| Modelis | Numatytoji *(pilna aibė)* | Geriausia paieškoje *(400 k)* | Dydis |
+|---|---:|---:|---|
+| Random Forest | 0,7213 · 558 MB | 0,7117 | **196 MB** |
+| **XGBoost** | 0,6838 · 7,78 MB | **0,7137** | 27,8 MB |
+| MLP | 0,6165 · 0,18 MB | 0,6274 | 0,52 MB |
+
+⚠️ **Skaičiai tiesiogiai nepalyginami:** paieška vyko ant 400 000 eilučių, o numatytosios reikšmės išmatuotos ant 1,7 mln. Palyginimas galioja **tarp konfigūracijų paieškoje**, ne tarp stulpelių. Tikrąjį atsakymą duos permokymas ant visos aibės.
+
+**Bet vienas dalykas iškalbingas jau dabar.** XGBoost su 400 000 eilučių ir suderintais parametrais (0,7137) lenkia save patį su 1,7 mln. eilučių ir numatytosiomis (0,6838). **Derinimas čia davė daugiau nei keturgubas duomenų kiekis** — tai atskiras pastebėjimas, vertas 4 skyriaus.
+
+**Random Forest laimėjimas ne kokybėje, o dydyje: 196 MB vietoj 558 MB** prie beveik tos pačios macro-F1. `max_depth=30` ir `max_features=0.3` išsprendžia tai, ką vakar radau kaip diskvalifikuojantį apribojimą.
+
+**XGBoost pasirinktas didesnis variantas** (800 medžių, 27,8 MB), o ne mažiausias per 1 % (200 medžių, 7,40 MB, macro-F1 0,7074): 27,8 MB telpa į šliuzo biudžetą be išlygų, o 0,9 % kokybės ten svarbiau nei 20 MB.
+
+**Suderinti konfigai sukurti ATSKIRAIS failais** (`*_derintas.yaml`). Perrašius senuosius, `rezultatai.csv` idempotentiškas įrašymas pakeistų bazines eilutes ta pačia rakto pora — ir palyginimas „prieš/po“, kurio reikia ataskaitai, dingtų.
+
 ### Ką darysiu toliau
 
-**Derinimas (`derinti.bat`) — protokolo 18 punktas.** Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
+**`mokyti_derintus.bat` → `slenkstis.bat` → `i_latex`.** Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
