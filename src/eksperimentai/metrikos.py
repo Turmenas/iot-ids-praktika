@@ -124,11 +124,32 @@ def eilute(modelis, formuluote: str, seed: int, metrikos: dict,
     return {k: r[k] for k in SCHEMA}
 
 
+#: Kas vienareiksmiskai apibrezia paleidima. Ta pati ketveriuka du kartus
+#: reiskia PAKARTOJIMA, ne nauja rezultata.
+RAKTAS = ["modelis", "formuluote", "seed", "konfig"]
+
+
 def prideti(eil: dict, kelias) -> None:
-    """Prideda eilute i rezultatai.csv, issaugant SCHEMA tvarka."""
+    """Iraso eilute i rezultatai.csv. Pakartotinis paleidimas PAKEICIA.
+
+    Paprastas prirasymas (`mode="a"`) atrode saugus, bet 2026-09-07
+    paleidus mokyti_viska.bat antra karta faile atsirado 24 eilutes
+    vietoj 12. Kokybes metrikos nuo to nenukentetu (jos tapacios), bet
+    isnasa "vidurkis is 3 paleidimu" butu melas, o laiko rodikliu sklaida
+    skaiciuojama is 6 matavimu po 2 tam paciam seed'ui.
+
+    Todel eilute su tuo paciu RAKTU perrasoma: failas idempotentiskas ir
+    ji galima saugiai regeneruoti bet kada.
+    """
     from pathlib import Path
     kelias = Path(kelias)
     kelias.parent.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame([eil], columns=SCHEMA)
-    yra = kelias.exists() and kelias.stat().st_size > 0
-    df.to_csv(kelias, mode="a" if yra else "w", header=not yra, index=False)
+    nauja = pd.DataFrame([eil], columns=SCHEMA)
+
+    if kelias.exists() and kelias.stat().st_size > 0:
+        sena = pd.read_csv(kelias)
+        kauke = ~(sena[RAKTAS].astype(str)
+                  .eq(nauja[RAKTAS].astype(str).iloc[0]).all(axis=1))
+        nauja = pd.concat([sena[kauke], nauja], ignore_index=True)[SCHEMA]
+
+    nauja.to_csv(kelias, index=False)

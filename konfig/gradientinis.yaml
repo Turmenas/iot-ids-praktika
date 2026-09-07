@@ -11,6 +11,8 @@ hiperparametrai:
   colsample_bytree: 0.8
   # hist - vienintelis budas, telpantis i 30 min. biudzeta prie 1,7 mln. eiluciu
   tree_method: hist
+  # GPU (RTX 4060). Masinoje be CUDA automatiskai grizta i cpu su pranesimu.
+  device: cuda
   n_jobs: -1
 
 smote: false

@@ -1467,9 +1467,56 @@ Rašant MLP kelią paaiškėjo, kad `paleisti.py` sukuria `Skale`, bet jos **nei
 
 Bet **diegimui to nepakanka:** išsaugotas MLP ar autokoderis be skalės yra neveikiantis artefaktas, nes įvesties normalizavimo parametrai prarasti. Tai tiesiogiai liečia 4 užduoties prototipą (T8). Įrašyta kaip taisytinas dalykas.
 
+#### 45. Prie vienodo FPR rikiuotė apsiverčia atgal — ir sprendimų matrica buvo teisi ⭐⭐⭐
+
+Slenksčio kreivės visiems trims prižiūrimiems modeliams (val aibė, modeliai nepermokyti):
+
+| Modelis | argmax FPR | argmax macro-F1 | τ | FPR ties τ | Aptikta | macro-F1 ties τ | Kaina |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Random Forest | 32,10 % | **0,7212** | 0,9842 | 0,77 % | 86,3 % | 0,6037 | **−16,3 %** |
+| **XGBoost** | 21,20 % | 0,6835 | 0,9749 | 0,67 % | **87,6 %** | **0,6390** | **−6,5 %** |
+| MLP | 29,13 % | 0,6096 | 0,9602 | 0,86 % | 83,9 % | 0,5455 | −10,5 % |
+
+⭐ **Ties vienodu FPR nugalėtojas pasikeičia: XGBoost 0,639 prieš Random Forest 0,604.**
+
+Vakar užrašiau, kad RF aplenkė XGBoost (0,721 prieš 0,684) ir kad tai apverčia sprendimų matricą. **Tai buvo argmax taško artefaktas.** RF pranašumas egzistavo tik prie 32 % klaidingų teigiamų, t. y. taške, kurio darbas pats nepriima. Įvedus reikalaujamą biudžetą, RF praranda 16,3 %, o XGBoost — 6,5 %.
+
+**Mechanizmas paaiškinamas.** Random Forest tikimybė yra 100 medžių balsų dalis, tad ties 1,0 ji šokinėja žingsniu 0,01 — skiriamoji geba ten, kur jos labiausiai reikia, yra grubi. XGBoost grąžina tolydžias tikimybes, todėl aukštą slenkstį pasiekia tiksliau.
+
+**Iš to seka trys dalykai:**
+
+1. **Sprendimų matrica buvo teisi.** Ji davė XGBoost 4,70, RF 3,55; matavimas prie teisingo operacinio taško tai patvirtina. Vakarykštis „matrica apversta" atšaukiamas.
+2. **XGBoost laimi pagal visus kriterijus vienu metu** — macro-F1 (0,639), PR-AUC, ROC-AUC, klaidingus teigiamus ir dydį (7,78 MB prieš 558 MB). Kompromiso nebėra.
+3. **Palyginimas prie argmax yra metodinė klaida**, o ne smulkmena: jis pakeitė rikiuotę. 6 skyriuje modeliai lyginami **tik** prie suderinto FPR.
+
+> **Pamoka.** Vakar iš skirtumo, 75 kartus viršijančio sklaidą, padariau išvadą apie metodų rikiuotę. Skirtumas buvo tikras — bet matavau ne tą tašką. **Statistinis reikšmingumas nieko nesako apie tai, ar matuojamas dydis yra tas, kurio reikia.**
+
+#### 46. `rezultatai.csv` turėjo 24 eilutes vietoj 12 ⚠️
+
+Paleidus `mokyti_viska.bat` antrą kartą kiekvienas paleidimas įsirašė dukart: `metrikos.prideti` prirašinėjo be jokios patikros.
+
+Kokybės metrikoms tai nekenktų — jos tapačios — bet išnaša „vidurkis ± std iš **3** paleidimų" būtų melas, o laiko rodiklių sklaida skaičiuojama iš 6 matavimų po du tam pačiam seed'ui.
+
+**Pataisyta: eilutė su tuo pačiu `(modelis, formuluotė, seed, konfigas)` dabar perrašoma**, tad failas idempotentiškas ir bet kada saugiai regeneruojamas.
+
+⭐ **Šalutinis rezultatas vertingesnis už pačią klaidą.** Du nepriklausomi pilni paleidimai davė kokybės metrikas, sutampančias iki **1·10⁻⁵**. Skiriasi tik laiko rodikliai (mokymas iki 15 s, delsa iki 2,2 µs) — kaip ir turi būti. **Atkartojamumas patvirtintas matavimu**, ne prielaida apie fiksuotus seed'us.
+
+#### 47. GPU padeda tik XGBoost
+
+Turima RTX 4060. Patikrinta:
+
+| Biblioteka | GPU | Pastaba |
+|---|---|---|
+| XGBoost 3.2 | ✅ | `device: cuda`; įrašyta į konfigą |
+| TensorFlow 2.21 | ❌ | **Native Windows GPU nepalaiko nuo TF 2.11** — reikėtų WSL2 |
+
+Antrasis apribojimas ne mūsų pasirinkimas — jį praneša pats TensorFlow. Praktinė pasekmė: derinimas pagreitės tik XGBoost, o MLP ir autokoderis lieka CPU. Jiems tai ne bėda — MLP mokosi 50 s.
+
+`gradientinis.py` GPU nebuvimą tikrina ir **tyliai grįžta į CPU, bet apie tai praneša**: tas pats konfigas veikia abiejose mašinose, o dešimteriopai lėtesnis mokymas nelieka nepaaiškintas.
+
 ### Ką darysiu toliau
 
-**Slenkstis ir derinimas paruošti (`slenkstis.bat`, `derinti.bat`).** Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
+**Derinimas (`derinti.bat`) — protokolo 18 punktas.** Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 

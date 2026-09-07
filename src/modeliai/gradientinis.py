@@ -37,8 +37,28 @@ class Gradientinis(Modelis):
         "subsample": 0.8,
         "colsample_bytree": 0.8,
         "tree_method": "hist",     # butinas milijonu eiluciu imtims
+        "device": "cuda",          # GPU; be jos automatiskai grizta i "cpu"
         "n_jobs": -1,
     }
+
+    @staticmethod
+    def _irenginys(noretas: str) -> str:
+        """Grazina "cuda" tik jei GPU tikrai pasiekiamas, kitaip "cpu".
+
+        Tyliai grizti i CPU geriau nei luzti: tas pats konfigas turi veikti
+        ir masinoje su GPU, ir be jos. Bet grizimas ISPAUSDINAMAS - kitaip
+        nesuprastum, kodel mokymas staiga trunka desimt kartu ilgiau.
+        """
+        if noretas != "cuda":
+            return noretas
+        try:
+            import xgboost as xgb
+            if xgb.build_info().get("USE_CUDA"):
+                return "cuda"
+            print("  [!] XGBoost sukompiliuotas be CUDA - naudojamas CPU")
+        except Exception as e:
+            print(f"  [!] GPU patikra nepavyko ({e}) - naudojamas CPU")
+        return "cpu"
 
     def _fit(self, X_train, y_train, X_val=None, y_val=None) -> None:
         from sklearn.preprocessing import LabelEncoder
@@ -51,6 +71,7 @@ class Gradientinis(Modelis):
         y = self._kodavimas.transform(y_train)
 
         p = {**self.NUMATYTA, **self.konfig}
+        p["device"] = self._irenginys(p.get("device", "cpu"))
         self._modelis = XGBClassifier(random_state=self.seed,
                                       eval_metric="mlogloss", **p)
         # Disbalansas: eiluciu svoriai, ne scale_pos_weight (zr. dokumentacija)

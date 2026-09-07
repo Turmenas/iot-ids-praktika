@@ -1,0 +1,22 @@
+% GENERUOJAMA is rezultatai/darbiniai/slenkscio_taskai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.slenkstis
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Sprendimo taškas} & \textbf{FPR} & \textbf{Atakų aptikta} & \textbf{macro-F1} \\
+\midrule
+Random Forest & argmax & 32,10~\% & 97,9~\% & 0,721 \\
+ & $\tau$ = 0,9842 & 0,77~\% & 86,3~\% & 0,604 \\
+\addlinespace
+XGBoost & argmax & 21,20~\% & 97,0~\% & 0,684 \\
+ & $\tau$ = 0,9749 & 0,67~\% & 87,6~\% & 0,639 \\
+\addlinespace
+MLP & argmax & 29,13~\% & 96,4~\% & 0,610 \\
+ & $\tau$ = 0,9602 & 0,86~\% & 83,9~\% & 0,546 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Slenkstis parenkamas \emph{tik} validacijos aibėje: mažiausias $\tau$, tenkinantis klaidingų teigiamų biudžetą. Modeliai nepermokomi.
+\endgroup
