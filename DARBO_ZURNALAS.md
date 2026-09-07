@@ -1556,9 +1556,45 @@ Permokymas atrodė užkibęs. Priežastis paprasta ir apskaičiuojama iš anksto
 - **Eigos klasė funkcijos viduje nepasiduoda `pickle`** — modelio išsaugojimas lūžo `PicklingError`. Perkelta į modulio lygį, o `_issaugoti` dabar atsieja iškvietimus: išsaugotam modeliui laikmačiai nereikalingi.
 - **`USE_CUDA` sako tik tiek, kad biblioteka sukompiliuota su CUDA** — ne kad GPU yra. Mano patikra būtų tylėjusi ten, kur GPU nėra. XGBoost pats grįžta į CPU su aiškiu pranešimu, tad patikros teiginys patikslintas, o ne sustiprintas.
 
+#### 50. Derinimas pagerino visus tris — ties FPR biudžetu ⭐⭐
+
+| Modelis | Bazinė ties biudžetu | Suderinta ties biudžetu | Pokytis |
+|---|---:|---:|---:|
+| **XGBoost** | 0,6390 | **0,6578** | +2,9 % |
+| Random Forest | 0,6037 | 0,6423 | +6,4 % |
+| MLP | 0,5455 | 0,5906 | +8,3 % |
+
+**XGBoost lieka geriausias ties operaciniu tašku** — macro-F1 0,6578, aptinka 88,4 % atakų prie 0,94 % klaidingų teigiamų.
+
+⭐ **Rikiuotės apsivertimas pasikartojo su suderintais modeliais.** Prie argmax pirmauja Random Forest (0,7235 prieš 0,7185), ties biudžetu — XGBoost (0,6578 prieš 0,6423). Tas pats reiškinys, tie patys modeliai, kitos hiperparametrų reikšmės. **Vadinasi, tai ne atsitiktinumas, o savybė**, ir 6 skyriuje ją galima teigti tvirtai.
+
+**GPU davė realų pagreitį:** XGBoost mokymas 215,8 → 105,5 s, nors medžių 800 vietoj 300 ir gylis 10 vietoj 8 — vienam medžiui apie penkis kartus greičiau.
+
+#### 51. Dydis, išmatuotas ant imties, į pilną aibę NEPERSIKELIA ⚠️⚠️
+
+Derinimo paieška Random Forest'ui prognozavo **196 MB**. Permokius ant visos aibės gauta **637,9 MB** — 3,3 karto daugiau, ir **daugiau nei bazinės konfigūracijos 558 MB.**
+
+Priežastis paprasta ir buvo numatoma: paieška ėjo ant 400 000 eilučių, o pilna mokymo aibė yra 1 698 155 — 4,25 karto daugiau. Prie `max_depth=30` medžiai nėra gylio ribojami tiek, kad lapai prisotintų: mazgų skaičius auga beveik tiesiškai su eilučių skaičiumi. Dydis padidėjo 3,3 karto — beveik tiek pat, kiek duomenys.
+
+⚠️ **Vadinasi, Random Forest atminties problema NEIŠSPRĘSTA — ji šiek tiek pablogėjo.** Būtent dėl jos į paiešką ir įdėjau dydžio stulpelį, o tas stulpelis pasirodė neinformatyvus tam tikslui, kuriam buvo skirtas.
+
+**Pamoka konkreti:** ant imties matuojama **kokybė** persikelia neblogai (rikiuotė pasitvirtino), bet **dydis nepersikelia**, nes jis priklauso nuo mokymo aibės dydžio, o ne tik nuo hiperparametrų. Dydį reikia arba matuoti pilnoje aibėje, arba ekstrapoliuoti pagal eilučių santykį.
+
+**Ką iš tikrųjų mažintų:** `min_samples_leaf` (dabar 1). Prie 10 ar 20 mazgų skaičius kristų kartais, o ne procentais. `max_depth` prie 30 nebeveikia kaip riba.
+
+XGBoost dydis irgi paaugo (27,8 → 45,0 MB), bet tik 1,6 karto: medžių skaičius fiksuotas, tad auga tik jų sudėtingumas. 45 MB į šliuzo biudžetą telpa.
+
+#### 52. Apsirikau delsos kryptimi ⚠️
+
+Vakar parašiau, kad GPU→CPU perėjimas išpūs XGBoost delsą. **Išmatuota priešingai: 7,58 → 4,13 µs**, t. y. beveik dvigubai greičiau. Prognozė vyksta GPU, ir tai atperka `DMatrix` sudarymą.
+
+**Bet išvada dėl matavimo lieka ta pati — tik dėl priešingos priežasties.** 4,13 µs yra **per optimistinis** skaičius: jis gautas su GPU, o kraštinis šliuzas GPU neturi — tai buvo 2 skyriaus prielaida. Lyginti jį su Random Forest ir MLP, matuotais CPU, negalima nė viena kryptimi.
+
+Taisymas tas pats: prieš delsos matavimą modelis perjungiamas į CPU. Skirtumas tas, kad tai ne „ištaisyti išpūstą skaičių", o **atsisakyti aparatūros, kurios diegimo vietoje nebus.**
+
 ### Ką darysiu toliau
 
-**`mokyti_derintus.bat` → `slenkstis.bat` → `i_latex`.** Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
+**Trys taisymai prieš 5 užduotį:** delsa matuojama CPU · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
