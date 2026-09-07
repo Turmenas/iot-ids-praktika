@@ -1,0 +1,20 @@
+% Veikimo rodikliai
+% GENERUOJAMA is rezultatai/rezultatai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.i_latex
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Formuluotė} & \textbf{Mokymo laikas, s} & \textbf{Inferencija, $\mu$s} & \textbf{Dydis, MB} \\
+\midrule
+XGBoost & 8 kategorijos & 203,2\,$\pm$\,2,1 & 6,04\,$\pm$\,0,34 & 7,78\,$\pm$\,0,04 \\
+Random Forest & 8 kategorijos & 126,8\,$\pm$\,6,1 & 7,20\,$\pm$\,0,29 & 558,50\,$\pm$\,0,19 \\
+MLP & 8 kategorijos & \textbf{50,2\,$\pm$\,3,1} & \textbf{3,09\,$\pm$\,0,24} & \textbf{0,18} \\
+\addlinespace
+Autokoderis & Dvejetainė & 5,1\,$\pm$\,0,6 & 3,81\,$\pm$\,0,80 & 0,06 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Inferencijos delsa matuojama gryna, atskirai nuo srauto lango sukaupimo laiko; kraštinio šliuzo biudžetas --- 20--50~ms. Reikšmės --- vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
+\endgroup

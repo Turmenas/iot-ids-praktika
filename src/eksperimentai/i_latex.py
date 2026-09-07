@@ -176,6 +176,9 @@ def _lentele(a: pd.DataFrame, stulpeliai: list, antraste: str,
         if not ryskinti:
             continue
         for f, grupe in a.groupby("formuluote", sort=False):
+            # Vienos eilutes grupeje geriausio nera - ji tokia viena.
+            if len(grupe) < 2:
+                continue
             v = grupe[f"{kodas}__vid"]
             if v.notna().any():
                 geriausi[(kodas, f)] = v.max() if didesnis else v.min()

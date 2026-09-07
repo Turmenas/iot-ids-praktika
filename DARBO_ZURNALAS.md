@@ -1312,9 +1312,106 @@ Patikrinta automatiškai: ASCII, CRLF, BOM nėra, kiekvienas `goto` turi atitink
 
 ⚠️ **Ko patikra nepadengia:** pačios `cmd.exe` semantikos — Linux pusėje jos paleisti negaliu. Pirmas tikras bandymas bus `patikra.bat`.
 
-### Ką darysiu toliau (rugs. 8, antradienis)
+### T7 — visi 12 paleidimų atlikti ✅
 
-**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų — paleidžiant per `.bat`, kad aplinkos klausimas nebeiškiltų.
+| Modelis | macro-F1 | Tikslumas | PR-AUC | FPR | Mokymas | Delsa | Dydis |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **Random Forest** | **0,721** ± 0,001 | 0,840 | 0,760 | **32,2 %** | 127 s | 7,20 µs | **558,5 MB** |
+| XGBoost | 0,684 ± 0,000 | 0,810 | **0,784** | 21,4 % | 203 s | 6,04 µs | 7,78 MB |
+| MLP | 0,617 ± 0,006 | 0,743 | 0,719 | 29,9 % | 50 s | 3,09 µs | 0,18 MB |
+| Autokoderis | 0,220 ± 0,044 | 0,240 | **0,996** | **1,0 %** | 5 s | 3,81 µs | 0,06 MB |
+
+### Ką radau
+
+#### 34. Random Forest aplenkė XGBoost — ir tai tikras skirtumas ⭐⭐
+
+macro-F1 **0,721 prieš 0,684**. Skirtumas 0,0375 yra **75 kartus didesnis už paleidimų sklaidą** (0,0005), tad pagal `dietterich1998tests` taisyklę jis tikras, o ne triukšmas.
+
+**Tai apverčia dvi ankstesnes prognozes.** Sprendimų matrica davė XGBoost 4,70, o Random Forest 3,55; rugsėjo 7 d. patikra ant 50 000 eilučių rodė XGBoost 0,692 prieš RF 0,666 — ta pačia kryptimi kaip matrica. **Pilna aibė apvertė ženklą.**
+
+Bet vienareikšmio nugalėtojo nėra, ir tai svarbiau už rikiuotę:
+
+| Kriterijus | Laimi |
+|---|---|
+| macro-F1 | **Random Forest** (0,721 prieš 0,684) |
+| PR-AUC ir ROC-AUC | **XGBoost** (0,784 / 0,983) |
+| Klaidingi teigiami | **XGBoost** (21,4 % prieš 32,2 %) |
+| Modelio dydis | **XGBoost** — 7,78 MB prieš **558,5 MB**, t. y. **72 kartus** |
+
+XGBoost geriau **rikiuoja** (aukštesni AUC), Random Forest geriau **sprendžia** prie argmax. Tai skirtingi dalykai, ir 6 skyriuje juos reikia pasakyti atskirai.
+
+⚠️ **Sprendimų matrica per dosniai įvertino RF resursus** (4 iš 5). 558 MB kraštiniame šliuze yra ne „šiek tiek daugiau“, o diskvalifikuojantis dydis. Priežastis mano konfigūracijoje: `max_depth: null`.
+
+#### 35. Klaidingi teigiami — 21–32 kartus virš biudžeto ⚠️⚠️⚠️
+
+**Tai rimčiausias radinys ir jis blokuoja išvadas.** 1 skyriuje suskaičiuota, kad 1 % klaidingų teigiamų reiškia ~1000 signalų per parą ir sistema išjungiama. Gauta:
+
+| Modelis | FPR | Virš biudžeto |
+|---|---:|---:|
+| Random Forest | 32,2 % | **32×** |
+| MLP | 29,9 % | 30× |
+| XGBoost | 21,4 % | 21× |
+| Autokoderis | 1,0 % | **telpa** (pagal konstrukciją) |
+
+Trys prižiūrimi modeliai eksploatacijai netinka nė vienas. **Klaidingiems teigiamiems atrankoje skirta 30 % svorio — tiek pat, kiek aptikimo kokybei**, tad tai ne šalutinis rodiklis.
+
+**Darbinė hipotezė — klasių svoriai.** `Web` gauna svorį 12,79, `BruteForce` 24,22, o `Benign` tik 3,03. Vadinasi, gerybinis srautas *santykinai* nusvertas 4–8 kartus: kai eilutė dviprasmiška, modeliui pigiau spėti retą ataką. Balansavimas, keliantis macro-F1, tuo pačiu griauna FPR.
+
+**Hipotezė tikrinama abliacija** — tie patys modeliai be `class_weight`. Kaina ~17 min.
+
+#### 36. Klaidingi teigiami turi vardą, ir jis buvo numatytas 1 užduotyje ⭐⭐⭐
+
+Pažiūrėjus, į ką virsta 15 000 val gerybinių eilučių:
+
+| Kur nukeliauja | Random Forest | XGBoost |
+|---|---:|---:|
+| Lieka `Benign` | 67,9 % | 78,8 % |
+| → **`Recon`** | **28,0 %** | 9,3 % |
+| → `Spoofing` | 3,2 % | 1,9 % |
+| → `Web` / `BruteForce` | 0,9 % | 10,0 % |
+
+**Beveik visi Random Forest klaidingi teigiami yra viena pora: gerybinis srautas ↔ žvalgyba.**
+
+⭐ **Ir būtent tai buvo užrašyta rugsėjo 3 d.** `01_atakos.tex` eilutėje apie žvalgybą: *„Srauto kryptis, trukmė ir unikalių taikinių skaičius **nefiksuojami**“* — tai viena iš keturių atakų, kurioms 39 požymių leidimas neturi skiriamųjų požymių.
+
+**Prognozė iš 1 užduoties pasitvirtino matavimu 5 užduotyje.** Duomenų apribojimas, įvardytas teorinėje dalyje, pasirodė kaip konkretus, išmatuojamas klaidų šablonas. Tai stipriausias darbo rezultatas: jis susieja 1 skyrių su 5-uoju ir parodo, kad teorinė dalis nebuvo dekoracija.
+
+#### 37. Tikslumas 0,84 prieš literatūros 99,5 % — dublikatų argumentas įrodytas savo skaičiais ⭐⭐
+
+`almahaqeri2026gradient` ant to paties CICIoT2023 skelbia 99,59 % tikslumą 8 kategorijoms. Mūsų geriausias — **0,840**.
+
+Skirtumas **15,6 procentinio punkto**, ir pagrindinis kandidatas į priežastis yra tas pats, kurį išmatavau rugsėjo 6 d.: **pašalinti 53,3 % tikslių dublikatų.** Pašalinus pasikartojančias eilutes dingsta būtent tie pavyzdžiai, kuriuos modelis gali įsiminti.
+
+⚠️ **Sąžiningos išlygos:** skiriasi ir požymių aibė (39 prieš 46), ir imtis. Todėl teigti galima tiek: *skirtumas yra tos pačios eilės, kaip ir pašalintų dublikatų dalis*, o ne kad jis vien jais paaiškinamas.
+
+**Teorinė riba (99,78 %) nėra ribojanti** — nuo jos esame 15 punktų atstumu. Sunkumas tikras, ne artefaktas.
+
+#### 38. Retos klasės ir yra macro-F1 stabdis
+
+Random Forest per klases (atkūrimas / tikslumas):
+
+| Kategorija | Atkūrimas | Tikslumas |
+|---|---:|---:|
+| Mirai | 99,8 % | 99,8 % |
+| Spoofing · Recon | 86,9 % | 92,8 / 83,4 % |
+| DoS · DDoS | 85,2 / 80,8 % | 60,9 / 93,9 % |
+| `Benign` | 67,9 % | 58,7 % |
+| **BruteForce** | **33,9 %** | 66,3 % |
+| **Web** | **26,9 %** | 57,1 % |
+
+`Web` ir `BruteForce` — mažiausios kategorijos (23 707 ir 12 520 eilučių) ir prasčiausiai atpažįstamos. Būtent jos nutempia macro vidurkį, kaip ir numatyta rugsėjo 2 d. aiškinant `almahaqeri2026gradient` 0,8903.
+
+Antra pastaba: `Benign` tikslumas **58,7 %** — kas antra „gerybine“ pavadinta eilutė iš tikrųjų yra ataka. Problema abipusė, ne tik klaidingi teigiami.
+
+#### 39. Delsos argumentas pasitvirtino su didele atsarga
+
+3,09–7,20 µs vienam įrašui prieš 20–50 ms šliuzo biudžetą — **2 800–6 500 kartų atsargos**. 2 skyriaus teiginys, kad lentelinių modelių delsa nėra ribojantis veiksnys, patvirtintas savo matavimais, o ne vien literatūra.
+
+Autokoderis atkartojo rugsėjo 7 d. slenksčio kreivę tiksliai: FPR lygiai 1,0 % ir macro-F1 0,220 (kreivė prognozavo 0,150 ties 11,8 % aptikimo). PR-AUC **0,996** prieš bazinį 0,959 — rikiuoja gerai, sprendžia blogai. Tas pats skardis, tik dabar pilnoje aibėje.
+
+### Ką darysiu toliau
+
+**Pirmiausia — klaidingų teigiamų abliacija.** Be jos 5 ir 6 skyriai turėtų pasakyti „geriausias metodas netinka eksploatacijai“ ir sustoti, nepatikrinę akivaizdžiausio paaiškinimo.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 

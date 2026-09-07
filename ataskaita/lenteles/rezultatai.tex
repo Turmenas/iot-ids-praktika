@@ -1,0 +1,20 @@
+% Aptikimo kokybe
+% GENERUOJAMA is rezultatai/rezultatai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.i_latex
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Formuluotė} & \textbf{macro-F1} & \textbf{PR-AUC} & \textbf{ROC-AUC} & \textbf{MCC} & \textbf{FPR} & \textbf{Tikslumas\textsuperscript{a}} \\
+\midrule
+XGBoost & 8 kategorijos & 0,684 & 0,784 & 0,983 & 0,762 & 0,2135\,$\pm$\,0,0017 & 0,810 \\
+Random Forest & 8 kategorijos & \textbf{0,721\,$\pm$\,0,001} & 0,760 & 0,975 & 0,793 & 0,3216\,$\pm$\,0,0008 & 0,840 \\
+MLP & 8 kategorijos & 0,617\,$\pm$\,0,006 & 0,719\,$\pm$\,0,004 & 0,974\,$\pm$\,0,001 & 0,694\,$\pm$\,0,004 & 0,2988\,$\pm$\,0,0070 & 0,743\,$\pm$\,0,003 \\
+\addlinespace
+Autokoderis & Dvejetainė & 0,220\,$\pm$\,0,044 & 0,996 & 0,931\,$\pm$\,0,002 & 0,098\,$\pm$\,0,019 & 0,0100 & 0,240\,$\pm$\,0,058 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize \textsuperscript{a}~Bendras tikslumas pateikiamas \emph{tik} palyginimui su literatūra: prie 41,8:1 santykio jis nėra rodiklis. Reikšmės --- vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
+\endgroup
