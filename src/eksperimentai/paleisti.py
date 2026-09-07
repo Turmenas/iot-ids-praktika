@@ -159,13 +159,20 @@ def main() -> None:
                    help="apkarpyti mokymo aibe - TIK greitai patikrai")
     n = a.parse_args()
 
-    for k in n.konfigai:
-        for s in n.seed:
-            try:
-                paleisti(k, s, n.vertinimas, n.imtis)
-            except Exception as e:
-                print(f"\n[KLAIDA] {k.name} seed {s}: {type(e).__name__}: {e}")
-                raise
+    import time
+    darbai = [(k, s) for k in n.konfigai for s in n.seed]
+    t0 = time.perf_counter()
+
+    for i, (k, s) in enumerate(darbai, 1):
+        praejo = time.perf_counter() - t0
+        liko = (f"  praejo {praejo/60:.1f} min, liko ~"
+                f"{praejo/(i-1)*(len(darbai)-i+1)/60:.0f} min" if i > 1 else "")
+        print(f"\n>>> PALEIDIMAS {i}/{len(darbai)}{liko}")
+        try:
+            paleisti(k, s, n.vertinimas, n.imtis)
+        except Exception as e:
+            print(f"\n[KLAIDA] {k.name} seed {s}: {type(e).__name__}: {e}")
+            raise
 
     if not n.imtis:
         print(f"\nRezultatai: {REZULTATAI.relative_to(SAKNIS)}")

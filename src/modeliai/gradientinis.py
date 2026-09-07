@@ -25,6 +25,35 @@ import numpy as np
 from src.modeliai.bazinis import Modelis
 
 
+def _eigos_iskvietimas(is_viso: int, vardas: str):
+    """XGBoost eigos juosta.
+
+    Klase kuriama funkcijoje, bet PATI funkcija yra modulio lygyje: vietine
+    klase (`_fit` viduje) nepasiduoda `pickle`, ir modelio issaugojimas
+    luzta. Kartu `issaugoti` atsieja iskvietimus - kitaip i faila keliautu
+    ir laikmaciai.
+    """
+    import time
+
+    import xgboost as xgb
+
+    from src.eksperimentai import eiga
+
+    class _Eiga(xgb.callback.TrainingCallback):
+        def __init__(self):
+            self.is_viso = int(is_viso)
+            self.zingsnis = max(1, self.is_viso // 20)
+            self.t0 = time.perf_counter()
+
+        def after_iteration(self, model, epoch, evals_log):
+            n = epoch + 1
+            if n % self.zingsnis == 0 or n == self.is_viso:
+                eiga.juosta(n, self.is_viso, vardas, "medziu", self.t0)
+            return False              # False = testi mokyma
+
+    return _Eiga()
+
+
 class Gradientinis(Modelis):
     vardas = "XGBoost"
     priziurimas = True
@@ -60,6 +89,11 @@ class Gradientinis(Modelis):
             print(f"  [!] GPU patikra nepavyko ({e}) - naudojamas CPU")
         return "cpu"
 
+        # Pastaba: `USE_CUDA` sako tik tiek, kad biblioteka SUKOMPILIUOTA su
+        # CUDA - ne kad GPU yra. Jei jo nera, XGBoost pats grizta i CPU ir
+        # apie tai perspeja ("No visible GPU is found"). Tos zinutes uztenka,
+        # todel cia GPU buvimas netikrinamas paleidziant bandomaji mokyma.
+
     def _fit(self, X_train, y_train, X_val=None, y_val=None) -> None:
         from sklearn.preprocessing import LabelEncoder
         from xgboost import XGBClassifier
@@ -72,8 +106,10 @@ class Gradientinis(Modelis):
 
         p = {**self.NUMATYTA, **self.konfig}
         p["device"] = self._irenginys(p.get("device", "cpu"))
-        self._modelis = XGBClassifier(random_state=self.seed,
-                                      eval_metric="mlogloss", **p)
+
+        self._modelis = XGBClassifier(
+            random_state=self.seed, eval_metric="mlogloss",
+            callbacks=[_eigos_iskvietimas(p["n_estimators"], self.vardas)], **p)
         # Disbalansas: eiluciu svoriai, ne scale_pos_weight (zr. dokumentacija)
         self._modelis.fit(X_train, y,
                           sample_weight=balansavimas.eiluciu_svoriai(y_train),
@@ -87,5 +123,8 @@ class Gradientinis(Modelis):
 
     def _issaugoti(self, kelias: Path) -> None:
         import joblib
+        # Eigos iskvietimas turi laikmati ir isvesties busena - i issaugota
+        # modeli jam ne vieta, o `pickle` jo vis tiek nepriimtu.
+        self._modelis.callbacks = None
         joblib.dump({"modelis": self._modelis, "kodavimas": self._kodavimas},
                     kelias, compress=3)

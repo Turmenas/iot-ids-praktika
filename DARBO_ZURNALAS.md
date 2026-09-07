@@ -1534,6 +1534,28 @@ Po 20 bandymų kiekvienam modeliui (400 000 eilučių imtis):
 
 **Suderinti konfigai sukurti ATSKIRAIS failais** (`*_derintas.yaml`). Perrašius senuosius, `rezultatai.csv` idempotentiškas įrašymas pakeistų bazines eilutes ta pačia rakto pora — ir palyginimas „prieš/po“, kurio reikia ataskaitai, dingtų.
 
+#### 49. Suderintas Random Forest lėtesnis ~3,7 karto — ir be eigos to nebuvo kaip suprasti ⭐
+
+Permokymas atrodė užkibęs. Priežastis paprasta ir apskaičiuojama iš anksto: suderintas RF turi `max_features=0.3` (11 požymių skaidymui vietoj 6 prie `sqrt`) ir **200 medžių vietoj 100**. Kartu ≈ 3,7 karto daugiau darbo, t. y. ~8 min. vienam seed'ui vietoj 127 s.
+
+**Bet tai išaiškėjo tik suskaičiavus.** Kol procesas nieko nerašė, „lėtas" ir „užkibęs" atrodė vienodai — o tai priverčia arba laukti neribotai, arba nutraukti gerą paleidimą.
+
+**Pridėta eiga trimis lygiais:**
+
+| Lygis | Kas rodoma |
+|---|---|
+| Visas paleidimas | `>>> PALEIDIMAS 4/9  praejo 12,3 min, liko ~18 min` |
+| Random Forest | juosta pagal medžius, 20 žingsnių |
+| XGBoost | juosta pagal medžius per `TrainingCallback` |
+| MLP · autokoderis | Keras jau spausdina epochas |
+
+⭐ **Random Forest juostai reikėjo mokyti dalimis, ir tai buvo patikrinta prieš darant.** `warm_start` su tuo pačiu `random_state` duoda **tapatų** mišką — skirtumas 2·10⁻¹⁶, t. y. slankiojo kablelio apvalinimas. Tikrinau prieš keisdamas mokymą: eigos juosta, keičianti rezultatus, būtų blogesnė už jos nebuvimą.
+
+**Dvi klaidos, pagautos bandant:**
+
+- **Eigos klasė funkcijos viduje nepasiduoda `pickle`** — modelio išsaugojimas lūžo `PicklingError`. Perkelta į modulio lygį, o `_issaugoti` dabar atsieja iškvietimus: išsaugotam modeliui laikmačiai nereikalingi.
+- **`USE_CUDA` sako tik tiek, kad biblioteka sukompiliuota su CUDA** — ne kad GPU yra. Mano patikra būtų tylėjusi ten, kur GPU nėra. XGBoost pats grįžta į CPU su aiškiu pranešimu, tad patikros teiginys patikslintas, o ne sustiprintas.
+
 ### Ką darysiu toliau
 
 **`mokyti_derintus.bat` → `slenkstis.bat` → `i_latex`.** Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
