@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-07 — **T0–T6 atlikti**: imtis, požymiai, skaidymas, balansavimas, **keturi modeliai ir paleidiklis**
+**Atnaujinta:** 2026-09-07 — **T0–T6 atlikti**; pridėti `.bat` paleidikliai su aplinkos apsauga
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -16,7 +16,11 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `STRUKTURA.md` | Šis failas |
 | ✅ `README.md` | Projekto apžvalga *(2026-09-03: turi turinį, anksčiau klaidingai žymėta tuščia)* |
 | ✅ `requirements.txt` · `requirements-lock.txt` | Priklausomybės *(lock nuo 09-01; žurnale klaidingai laikyta neatlikta)* |
-| ✅ `patikra.py` | Aplinkos patikra |
+| ✅ `patikra.py` | Aplinkos patikra (bibliotekos + aplankai) |
+| ✅ `_aplinka.bat` | ⭐ Bendra dalis visiems `.bat`: aktyvuoja `iot-ids`, **nutraukia darbą, jei aktyvi kita aplinka**, išjungia `%APPDATA%` paketų nutekėjimą |
+| ✅ `patikra.bat` | Keturios patikros prieš mokymą (~1 min., į CSV nerašo) |
+| ✅ `mokyti_rf.bat` · `mokyti_xgboost.bat` · `mokyti_mlp.bat` · `mokyti_autoencoder.bat` | Po vieną modelį × 3 seed'ai |
+| ✅ `mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
 | ✅ `.gitignore` | Komentarai **tik** atskirose eilutėse |
 | ✅ `.gitattributes` | Eilučių pabaigų normalizavimas |
 
@@ -108,6 +112,22 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 ---
 
 ## Komandos
+
+### Paprasčiausias būdas — `.bat` failai
+
+```
+patikra.bat                 pirma sis: 4 patikros, ~1 min.
+mokyti_viska.bat            visi 12 paleidimu nuosekliai
+mokyti_rf.bat               po viena modeli, jei nori dalimis
+mokyti_xgboost.bat
+mokyti_mlp.bat
+mokyti_autoencoder.bat
+```
+
+Jie patys aktyvuoja `iot-ids` ir **nutraukia darbą**, jei aktyvi kita aplinka —
+būtent tai, kas atsitiko 2026-09-07.
+
+### Rankomis
 
 ```powershell
 conda activate iot-ids

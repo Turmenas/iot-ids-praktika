@@ -1294,9 +1294,27 @@ Failas perrašytas į UTF-8 (79 paketai, turinys nepakeistas). Iš jo matyti, ka
 
 **Taisyklė papildyta:** PowerShell'e failus rašyti su `| Out-File -Encoding utf8`, ne `>`.
 
+#### 33. `.bat` paleidikliai — aplinkos klaida paverčiama neįmanoma ⭐
+
+Septyni failai: `patikra.bat`, keturi `mokyti_*.bat` po vieną modeliui, `mokyti_viska.bat` ir bendra dalis `_aplinka.bat`.
+
+**Svarbiausia juose ne patogumas, o `_aplinka.bat`.** Jis daro tris dalykus, kurių rankinis paleidimas nedaro:
+
+1. **Aktyvuoja `iot-ids` ir patikrina, ar tikrai aktyvavo.** Tikrinamas ne `CONDA_DEFAULT_ENV`, o `os.path.basename(sys.prefix)` — tikrasis interpretatoriaus kelias, nes būtent jis lemia, kurie paketai importuojami. Jei aplinka ne ta, skriptas **nutraukia darbą** su paaiškinimu, o ne mokosi toliau.
+2. **`PYTHONNOUSERSITE=1`** — išjungia `%APPDATA%\Python\Python312\site-packages`, t. y. pačią šiandieninio numpy konflikto priežastį, o ne jo simptomą.
+3. Grąžina darbinį aplanką po aktyvavimo (aktyvavimo skriptai gali jį pakeisti) ir nutildo TensorFlow informacinius pranešimus.
+
+**Mokymas nuoseklus, ne lygiagretus, ir tai ne atsargumas.** Du argumentai: keturi procesai rašytų į tą patį `rezultatai.csv` ir jį sugadintų, o duomenų paruošimas pasiekia ~3,5 GB, tad keturi vienu metu pareikalautų ~14 GB. Įrašyta į failo antraštę, kad po savaitės nekiltų pagunda „pagreitinti“.
+
+**Ta pati ASCII taisyklė kaip `build.ps1`.** Failai gryname ASCII be lietuviškų raidžių ir su CRLF: cmd.exe lange lietuviškos raidės virsta šiukšlėmis, o LF eilutės laužo daugiaeiles `if`/`for` konstrukcijas. `.gitattributes` papildytas `*.bat text eol=crlf` — kitaip Git jas normalizuotų į LF ir failai suluoštų.
+
+Patikrinta automatiškai: ASCII, CRLF, BOM nėra, kiekvienas `goto` turi atitinkamą etiketę.
+
+⚠️ **Ko patikra nepadengia:** pačios `cmd.exe` semantikos — Linux pusėje jos paleisti negaliu. Pirmas tikras bandymas bus `patikra.bat`.
+
 ### Ką darysiu toliau (rugs. 8, antradienis)
 
-**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų — **aktyvavus `iot-ids`**.
+**T7 → T8 → T9.** Modeliai ir infrastruktūra paruošti; laukiama pilno mokymo rezultatų — paleidžiant per `.bat`, kad aplinkos klausimas nebeiškiltų.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
