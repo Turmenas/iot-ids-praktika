@@ -1409,9 +1409,38 @@ Antra pastaba: `Benign` tikslumas **58,7 %** — kas antra „gerybine“ pavadi
 
 Autokoderis atkartojo rugsėjo 7 d. slenksčio kreivę tiksliai: FPR lygiai 1,0 % ir macro-F1 0,220 (kreivė prognozavo 0,150 ties 11,8 % aptikimo). PR-AUC **0,996** prieš bazinį 0,959 — rikiuoja gerai, sprendžia blogai. Tas pats skardis, tik dabar pilnoje aibėje.
 
+#### 40. Sprendimo slenkstis išsprendžia FPR problemą be permokymo ⭐⭐⭐
+
+Prieš darant abliaciją paaiškėjo, kad klasių svoriai net nėra pagrindinis svertas. Prižiūrimi modeliai grąžina tikimybes, todėl **operacinį tašką galima rinktis po mokymo** — lygiai kaip autokoderiui.
+
+Taisyklė: ataka skelbiama tik jei bendra atakų tikimybė viršija slenkstį *τ*; kitu atveju — `Benign`. XGBoost (seed 42, val aibė, **modelis nepermokytas**):
+
+| *τ* | FPR | Atakų aptikta | macro-F1 |
+|---:|---:|---:|---:|
+| argmax *(dabartinis)* | 21,35 % | — | 0,684 |
+| 0,90 | 4,86 % | 92,1 % | 0,664 |
+| **0,99** | **0,17 %** | **86,0 %** | **0,620** |
+| 0,999 | 0,01 % | 84,1 % | 0,574 |
+
+⭐ **Ties *τ* = 0,99 klaidingi teigiami krenta 125 kartus (21,35 % → 0,17 %), o macro-F1 — tik 9 % (0,684 → 0,620).** Aptikimas lieka 86 %. Operacinis biudžetas iš 21 karto viršyto tampa 6 kartus atsargesnis už reikalaujamą.
+
+**Tai keičia ir 6 skyriaus palyginimą.** Iki šiol modeliai lyginti prie argmax, kur jų FPR skiriasi 21–32 %. Palyginimas **prie vienodo FPR** yra vienintelis teisingas: autokoderis prie 1 % FPR aptinka 11,8 % atakų, XGBoost prie **0,17 %** — 86 %. Skirtumas ne laipsniškas, o kategoriškas, ir be slenksčio kreivės jis nebuvo matomas.
+
+⚠️ **Metodinė pastaba:** slenkstis renkamas ant `val`, kaip ir autokoderio (protokolo 21 punktas). Tai ne protokolo pažeidimas, o to paties principo išplėtimas visiems modeliams — bet jį reikia įvardyti kaip sprendimo taisyklės dalį, ne kaip rezultatų gražinimą.
+
+Kreivė: `rezultatai/darbiniai/xgboost_slenkstis.csv`.
+
+#### 41. Gerybinio srauto turime 10,5 karto daugiau, nei panaudojome ⭐
+
+`BENIGN` klasėje yra **1 047 308** unikalios eilutės, o imtyje — 100 000, nes suveikė riba. Tuo tarpu FPR ir `Benign` tikslumas (58,7 %) yra pagrindinės problemos.
+
+**Tai vienintelė klasė, kuriai daugiau duomenų iš tikrųjų padėtų.** Potvynio klasėse taip pat liko po 1–1,9 mln. eilučių, bet jų pridėjimas tik didintų disbalansą ir neliestų nė vieno klaidų šaltinio. Ribos kėlimas **tik gerybiniam srautui** yra asimetriškas ir tiksliai nukreiptas.
+
+⚠️ Tai **protokolo 1 punkto keitimas**, todėl daromas tik įvardijus priežastį ataskaitoje, o ne tyliai.
+
 ### Ką darysiu toliau
 
-**Pirmiausia — klaidingų teigiamų abliacija.** Be jos 5 ir 6 skyriai turėtų pasakyti „geriausias metodas netinka eksploatacijai“ ir sustoti, nepatikrinę akivaizdžiausio paaiškinimo.
+**Prioritetas — slenksčio kreivės visiems trims prižiūrimiems modeliams.** Ji nemokama (modeliai išsaugoti), išsprendžia blokuojančią FPR problemą ir padaro 6 skyriaus palyginimą teisingą.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
