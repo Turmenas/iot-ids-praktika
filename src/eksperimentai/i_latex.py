@@ -114,9 +114,15 @@ def _rikiuoti(df: pd.DataFrame) -> pd.DataFrame:
 
 # ─── Agregavimas ─────────────────────────────────────────────────────
 
-def ikelti(kelias: Path = CSV) -> pd.DataFrame:
-    if not kelias.exists():
-        raise SystemExit(f"Nerastas {kelias} - pirma paleiskite eksperimentus.")
+def ikelti(kelias: Path | None = None) -> pd.DataFrame:
+    # Kelias imamas kvietimo metu, o ne is numatytojo argumento: numatytasis
+    # butu uzfiksuotas importo momentu ir testai negaletu jo pakeisti.
+    kelias = Path(kelias) if kelias is not None else CSV
+
+    if not kelias.exists() or kelias.stat().st_size == 0:
+        raise SystemExit(
+            f"{kelias} tuscias arba nerastas - pirma paleiskite eksperimentus:\n"
+            f"  python -m src.eksperimentai.paleisti konfig/random_forest.yaml")
 
     df = pd.read_csv(kelias)
     if df.empty:

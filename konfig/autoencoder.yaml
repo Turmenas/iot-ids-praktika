@@ -1,0 +1,17 @@
+# Autokoderis - zero-day hipotezes patikra.
+# Formuluote DVEJETAINE: modelis neturi klasiu, tik anomalijos iverti.
+modelis: autoencoder
+formuluote: dvejetaine
+
+hiperparametrai:
+  sluoksniai: [24, 12]
+  batch_size: 4096
+  epochos: 30
+  kantrybe: 4
+  learning_rate: 0.001
+  # Slenkstis is VAL gerybinio srauto - niekada is test (protokolo 21 p.).
+  # 99, o ne iprastas 95: procentilis PAGAL APIBREZIMA nustato klaidingu
+  # teigiamu daly (100-p) %, o 1 skyrius sako, kad 5 % butu nepriimtina.
+  procentilis: 99
+
+smote: false

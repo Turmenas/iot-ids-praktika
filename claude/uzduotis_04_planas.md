@@ -94,8 +94,8 @@ Kartu kode nėra: **dublikatų šalinimo**, `dropna(subset=["Label"])`, `replace
 | ~~**T2**~~ | ~~Požymių paruošimas~~ | ✅ **Atlikta 09-07.** 36 požymiai; tapatybės patvirtintos imtyje (0 nesutapimų iš 2,43 mln.); `Skale` su apsauga | — |
 | ~~**T3**~~ | ~~Skaidymas 70/15/15~~ | ✅ **Atlikta 09-07.** 1 698 155 / 363 891 / 363 891; keturios patikros; didžiausias proporcijos nuokrypis 0,0001 p. p. | — |
 | ~~**T4**~~ | ~~Balansavimas~~ | ✅ **Atlikta 09-07.** Svorių santykis 83,9; ⚠️ `scale_pos_weight` pakeistas `sample_weight` (protokolo pataisa); SMOTE be gerybinio srauto | — |
-| **T5** | ⭐ **Keturi modeliai su vienoda sąsaja** | `bazinis.py` + `random_forest.py`, `xgboost.py`, `mlp.py`, `autoencoder.py` | **P0** |
-| **T6** | Eksperimentų infrastruktūra | `paleisti.py` + 4 YAML konfigai → `rezultatai.csv` protokolo schema | **P0** |
+| ~~**T5**~~ | ~~Keturi modeliai su vienoda sąsaja~~ | ✅ **Atlikta 09-07.** Visi keturi per registrą; kiekvienas patikrintas pilnu ciklu. Žr. 13 sk. | — |
+| ~~**T6**~~ | ~~Eksperimentų infrastruktūra~~ | ✅ **Atlikta 09-07.** `paleisti.py` + `metrikos.py` + keturi konfigai; schema patikrinta rašant ir skaitant | — |
 | **T7** | ⭐ **Kontrolinis taškas: pilnas ciklas** | RF, 1 seed, nuo `imtis.parquet` iki eilutės `rezultatai.csv` | **P0** |
 | **T8** | Prototipas su vizualizacija | Streamlit: CSV eilutės → požymiai → inferencija → signalai + grafikai | P1 |
 | **T9** | `04_sprendimas.tex` | 7 poskyriai, ~5–6 psl. | **P0** |

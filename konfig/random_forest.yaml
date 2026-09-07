@@ -1,0 +1,16 @@
+# Random Forest - ansamblio pakopa sudetingumo gradiente.
+# Sprendimu matricoje 3,55 balo; vaidmuo - atskaitos lygis prieaugiui matuoti.
+modelis: random_forest
+formuluote: 8kat
+
+hiperparametrai:
+  n_estimators: 100
+  # Gylis neribojamas: 36 pozymiai, 1,7 mln. eiluciu - medziai isauga
+  # patys, o class_weight atsveria disbalansa.
+  max_depth: null
+  min_samples_leaf: 1
+  max_features: sqrt
+  n_jobs: -1
+  class_weight: balanced
+
+smote: false

@@ -1,0 +1,14 @@
+# MLP - ar sudetingumas apsimoka lentelinei ivesciai (2 uzduoties 2.4 klausimas).
+modelis: mlp
+formuluote: 8kat
+
+hiperparametrai:
+  sluoksniai: [128, 64]
+  dropout: 0.2
+  batch_size: 4096
+  epochos: 20
+  # Ankstyvas stabdymas pagal MUSU val aibe; 30 epochu praktikoje nepasiekiama
+  kantrybe: 3
+  learning_rate: 0.001
+
+smote: false

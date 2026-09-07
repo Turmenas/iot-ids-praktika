@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-07 — **T0–T4 atlikti**: imtis sudaryta, požymiai, skaidymas, balansavimas
+**Atnaujinta:** 2026-09-07 — **T0–T6 atlikti**: imtis, požymiai, skaidymas, balansavimas, **keturi modeliai ir paleidiklis**
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -60,9 +60,14 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\pozymiai.py` | ⭐ **T2 (09-07).** 39 → **36** požymiai, šalinama sąrašu; tapatybės tikrinamos kaskart; `Skale` su apsauga (`fit` tik ant train, antras kvietimas meta klaidą) |
 | ✅ `duomenys\skaidymas.py` | ⭐ **T3 (09-07).** Stratifikuotas 70/15/15 pagal **34 etiketes**; **keturios nutekėjimo patikros**; indeksai išsaugomi |
 | ✅ `duomenys\balansavimas.py` | ⭐ **T4 (09-07).** Klasių svoriai (santykis 83,9), `sample_weight` XGBoost'ui, SMOTE abliacijai. **Gerybinis srautas nesintetinamas** |
-| ⬜ `modeliai\bazinis.py` | Bendra klasė: `fit` / `predict` / `predict_proba`. 0 baitų |
-| ⬜ `modeliai\random_forest.py` · `autoencoder.py` · `cnn.py` | Sukurti, 0 baitų. ⚠️ **Ketvertas yra RF, XGBoost, MLP, autokoderis** — `cnn.py` **ištrintinas**; reikės `gradientinis.py` (⚠️ **ne** `xgboost.py` — uždengtų biblioteką) ir `mlp.py` |
-| ⬜ `eksperimentai\paleisti.py` | Konfigas → mokymas → metrikos. 0 baitų |
+| ✅ `modeliai\bazinis.py` | ⭐ **T5.** Kontraktas: `fit` / `predict` / `predict_proba` / `issaugoti`; laukai `priziurimas`, `reikia_skales`; delsos matavimas; registras `gauti()` |
+| ✅ `modeliai\random_forest.py` | **T5.** `class_weight=balanced`; normalizavimo nereikia |
+| ✅ `modeliai\gradientinis.py` | **T5.** XGBoost. ⚠️ Vardas **ne** `xgboost.py` — uždengtų biblioteką. `sample_weight`, ne `scale_pos_weight` |
+| ✅ `modeliai\mlp.py` | **T5.** Keras; ankstyvas stabdymas pagal **mūsų** `val`; `.keras` failas skaičiuojamas į dydį |
+| ✅ `modeliai\autoencoder.py` | ⭐ **T5.** Mokomas tik iš `BENIGN`; slenkstis — **99-asis** `val` procentilis (ne 95: procentilis nustato FPR) |
+| 🗑 `modeliai\cnn.py` | Ištrintinas — neatitinka ketverto |
+| ✅ `eksperimentai\paleisti.py` | ⭐ **T6.** Konfigas → mokymas → metrikos → `rezultatai.csv`. `--imtis` greitai patikrai (į CSV nerašo), `--vertinimas test` **tik 5 užduočiai** |
+| ✅ `eksperimentai\metrikos.py` | **T6.** Protokolo 15 stulpelių; FPR = tikro gerybinio srauto dalis, priskirta atakai |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
 | ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
@@ -77,7 +82,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. Vardas suvienodintas 09-06 |
 | ✅ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
 | ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
-| ✅ `konfig\random_forest.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos |
+| ✅ `konfig\random_forest.yaml` · `gradientinis.yaml` · `mlp.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos — **visos keturios užpildytos** |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
 | ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys |
 | ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
@@ -122,6 +127,9 @@ python -m src.duomenys.balansavimas      # klasiu svoriai + SMOTE abliacija
 
 python -m src.eksperimentai.matrica     # CSV -> lenteles/matrica.tex
 python -m src.eksperimentai.jautrumas   # T5: svoriu jautrumas
+python -m src.eksperimentai.paleisti konfig/random_forest.yaml --seed 42 43 44
+python -m src.eksperimentai.paleisti konfig/*.yaml --seed 42 43 44
+python -m src.eksperimentai.paleisti konfig/mlp.yaml --imtis 50000   # greita patikra
 python -m src.eksperimentai.i_latex        # -> rezultatai.tex + veikimas.tex
 
 git add . ; git commit -m "..." ; git push
