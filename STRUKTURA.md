@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-07 — **T0–T6 atlikti**; pridėti `.bat` paleidikliai su aplinkos apsauga
+**Atnaujinta:** 2026-09-07 — **T0–T7 atlikti**; pridėtas slenksčio parinkimas ir hiperparametrų derinimas
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -21,6 +21,8 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `patikra.bat` | Keturios patikros prieš mokymą (~1 min., į CSV nerašo) |
 | ✅ `mokyti_rf.bat` · `mokyti_xgboost.bat` · `mokyti_mlp.bat` · `mokyti_autoencoder.bat` | Po vieną modelį × 3 seed'ai |
 | ✅ `mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
+| ✅ `slenkstis.bat` | ⭐ FPR biudžeto laikymasis **be permokymo** (naudoja išsaugotus modelius) |
+| ✅ `derinti.bat` | Hiperparametrų paieška — **protokolo 18 punktas** |
 | ✅ `.gitignore` | Komentarai **tik** atskirose eilutėse |
 | ✅ `.gitattributes` | Eilučių pabaigų normalizavimas |
 
@@ -74,6 +76,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `eksperimentai\metrikos.py` | **T6.** Protokolo 15 stulpelių; FPR = tikro gerybinio srauto dalis, priskirta atakai |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
+| ✅ `eksperimentai\slenkstis.py` | ⭐ Sprendimo slenkstis: kreivės + operacinis taškas ties FPR ≤ 1 %. `--modeliai` leidžia paleisti dalimis |
+| ✅ `eksperimentai\derinimas.py` | ⭐ Atsitiktinė paieška ant imties; šalia macro-F1 fiksuoja **modelio dydį** |
 | ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
 
 ## Duomenys, konfigūracijos, rezultatai

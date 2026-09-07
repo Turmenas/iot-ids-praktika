@@ -1438,9 +1438,38 @@ Kreivė: `rezultatai/darbiniai/xgboost_slenkstis.csv`.
 
 ⚠️ Tai **protokolo 1 punkto keitimas**, todėl daromas tik įvardijus priežastį ataskaitoje, o ne tyliai.
 
+#### 42. Random Forest netelpa į atmintį — 558 MB buvo per švelnus skaičius ⚠️⭐
+
+Rašant slenksčio modulį procesas nutrūko be pranešimo. Priežastis pasirodė svarbesnė už patį modulį: **`joblib.load` vien Random Forest modeliui nužudomas 3,9 GB mašinoje** (išėjimo kodas 137), net kai daugiau nieko neįkelta.
+
+558 MB yra dydis **diske ir suspaustas** (`joblib compress=3`). Atmintyje modelis kelis kartus didesnis — daugiau nei 3,9 GB.
+
+**Tai keičia resursų vertinimą kokybiškai, ne kiekybiškai.** Sprendimų matricoje Random Forest gavo 4 iš 5 už resursus, o kraštinio šliuzo klasės įrenginiai turi 1–8 GB. Modelis, kuriam vien įkelti reikia daugiau nei 4 GB, ten netelpa iš principo — tai ne „šiek tiek brangiau“, o diskvalifikacija. Priežastis mano konfigūracijoje: `max_depth: null`.
+
+Iš to seka konkretus reikalavimas derinimui: **modelio dydis fiksuojamas šalia macro-F1 kiekvienam bandymui**, ir įrašyta taisyklė siūlyti mažiausią modelį, atsiliekantį mažiau nei 1 % nuo geriausio.
+
+#### 43. Slenksčio kreivė patvirtinta antruoju matavimu
+
+XGBoost, visa `val` aibė, modelis nepermokytas:
+
+| Taškas | FPR | Atakų aptikta | macro-F1 |
+|---|---:|---:|---:|
+| argmax | 21,20 % | 97,0 % | 0,684 |
+| **τ = 0,975** | **0,67 %** | **87,6 %** | **0,639** |
+
+**FPR sumažėjo 32 kartus, macro-F1 — 6,5 %.** Biudžetas įvykdytas su atsarga, o aptikimas nukrito nuo 97,0 % iki 87,6 %.
+
+⚠️ **Dvi ribos, kurių negalėjau patikrinti savo pusėje:** Random Forest netelpa į atmintį, o MLP `.keras` failas neįsikelia dėl Keras versijų skirtumo (`quantization_config` — failas išsaugotas naujesne versija). Abu turi veikti mašinoje, kurioje modeliai buvo apmokyti.
+
+#### 44. Skalė neišsaugota su modeliu ⚠️
+
+Rašant MLP kelią paaiškėjo, kad `paleisti.py` sukuria `Skale`, bet jos **neišsaugo**. Slenksčio moduliui tai neproblema — `StandardScaler` deterministinis, tad perskaičiuota iš tos pačios mokymo aibės skalė tapati.
+
+Bet **diegimui to nepakanka:** išsaugotas MLP ar autokoderis be skalės yra neveikiantis artefaktas, nes įvesties normalizavimo parametrai prarasti. Tai tiesiogiai liečia 4 užduoties prototipą (T8). Įrašyta kaip taisytinas dalykas.
+
 ### Ką darysiu toliau
 
-**Prioritetas — slenksčio kreivės visiems trims prižiūrimiems modeliams.** Ji nemokama (modeliai išsaugoti), išsprendžia blokuojančią FPR problemą ir padaro 6 skyriaus palyginimą teisingą.
+**Slenkstis ir derinimas paruošti (`slenkstis.bat`, `derinti.bat`).** Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 

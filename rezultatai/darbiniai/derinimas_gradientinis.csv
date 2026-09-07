@@ -1,0 +1,4 @@
+bandymas,macro_f1,dydis_mb,mokymo_laikas_s,n_estimators,max_depth,learning_rate,subsample,colsample_bytree,min_child_weight
+3,0.69169,5.37,16.3,600,8,0.1,0.8,0.8,10
+2,0.69071,3.41,12.0,400,8,0.2,0.8,1.0,10
+1,0.67073,1.13,7.5,400,4,0.1,0.8,1.0,1
