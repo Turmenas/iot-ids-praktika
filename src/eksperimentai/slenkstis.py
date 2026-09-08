@@ -257,7 +257,11 @@ def main() -> None:
     def _sujungti(nauja: pd.DataFrame, kelias: Path) -> pd.DataFrame:
         if kelias.exists():
             sena = pd.read_csv(kelias)
-            sena = sena[~sena.modelis.isin(nauja.modelis.unique())]
+            # Salinamos ir tos pacios eilutes senu vardu (be varianto
+            # skliaustuose) - kitaip po pervadinimo lenteleje lieka dublikatai.
+            baze = {m.split(" (")[0] for m in nauja.modelis.unique()}
+            sena = sena[~sena.modelis.isin(nauja.modelis.unique())
+                        & ~sena.modelis.isin(baze)]
             nauja = pd.concat([sena, nauja], ignore_index=True)
         eile = {m["rodomas"]: i for i, m in enumerate(modeliai)}
         nauja["_e"] = nauja.modelis.map(eile).fillna(99)
