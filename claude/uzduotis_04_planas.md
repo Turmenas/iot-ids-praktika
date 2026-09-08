@@ -13,7 +13,7 @@
 | ✅ **Derinimas** | Atliktas: 20 bandymų × 3 modeliai. Suderinti konfigai — `konfig/*_derintas.yaml` |
 | 🔄 **Permokymas** | `mokyti_derintus.bat` — **dar nepaleistas** |
 | ✅ **T8** | Prototipas — `prototipas.bat`. MLP jame pareikalaus permokymo (skalė) |
-| ⬜ **T9** | `04_sprendimas.tex` |
+| ✅ **T9** | `04_sprendimas.tex` — 7 poskyriai, 3 lentelės, paveikslas. **Liko sukompiliuoti** |
 
 **Turimi rezultatai** (val aibė, ties FPR ≤ 1 %): XGBoost **0,639** · Random Forest 0,604 · MLP 0,546 · autokoderis 0,220 *(FPR 1 %, aptinka 11,8 %)*.
 

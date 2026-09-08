@@ -1,0 +1,24 @@
+% GENERUOJAMA is rezultatai/darbiniai/imties_pasiskirstymas.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.lenteles
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.5cm}>{\raggedleft\arraybackslash}p{1.5cm}>{\raggedleft\arraybackslash}p{1.9cm}>{\raggedleft\arraybackslash}p{1.9cm}>{\raggedleft\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Kategorija} & \textbf{Etikečių} & \textbf{Dubli\-katų} & \textbf{Rinkinyje} & \textbf{Unikalių} & \textbf{Imtyje} \\
+\midrule
+DDoS & 12 & 62,2~\% & 32\,535\,697 & 12\,291\,943 & 1\,049\,996 \\
+DoS & 4 & 46,1~\% & 7\,746\,340 & 4\,178\,488 & 368\,441 \\
+Žvalgyba & 5 & 0,9~\% & 661\,108 & 655\,464 & 371\,273 \\
+Mirai & 3 & 6,4~\% & 2\,521\,551 & 2\,359\,183 & 300\,000 \\
+Klastojimas & 2 & 6,4~\% & 465\,914 & 436\,061 & 200\,000 \\
+Gerybinis srautas & 1 & 0,4~\% & 1\,051\,313 & 1\,047\,308 & 100\,000 \\
+Žiniatinklio & 6 & 0,4~\% & 23\,798 & 23\,707 & 23\,707 \\
+Grubi jėga & 1 & 0,0~\% & 12\,522 & 12\,520 & 12\,520 \\
+\midrule
+\textbf{Iš viso} & \textbf{34} & \textbf{53,3~\%} & \textbf{45\,018\,243} & \textbf{21\,004\,674} & \textbf{2\,425\,937} \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Riba \num{100000} taikyta \emph{etiketei}, ne kategorijai, todėl DDoS su dvylika etikečių gauna daugiausia vietų. Dublikatai šalinami prieš imties sudarymą.
+\endgroup

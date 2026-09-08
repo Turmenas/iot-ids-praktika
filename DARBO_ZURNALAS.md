@@ -1644,9 +1644,34 @@ Pervadinus modelius (`<konfigas>_<formuluotė>_seed<N>`) lūžo **ir** prototipa
 
 **Pamoka paprasta ir sena:** dubliuotas sąrašas yra du sąrašai, kurie anksčiau ar vėliau išsiskiria. Vardų šaltinis turi būti vienas — geriausia pati failų sistema.
 
+#### 56. Delsa permatuota CPU — XGBoost skirtumas 6,5 karto ⭐
+
+| Modelis | Delsa, µs | Dydis, MB |
+|---|---:|---:|
+| Autokoderis | 2,78 | 0,06 |
+| MLP (suderintas) | 3,00 | 0,52 |
+| Random Forest (suderintas) | 10,91 | 637,9 |
+| **XGBoost (suderintas)** | **27,42** *(buvo 4,2 su GPU)* | 45,0 |
+
+Suderinto XGBoost delsa CPU **6,5 karto didesnė** nei matuota GPU. Visi keturi vis tiek telpa į 20–50 ms šliuzo biudžetą su trijų eilių atsarga, bet dabar skaičiai palyginami tarpusavyje ir atitinka diegimo aplinką.
+
+⚠️ **Permatuodamas savo pusėje vos neįvedžiau naujo nesulyginamumo:** įrašiau VM išmatuotas reikšmes į `rezultatai.csv`, kur kitos eilutės matuotos kita mašina. Failą atstačiau iš Git, o į modulio dokumentaciją įrašiau taisyklę — **visi modeliai matuojami vienu paleidimu, vienoje mašinoje**. Ta pati nesulyginamumo yda, kurią taisiau, tik kitu pavidalu.
+
+#### 57. T9 — 4 skyrius parašytas ✅
+
+`04_sprendimas.tex`: 7 poskyriai, ~4,1 psl. teksto plius trys lentelės ir paveikslas.
+
+**Pirmas paveikslas visame darbe** — `paveikslai/architektura.pdf`, generuojamas (`src/eksperimentai/paveikslai.py`), ne pieštas. Jame svarbiausia ne grandinė, o **mokymo atskyrimas nuo diegimo**: į šliuzą keliauja tik du artefaktai — apmokytas modelis ir slenkstis, o slenkstis ateina iš validacijos aibės. Sistema, kalibruojanti save pagal stebimą srautą, prisitaikytų prie atakos, jei ši truktų pakankamai ilgai.
+
+**Nauja generuojama lentelė** `tab:imtis` (`src/eksperimentai/lenteles.py`) — kategorijos, etikečių skaičius, dublikatų dalis, unikalios eilutės ir imtis. Ji vienu žvilgsniu paaiškina tai, ką iki šiol reikėdavo aiškinti tekstu: DDoS turi 12 etikečių ir 62 % dublikatų, `BruteForce` — vieną etiketę ir 0 %.
+
+⚠️ **Generuojamos lentelės `\label` neturi** — jį duoda skyrius, apgaubdamas `table` aplinka. Pastebėjau tikrindamas nuorodas, ne po kompiliavimo. Visos trys naudoja `tabularx`, todėl `table` float'e leistinos (`xltabular` ten negalima — 1 skyriaus spąstai).
+
+**Skyriuje sąmoningai nėra proceso pasakojimo** — nei apie tai, kaip prie sprendimų priėjau, nei apie klaidas. Yra tik kas išmatuota, kas pasirinkta ir kokia to pasekmė. Rugsėjo 3 d. vadovo pastaba pritaikyta iš karto, o ne po redagavimo.
+
 ### Ką darysiu toliau
 
-**T9 — `04_sprendimas.tex`.** Prieš 5 užduotį lieka trys taisymai: delsa CPU ir `paleisti.py` (prototipe jau padaryta) · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
+**Kompiliavimas** (`build.ps1`) — paveikslas ir trys lentelės Windows pusėje dar nebandyti. Po to 4 užduotis uždaryta; lieka 5 ir 6. Prieš 5 užduotį lieka trys taisymai: delsa CPU ir `paleisti.py` (prototipe jau padaryta) · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 

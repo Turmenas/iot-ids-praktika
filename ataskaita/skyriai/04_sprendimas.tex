@@ -1,0 +1,262 @@
+% ---------------------------------------------------------------------
+%  4 UŽDUOTIS — DI pagrįsto aptikimo sprendimo kūrimas
+%  REIKALINGA PREAMBULĖJE: xltabular, tabularx, booktabs, siunitx,
+%                          graphicx, float
+%  Lentelės ir paveikslai GENERUOJAMI:
+%    python -m src.eksperimentai.lenteles     -> lenteles/imtis.tex
+%    python -m src.eksperimentai.i_latex      -> lenteles/veikimas.tex
+%    python -m src.eksperimentai.slenkstis    -> lenteles/slenkstis.tex
+%    python -m src.eksperimentai.paveikslai   -> paveikslai/architektura.pdf
+% ---------------------------------------------------------------------
+
+\subsection{Sprendimo architektūra}
+\label{sec:architektura}
+
+Sprendimas kuriamas kraštiniam šliuzui --- diegimo vietai, kuri
+\ref{sec:atakos} skyriuje nustatyta kaip vienintelė tenkinanti abu
+reikalavimus: remtis tinklo srautu ir veikti be per-įrenginio
+konfigūravimo.
+
+Aptikimo grandinė sudaryta iš šešių žingsnių (\ref{pav:architektura}
+paveikslas). Srauto langas --- 10 arba 100 paketų agregatas --- paverčiamas
+36 požymių vektoriumi; neuroniniams modeliams jis dar normalizuojamas;
+modelis grąžina atakos įvertį; sprendimas priimamas palyginus įvertį su
+slenksčiu, o ne paimant didžiausią tikimybę.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{architektura.pdf}
+  \caption{Aptikimo sprendimo architektūra. Mokymas atskirtas nuo diegimo:
+    į šliuzą keliauja tik apmokytas modelis ir slenkstis.}
+  \label{pav:architektura}
+\end{figure}
+
+Architektūroje svarbiausia yra ne pati grandinė, o \emph{atskyrimas}:
+mokymas ir slenksčio kalibravimas vyksta ne šliuze, o į jį keliauja tik
+du artefaktai --- apmokytas modelis ir skaitinė slenksčio reikšmė.
+Slenkstis nustatomas iš validacijos aibės, o ne iš diegimo srauto: sistema,
+kalibruojanti save pagal stebimą srautą, prisitaikytų prie atakos, jei ši
+truktų pakankamai ilgai.
+
+
+\subsection{Duomenų paruošimas}
+\label{sec:duomenu_paruosimas}
+
+Iš \num{45019243} rinkinio eilučių pirmiausia pašalinamos nutrūkusios
+(devyniuose failuose paskutinė eilutė nepilna) ir turinčios begalines
+\texttt{Rate} reikšmes --- iš viso \num{1000} eilučių. Toliau šalinami
+tikslūs dublikatai, ir tik po to sudaroma imtis.
+
+\begin{table}[htbp]
+\centering
+\caption{Duomenų rinkinys pagal kategorijas: dublikatų dalis, unikalių
+         eilučių skaičius ir imtis}
+\label{tab:imtis}
+\lentele{imtis.tex}
+\end{table}
+
+Dublikatų dalis --- \textbf{53,3~\%} --- pasiskirsčiusi netolygiai
+(\ref{tab:imtis} lentelė): potvynio klasėse ji siekia 62~\%, o gerybiniame
+sraute ir retose atakų klasėse nesiekia 1~\%. Todėl dublikatų šalinimas
+pats savaime mažina disbalansą: traukiasi būtent gausiausios klasės.
+
+Imtis sudaroma taikant \num{100000} eilučių ribą kiekvienai etiketei;
+retos klasės imamos visos. Rezultatas --- \num{2425937} eilutės, arba
+5,4~\% valyto rinkinio. Trylikai klasių iš 34 riba neįsijungia: joms imtis
+yra visa klasė po dublikatų šalinimo, ir daugiau tų duomenų neegzistuoja.
+Mažiausia klasė \texttt{UPLOADING\_ATTACK} turi \num{1196} eilutes.
+
+Riba taikoma etiketei, o ne kategorijai, todėl kategorijų dydžiai lieka
+labai nevienodi: DDoS su dvylika etikečių gauna \num{1049996} eilučių, o
+\texttt{BruteForce} su viena --- \num{12520}. Disbalansas imtyje yra
+\textbf{84:1}; be ribos jis būtų 5764:1.
+
+Prieštaringos etiketės --- vienodi požymių vektoriai, pažymėti skirtingai
+--- paliekami, nes tai tikras duomenų dviprasmiškumas, o ne dubliavimas.
+Imtyje tokių vektorių yra \num{5114}, t.\,y. \num{10435} eilutės arba
+0,43~\%. Geriausias įmanomas klasifikatorius kiekvienoje tokioje grupėje
+priskiria dažniausią etiketę ir dėl to suklysta \num{5321} kartą, taigi
+\textbf{teorinė tikslumo riba šioje imtyje yra 99,78~\%}.
+
+Skaidymas --- stratifikuotas atsitiktinis 70/15/15: \num{1698155} eilutės
+mokymui, po \num{363891} validacijai ir testavimui. Stratifikuojama pagal
+34 etiketes, o ne pagal 8 kategorijas: kategorija yra etiketės funkcija,
+todėl smulkesnis stratifikavimas išlaiko ir kategorijų proporcijas, o
+atvirkščiai negalioja. Didžiausias klasės proporcijos nuokrypis mokymo
+aibėje --- 0,0001 procentinio punkto. Indeksai išsaugomi ir įkeliami, o ne
+perskaičiuojami kiekvieno paleidimo metu.
+
+Chronologinis skaidymas negalimas: rinkinyje nėra laiko žymos, todėl
+rezultatai nieko nesako apie modelio elgseną laikui bėgant.
+
+
+\subsection{Požymių atranka}
+\label{sec:pozymiai}
+
+Iš 39 leidimo požymių šalinami trys, kurių ryšys su kitais yra tikslus:
+\texttt{Variance} (= \texttt{Std}$^2$), \texttt{Tot sum}
+(= \texttt{AVG} $\times$ \texttt{Number}) ir \texttt{Tot size}
+(= \texttt{AVG}; paliekamas \texttt{AVG}, nes jis tiesiogiai
+interpretuojamas kaip vidutinis paketo dydis). Visos trys tapatybės
+patikrintos darbinėje imtyje: nesutapimų nė vieno iš \num{2425937}.
+Lieka \textbf{36 požymiai}.
+
+Šalinama sąrašu, o ne automatiniu filtru, ir tam yra du nepriklausomi
+argumentai, abu išmatuoti šiuose duomenyse.
+
+\emph{Koreliacijos filtras nepašalintų to, ką turėtų.} Poros
+\texttt{Variance}--\texttt{Std} ryšys yra tikslus, bet tiesinė Pearson
+koreliacija tėra \num{0.737}. Įprastas \num{0.95} slenkstis šios poros
+nepaliestų, nors vienas stulpelis nesuteikia jokios naujos informacijos.
+
+\emph{Mažos dispersijos filtras pašalintų tai, ko neturėtų.} Šeši
+požymiai (\texttt{ece\_flag\_number}, \texttt{cwr\_flag\_number},
+\texttt{Telnet}, \texttt{SMTP}, \texttt{IRC}, \texttt{IGMP}) daugiau nei
+99,5~\% eilučių turi tą pačią reikšmę, tad automatinis filtras juos
+išmestų. Tačiau jų vidurkiai 7--22 kartus didesni būtent rečiausiose
+klasėse: \texttt{IRC} --- 21,8 karto ties \texttt{BACKDOOR\_MALWARE},
+\texttt{Telnet} ir \texttt{SMTP} --- ties žvalgybos klasėmis,
+\texttt{cwr\_flag\_number} --- 15,6 karto ties
+\texttt{UPLOADING\_ATTACK}. Pasiskirstymas prasmingas: IRC istoriškai
+naudojamas kaip botneto valdymo kanalas, o prievadų skenavimas paliečia
+būtent \texttt{Telnet} ir \texttt{SMTP} prievadus. Absoliučios reikšmės
+mažos, todėl tai silpni požymiai; bet jie skiria klases, kurios ir lemia
+macro-F1.
+
+\texttt{Protocol Type} paliekamas, nors atrodo perteklinis šalia
+\texttt{TCP}, \texttt{UDP} ir \texttt{ICMP} stulpelių: sutapimas su jais
+yra 69,8--94,4~\%, t.\,y. koreliacija, o ne tapatybė.
+
+Atkreiptinas dėmesys, kad vėliavėlių stulpeliai
+(\texttt{syn\_flag\_number} ir kiti) nėra dvejetainiai --- tai vėliavėlių
+\emph{dalys} lange. Nė vienas iš 36 požymių neįgyja tik reikšmių 0 ir 1.
+
+
+\subsection{Modelių realizacija ir bendra sąsaja}
+\label{sec:sasaja}
+
+Visi keturi metodai realizuoti su vienoda sąsaja: \texttt{fit},
+\texttt{predict}, \texttt{predict\_proba} ir išsaugojimas. Sąsaja
+fiksuota prieš pirmą modelį, nes nuo jos priklauso, ar metodų palyginimas
+bus vienas ciklas, ar rankinis darbas.
+
+Du sąsajos laukai neša metodikos sprendimus. Laukas
+\texttt{prižiūrimas} nurodo, kurių metrikų modeliui skaičiuoti negalima:
+autokoderis klasių neturi, todėl bendro macro-F1 stulpelio visiems
+keturiems sudaryti neįmanoma. Laukas \texttt{reikia\_skalės} nurodo, ar
+modeliui būtinas normalizavimas --- medžių ansambliams jo nereikia, nes
+jie remiasi reikšmių tvarka, o ne masteliu.
+
+\texttt{predict\_proba} apibrėžiamas ne kaip tikimybių matrica, o kaip
+\emph{įvertis, kurio didesnė reikšmė reiškia didesnę atakos tikimybę}.
+Prižiūrimiems metodams tai tikimybių matrica, autokoderiui --- atkūrimo
+paklaida. Bendras yra tik rikiavimas, ir būtent jo pakanka PR-AUC bei
+ROC-AUC skaičiavimui.
+
+Normalizavimui naudojamas \texttt{StandardScaler}, pritaikomas
+\emph{tik} mokymo aibei; pakartotinis pritaikymas kodo lygmeniu
+draudžiamas, nes būtent taip nutekėjimas dažniausiai ir atsiranda.
+Skalė išsaugoma kartu su modeliu: be jos išsaugotas neuroninis modelis
+yra neveikiantis artefaktas.
+
+Klasių disbalansas sprendžiamas klasių svoriais, o ne duomenų
+dubliavimu. Svorių santykis mokymo aibėje --- 83,9. XGBoost atveju
+naudojamas eilučių svorių masyvas, o ne parametras
+\texttt{scale\_pos\_weight}: pastarasis veikia tik dvejetainėje
+užduotyje ir daugiaklasėje ignoruojamas be įspėjimo. SMOTE tikrinamas
+tik kaip abliacija ir tik mokymo aibėje, o gerybinis srautas
+nesintetinamas niekada: klaidingų teigiamų analizė turi remtis tikru
+gerybiniu srautu, o autokoderio prielaida yra švarus jo profilis.
+
+
+\subsection{Sprendimo slenkstis}
+\label{sec:slenkstis}
+
+Prižiūrimi modeliai grąžina tikimybes, todėl sprendimo taškas gali būti
+parenkamas po mokymo. Numatytasis pasirinkimas --- didžiausia tikimybė
+--- yra netiesioginis ir, kaip rodo matavimai, netinkamas: prie jo
+klaidingų teigiamų dalis siekia 21--32~\%, t.\,y. 21--32 kartus viršija
+\ref{sec:atakos} skyriuje apskaičiuotą biudžetą, kuriam 1~\% jau reiškia
+apie tūkstantį signalų per parą.
+
+Todėl taikoma aiški taisyklė: ataka skelbiama tik tada, kai bendra atakų
+tikimybė viršija slenkstį $\tau$; kitu atveju srautas laikomas gerybiniu.
+Slenkstis parenkamas kaip mažiausias $\tau$, tenkinantis klaidingų
+teigiamų biudžetą, ir renkamas \emph{tik} validacijos aibėje.
+
+\begin{table}[htbp]
+\centering
+\caption{Sprendimo taškas: didžiausios tikimybės taisyklė ir slenkstis,
+         tenkinantis 1~\% klaidingų teigiamų biudžetą}
+\label{tab:slenkstis}
+\lentele{slenkstis.tex}
+\end{table}
+
+\ref{tab:slenkstis} lentelė rodo, kad biudžeto laikymasis kainuoja
+6--16~\% macro-F1, o atakų aptikimas išlieka 84--88~\%. Kaina nevienoda:
+Random Forest praranda 16,3~\%, XGBoost --- 8,5~\%. Skirtumo priežastis
+struktūrinė --- Random Forest tikimybė yra medžių balsų dalis, todėl ties
+vienetu jos skiriamoji geba grubi, o stiprinimo metodas grąžina tolydžias
+reikšmes ir aukštą slenkstį pasiekia tiksliau.
+
+Autokoderiui ši taisyklė netaikoma: jis klasių neturi, o jo operacinis
+taškas yra atkūrimo paklaidos procentilis, apskaičiuotas iš validacijos
+aibės gerybinio srauto. Procentilis \emph{pagal apibrėžimą} nustato
+klaidingų teigiamų dalį, todėl pasirinktas 99-asis, atitinkantis tą patį
+1~\% biudžetą.
+
+
+\subsection{Eksperimentų infrastruktūra ir prototipas}
+\label{sec:infrastruktura}
+
+Kiekvienas eksperimentas aprašomas konfigūracijos failu, o paleidimas yra
+viena komanda: konfigūracija nurodo modelį, užduoties formuluotę ir
+hiperparametrus, o rezultatas --- viena eilutė bendrame rezultatų faile
+su penkiolika stulpelių. Ataskaitos lentelės generuojamos iš to failo, o
+ne perrašomos ranka; perleidus eksperimentus skaičiai atsinaujina patys.
+
+Kiekvienas modelis mokomas su trimis pradiniais dydžiais. Du nepriklausomi
+pilni perleidimai davė kokybės metrikas, sutampančias iki
+$1\cdot10^{-5}$, tad atkartojamumas patvirtintas matavimu, o ne prielaida
+apie fiksuotus pradinius dydžius. Testavimo aibė neįkeliama be aiškios
+vėliavos ir vertinimo etape lieka nepaliesta.
+
+\begin{table}[htbp]
+\centering
+\caption{Veikimo rodikliai: mokymo laikas, inferencijos delsa procesoriumi
+         ir modelio dydis}
+\label{tab:veikimas}
+\lentele{veikimas.tex}
+\end{table}
+
+Inferencijos delsa matuojama procesoriumi, nors mokymui naudotas
+grafinis spartintuvas: kraštinis šliuzas jo neturi, todėl grafiniu
+spartintuvu išmatuota delsa būtų per optimistinė ir nesulyginama tarp
+modelių. Visi keturi metodai telpa į 20--50~ms biudžetą su trijų eilių
+atsarga (\ref{tab:veikimas} lentelė).
+
+Sprendimo veikimui pademonstruoti sukurtas prototipas: srauto langai
+apdorojami paketais, rodomi apdorotų langų ir signalų skaičiai, klaidingų
+teigiamų dalis, aptikimo dalis pagal kategorijas ir inferencijos delsa.
+Prototipas naudoja tą patį sprendimo tašką kaip vertinimas --- prie
+didžiausios tikimybės jis demonstruotų 21--32~\% klaidingų teigiamų.
+Demonstracijai naudojama validacijos aibė.
+
+
+\subsection{Apibendrinimas}
+\label{sec:sprendimas_isvados}
+
+Sukurta pilna aptikimo grandinė: duomenų paruošimas su dublikatų
+šalinimu, 36 požymių atranka, keturi modeliai su vienoda sąsaja,
+eksperimentų infrastruktūra ir prototipas.
+
+Trys sprendimai lemia rezultatų vertę labiau nei modelių pasirinkimas.
+Dublikatų šalinimas prieš skaidymą pašalina 53,3~\% eilučių ir kartu
+pagrindinį rezultatų išpūtimo kelią. Požymių šalinimas sąrašu, o ne
+automatiniu filtru, išsaugo požymius, kurie skiria rečiausias klases.
+Sprendimo slenkstis, parenkamas pagal klaidingų teigiamų biudžetą,
+sumažina klaidingus signalus 23--46 kartų.
+
+Išmatuota teorinė tikslumo riba --- 99,78~\% --- yra atskaitos taškas
+kitam skyriui: už ją aukštesnis rezultatas reikštų nutekėjimą, o ne
+sėkmę.
