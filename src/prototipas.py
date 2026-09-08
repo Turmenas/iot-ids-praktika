@@ -39,11 +39,40 @@ APMOKYTI = SAKNIS / "rezultatai" / "apmokyti"
 TASKAI = SAKNIS / "rezultatai" / "darbiniai" / "slenkscio_taskai.csv"
 GERYBINE = "Benign"
 
-MODELIAI = {
-    "XGBoost (suderintas)": ("gradientinis_derintas_8kat_seed42", "XGBoost"),
-    "Random Forest (suderintas)": ("random_forest_derintas_8kat_seed42", "Random Forest"),
-    "MLP (suderintas)": ("mlp_derintas_8kat_seed42", "MLP"),
+#: Modulio priesaga -> (vardas lenteleje, ar butinas normalizavimas)
+TIPAI = {
+    "random_forest": ("Random Forest", False),
+    "gradientinis": ("XGBoost", False),
+    "mlp": ("MLP", True),
+    "autoencoder": ("Autokoderis", True),
 }
+
+
+def rasti_modelius(seed: int = 42) -> tuple[dict, list[str]]:
+    """Suranda issaugotus modelius aplanke, o ne remiasi ikaltais vardais.
+
+    Pirmoji versija vardus turejo ikaltus, todel permokius BAZINI MLP
+    prototipas vis tiek rode klaida - jis ieskojo SUDERINTO. Dabar
+    siulomi tik tie modeliai, kurie tikrai yra ir tikrai veiks.
+
+    Grazina ({rodomas vardas: (zyma, tipo vardas)}, [praleistu paaiskinimai]).
+    """
+    rasti, praleisti = {}, []
+    for f in sorted(APMOKYTI.glob(f"*_seed{seed}.joblib")):
+        zyma = f.stem
+        tipas = next((k for k in TIPAI if zyma.startswith(k)), None)
+        if tipas is None:
+            continue
+        vardas, reikia_skales = TIPAI[tipas]
+        konfigas = zyma.split("_8kat")[0].split("_dvejetaine")[0]
+        rodomas = f"{vardas} ({'suderintas' if 'derintas' in konfigas else 'bazinis'})"
+
+        if reikia_skales and not f.with_suffix(".skale.joblib").exists():
+            praleisti.append(f"{rodomas} - issaugotas be skales, permokykite "
+                             f"konfiguracija `konfig/{konfigas}.yaml`")
+            continue
+        rasti[rodomas] = (zyma, vardas)
+    return rasti, praleisti
 
 
 # ─── Ikelimas ────────────────────────────────────────────────────────
@@ -75,10 +104,6 @@ def ikelti_modeli(zyma: str):
             pass
         return m.predict_proba, d["kodavimas"].classes_, skale
     if zyma.startswith("mlp"):
-        if skale is None:
-            st.error("MLP issaugotas be skales - permokykite, kad atsirastu "
-                     "`.skale.joblib` (paleisti.py tai daro nuo 2026-09-08).")
-            st.stop()
         import tensorflow as tf
         keras = tf.keras.models.load_model(kelias.with_suffix(".keras"))
         return (lambda X: keras.predict(X, batch_size=4096, verbose=0),
@@ -140,8 +165,14 @@ st.caption("Prototipas · CICIoT2023 · sprendimo taškas parenkamas pagal "
 
 with st.sidebar:
     st.header("Nustatymai")
+    MODELIAI, praleisti = rasti_modelius()
+    if not MODELIAI:
+        st.error("Nerasta nė vieno tinkamo modelio. Paleiskite mokyti_viska.bat")
+        st.stop()
     pasirinktas = st.selectbox("Modelis", list(MODELIAI))
     zyma, vardas = MODELIAI[pasirinktas]
+    if praleisti:
+        st.caption("Nerodomi: " + " · ".join(praleisti))
 
     tau = st.slider("Sprendimo slenkstis τ", 0.50, 0.9999,
                     numatytas_tau(vardas), 0.0001, format="%.4f",
