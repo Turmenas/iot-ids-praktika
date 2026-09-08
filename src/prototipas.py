@@ -87,16 +87,39 @@ def ikelti_modeli(zyma: str):
 
 
 @st.cache_data(show_spinner="Ikeliamas srautas...")
-def ikelti_srauta(n: int, seed: int = 0):
-    """Atsitiktine VALIDACIJOS aibes atkarpa. Test aibe neliesta."""
+def ikelti_srauta(n: int, tolygi: bool = False, seed: int = 0):
+    """VALIDACIJOS aibes atkarpa. Test aibe neliesta.
+
+    `tolygi=False` - natūrali sudetis, kokia yra rinkinyje. Joje DDoS
+    sudaro 43 % langu, nes riba 100 000 taikyta ETIKETEI, o DDoS turi
+    12 etikeciu, kai BruteForce - viena. Tai tikra rinkinio savybe, ne
+    prototipo trukumas.
+
+    `tolygi=True` - po lygiai is kiekvienos kategorijos. Skirta TIK
+    demonstracijai: taip matomi visi atakų tipai, o ne vien potvyniai.
+    Metrikos tokiame sraute nera reprezentatyvios ir taip pazymetos.
+    """
     from src.duomenys import pozymiai, skaidymas
 
     df = pd.read_parquet(pozymiai.IMTIS)
     idx = skaidymas.ikelti()
     X, _, y_kat = pozymiai.atrinkti(df, tikrinti=False)
+    y = y_kat.to_numpy()
     rng = np.random.default_rng(seed)
-    imti = rng.permutation(idx["val"])[:n]
-    return X.iloc[imti].reset_index(drop=True), y_kat.to_numpy()[imti]
+    val = idx["val"]
+
+    if not tolygi:
+        imti = rng.permutation(val)[:n]
+    else:
+        kat = y[val]
+        vienai = max(n // len(np.unique(kat)), 1)
+        dalys = []
+        for k in np.unique(kat):
+            k_idx = val[kat == k]
+            dalys.append(rng.permutation(k_idx)[:min(vienai, len(k_idx))])
+        imti = rng.permutation(np.concatenate(dalys))
+
+    return X.iloc[imti].reset_index(drop=True), y[imti]
 
 
 def numatytas_tau(vardas: str) -> float:
@@ -125,6 +148,12 @@ with st.sidebar:
                     help="Ataka skelbiama, kai bendra atakų tikimybė viršija τ. "
                          "Didesnis τ — mažiau klaidingų signalų, bet ir mažiau "
                          "aptiktų atakų.")
+    sudetis = st.radio(
+        "Srauto sudėtis", ["natūrali", "tolygi (demonstracijai)"],
+        help="Natūralioje DDoS sudaro 43 % langų — riba 100 000 taikyta "
+             "etiketei, o DDoS turi 12 etikečių. Tolygioje po lygiai iš "
+             "kiekvienos kategorijos, kad matytųsi visi atakų tipai.")
+    tolygi = sudetis.startswith("tolygi")
     n_eiluciu = st.select_slider("Srauto ilgis (langų)",
                                  [2000, 5000, 10000, 20000], value=5000)
     dydis = st.select_slider("Paketo dydis", [100, 250, 500, 1000], value=250)
@@ -132,10 +161,14 @@ with st.sidebar:
     startas = st.button("Paleisti srautą", type="primary", use_container_width=True)
 
 proba_f, klases, skale = ikelti_modeli(zyma)
-X, y = ikelti_srauta(n_eiluciu)
+X, y = ikelti_srauta(n_eiluciu, tolygi)
 i_ben = list(klases).index(GERYBINE)
 
 st.sidebar.metric("Gerybinio srauto dalis", f"{(y == GERYBINE).mean()*100:.1f} %")
+if tolygi:
+    st.sidebar.warning("Tolygus srautas skirtas tik demonstracijai — "
+                       "klaidingų teigiamų ir aptikimo dalys jame "
+                       "nereprezentatyvios.")
 
 if not startas:
     st.info("Nustatykite parametrus ir spauskite **Paleisti srautą**. "
@@ -151,10 +184,13 @@ juosta = st.progress(0.0)
 g1, g2 = st.columns([2, 1])
 vieta_grafikas = g1.empty()
 vieta_kategorijos = g2.empty()
+st.subheader("Aptikimas pagal kategorijas")
+vieta_kat_lentele = st.empty()
 st.subheader("Paskutiniai pavojaus signalai")
 vieta_lentele = st.empty()
 
 istorija, signalai_sar = [], []
+pagal_kategorija: dict[str, list[int]] = {}
 n_sig = n_ger = n_ger_klaid = n_atak = n_atak_rasta = 0
 delsos = []
 
@@ -179,6 +215,12 @@ for pradzia in range(0, len(X), dydis):
     n_ger_klaid += int(signalas[ger].sum())
     n_atak += int((~ger).sum())
     n_atak_rasta += int(signalas[~ger].sum())
+
+    for k in np.unique(tikra):
+        jos = tikra == k
+        r = pagal_kategorija.setdefault(k, [0, 0])
+        r[0] += int(jos.sum())
+        r[1] += int(signalas[jos].sum())
 
     istorija.append({"paketas": len(istorija) + 1,
                      "signalai": int(signalas.sum()),
@@ -207,6 +249,17 @@ for pradzia in range(0, len(X), dydis):
     kat = pd.Series([s["kategorija"] for s in signalai_sar]).value_counts()
     if not kat.empty:
         vieta_kategorijos.bar_chart(kat, height=260)
+    kl = pd.DataFrame([
+        {"kategorija": k, "langų sraute": v[0], "signalų": v[1],
+         "aptikta, %": round(v[1] / v[0] * 100, 1) if v[0] else 0.0}
+        for k, v in pagal_kategorija.items()])
+    # Gerybiniam srautui "aptikta" reiskia KLAIDINGUS signalus - todel
+    # rikiuojama taip, kad prasciausiai atpazistamos klases butu virsuje.
+    kl["_r"] = np.where(kl.kategorija == GERYBINE, -1, kl["aptikta, %"])
+    vieta_kat_lentele.dataframe(
+        kl.sort_values("_r").drop(columns="_r"),
+        use_container_width=True, hide_index=True)
+
     vieta_lentele.dataframe(pd.DataFrame(signalai_sar[-12:][::-1]),
                             use_container_width=True, hide_index=True)
 

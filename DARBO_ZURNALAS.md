@@ -1610,6 +1610,30 @@ Praktinės žalos ataskaitai nėra — bazinių modelių metrikos yra `rezultata
 
 **Delsa prototipe matuojama CPU** (`set_params(device="cpu")`) — kraštinis šliuzas GPU neturi. Tai ta pati pataisa, kurią numačiau, tik įgyvendinta ten, kur ji labiausiai matoma.
 
+#### 54. „Visada dominuoja DDoS" — tai imties sudarymo pasekmė, ne prototipo yda ⭐
+
+Prototipe, kad ir kokie nustatymai, signalų sąraše vyrauja DDoS. Priežastis matoma iš srauto sudėties:
+
+| Kategorija | `val` langų | Dalis | **Etikečių** |
+|---|---:|---:|---:|
+| DDoS | 157 500 | **43,3 %** | **12** |
+| Recon | 55 691 | 15,3 % | 5 |
+| DoS | 55 266 | 15,2 % | 4 |
+| Mirai | 45 000 | 12,4 % | 3 |
+| Spoofing | 30 000 | 8,2 % | 2 |
+| Benign | 15 000 | 4,1 % | 1 |
+| Web | 3 556 | 1,0 % | 6 |
+| BruteForce | 1 878 | 0,5 % | 1 |
+
+⭐ **Riba 100 000 taikyta ETIKETEI, ne kategorijai.** DDoS turi 12 etikečių, tad gauna iki 1,2 mln. vietų, o `BruteForce` — viena etiketė ir 1 878 eilutės. Kategorijų disbalansas imtyje **84:1** yra tiesioginė to pasekmė.
+
+**Tai nebuvo klaida** — protokolo 1 punktas ribą apibrėžė etiketei sąmoningai, kad retos etiketės nedingtų. Bet pasekmė kategorijų lygmeniu iki šiol niekur nebuvo užrašyta, nors būtent ji paaiškina, kodėl `Web` (6 etiketės, bet tik 3 556 eilutės) atpažįstamas prasčiausiai.
+
+**Prototipe pridėti du dalykai, kurie tai paverčia informacija:**
+
+1. **Srauto sudėties pasirinkimas** — natūrali (kaip rinkinyje) arba tolygi (po lygiai iš kategorijos). Tolygi skirta **tik demonstracijai** ir pažymėta įspėjimu: metrikos joje nereprezentatyvios. Patikrinta: natūralioje DDoS 44,3 %, tolygioje visos po 12,5 %.
+2. **Aptikimo lentelė pagal kategorijas** — kiek langų sraute, kiek signalų, kokia aptikimo dalis, rikiuojant prasčiausiai atpažįstamas viršuje. Iki šiol prototipas rodė bendrą „aptikta 89 %", kuris slėpė tikrąją istoriją: Mirai 99,8 %, o `Web` 26,9 %.
+
 ### Ką darysiu toliau
 
 **T9 — `04_sprendimas.tex`.** Prieš 5 užduotį lieka trys taisymai: delsa CPU ir `paleisti.py` (prototipe jau padaryta) · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
