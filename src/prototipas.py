@@ -20,14 +20,21 @@ neliesta iki 5 uzduoties (protokolo 19 punktas) - net demonstracijoje.
 
 from __future__ import annotations
 
+import sys
 import time
 from pathlib import Path
+
+SAKNIS = Path(__file__).resolve().parents[1]
+
+# `streamlit run src/prototipas.py` nustato sys.path[0] i `src/`, ne i
+# projekto sakni, todel `from src.duomenys import ...` nerandamas.
+# Sakni pridedame PRIES bet kokius `src.` importus.
+if str(SAKNIS) not in sys.path:
+    sys.path.insert(0, str(SAKNIS))
 
 import numpy as np
 import pandas as pd
 import streamlit as st
-
-SAKNIS = Path(__file__).resolve().parents[1]
 APMOKYTI = SAKNIS / "rezultatai" / "apmokyti"
 TASKAI = SAKNIS / "rezultatai" / "darbiniai" / "slenkscio_taskai.csv"
 GERYBINE = "Benign"
