@@ -90,7 +90,9 @@ def architektura() -> Path:
     fig.tight_layout(pad=0.3)
     PAVEIKSLAI.mkdir(parents=True, exist_ok=True)
     kelias = PAVEIKSLAI / "architektura.pdf"
-    fig.savefig(kelias, bbox_inches="tight")
+    # CreationDate isjungiama: kitaip kiekvienas paleidimas duoda kitokius
+    # baitus, ir Git rodo pakeitima ten, kur turinys nepakito.
+    fig.savefig(kelias, bbox_inches="tight", metadata={"CreationDate": None})
     plt.close(fig)
     return kelias
 

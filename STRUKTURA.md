@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-07 — **T0–T7 atlikti**; pridėtas slenksčio parinkimas ir hiperparametrų derinimas
+**Atnaujinta:** 2026-09-08 — **4 UŽDUOTIS BAIGTA**: T0–T9, ataskaita 37 psl., 0 klaidų
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -23,6 +23,8 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
 | ✅ `slenkstis.bat` | ⭐ FPR biudžeto laikymasis **be permokymo** (naudoja išsaugotus modelius) |
 | ✅ `prototipas.bat` | **T8** — Streamlit prototipas naršyklėje |
+| ✅ `mokyti_derintus.bat` | Permokymas su suderintais parametrais (`*_derintas.yaml`) |
+| ✅ `delsa.bat` | Delsos permatavimas CPU be permokymo |
 | ✅ `derinti.bat` | Hiperparametrų paieška — **protokolo 18 punktas** |
 | ✅ `.gitignore` | Komentarai **tik** atskirose eilutėse |
 | ✅ `.gitattributes` | Eilučių pabaigų normalizavimas |
@@ -52,11 +54,12 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
 | ⚠️ `skyriai\ciciot2023_pozymiai.md` | **Ne skyrius** — duomenų dokumentas tarp `.tex` failų. Vieta svarstytina |
 | ✅ `skyriai\03_parinkimas.tex` | **3 užd. BAIGTA** — 7 poskyriai, 4 lentelės, ~5 psl. Protokolas 3.6 poskyryje |
-| ⬜ `skyriai\04_sprendimas.tex` | **4 užd.** ← **vykdoma rugs. 7–9 d.** Metodika rašoma iš 3.6 protokolo; planas — `claude\uzduotis_04_planas.md` |
+| ✅ `skyriai\04_sprendimas.tex` | **4 užd. BAIGTA** — 7 poskyriai, 3 lentelės, 2 paveikslai |
 | ⬜ `skyriai\05..07_*.tex` | 5–6 užd. ir išvados |
 | ⬜ `lenteles\rezultatai.tex` · `lenteles\veikimas.tex` | **Generuojami** per `i_latex.py` — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
-| ⬜ `paveikslai\` · `skaidres\` | Grafikai, skaidrės |
+| ✅ `paveikslai\architektura.pdf` · `prototipas.png` | Pirmi paveikslai darbe |
+| ⬜ `skaidres\` | Skaidrės, jei reikės |
 
 ## `src\`
 
@@ -80,6 +83,10 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `prototipas.py` | ⭐ **T8.** Srautas → požymiai → inferencija → signalas. Naudoja **slenkstį, ne argmax**; inferencija CPU; validacijos aibė, test neliečiama |
 | ✅ `eksperimentai\slenkstis.py` | ⭐ Sprendimo slenkstis: kreivės + operacinis taškas ties FPR ≤ 1 %. `--modeliai` leidžia paleisti dalimis |
 | ✅ `eksperimentai\derinimas.py` | ⭐ Atsitiktinė paieška ant imties; šalia macro-F1 fiksuoja **modelio dydį** |
+| ✅ `eksperimentai\delsa.py` | Delsos permatavimas CPU. ⚠️ Visi modeliai — **vienu paleidimu, vienoje mašinoje** |
+| ✅ `eksperimentai\lenteles.py` | `imties_pasiskirstymas.csv` → `lenteles/imtis.tex` |
+| ✅ `eksperimentai\paveikslai.py` | `paveikslai/architektura.pdf`; PDF data išjungta, kad būtų atkartojama |
+| ✅ `eksperimentai\eiga.py` | Eigos juosta (RF, XGBoost) |
 | ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
 
 ## Duomenys, konfigūracijos, rezultatai
