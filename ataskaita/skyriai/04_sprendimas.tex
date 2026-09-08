@@ -235,12 +235,29 @@ spartintuvu išmatuota delsa būtų per optimistinė ir nesulyginama tarp
 modelių. Visi keturi metodai telpa į 20--50~ms biudžetą su trijų eilių
 atsarga (\ref{tab:veikimas} lentelė).
 
-Sprendimo veikimui pademonstruoti sukurtas prototipas: srauto langai
-apdorojami paketais, rodomi apdorotų langų ir signalų skaičiai, klaidingų
-teigiamų dalis, aptikimo dalis pagal kategorijas ir inferencijos delsa.
-Prototipas naudoja tą patį sprendimo tašką kaip vertinimas --- prie
-didžiausios tikimybės jis demonstruotų 21--32~\% klaidingų teigiamų.
-Demonstracijai naudojama validacijos aibė.
+Sprendimo veikimui pademonstruoti sukurtas prototipas
+(\ref{pav:prototipas} paveikslas): srauto langai apdorojami paketais,
+rodomi apdorotų langų ir signalų skaičiai, klaidingų teigiamų dalis,
+aptikimo dalis pagal kategorijas ir inferencijos delsa. Prototipas naudoja
+tą patį sprendimo tašką kaip vertinimas --- prie didžiausios tikimybės jis
+demonstruotų 21--32~\% klaidingų teigiamų. Demonstracijai naudojama
+validacijos aibė.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{prototipas.png}
+  \caption{Prototipas apdorojant \num{5000} srauto langų. Klaidingų
+    teigiamų dalis --- 1,29~\%, aptinkama 89,6~\% atakų. Lentelėje matyti,
+    kad bendras rodiklis slepia skirtumus tarp kategorijų: potvynio ir
+    Mirai atakos aptinkamos visos, o \texttt{BruteForce} ir žiniatinklio
+    atakos --- mažiau nei puse atvejų.}
+  \label{pav:prototipas}
+\end{figure}
+
+Prototipe išmatuota delsa didesnė nei \ref{tab:veikimas} lentelėje, nes
+langai apdorojami po 250, o ne dideliais paketais. Toks matavimas artimesnis
+diegimo sąlygoms --- šliuzas apdoroja langus jiems atkeliaujant --- ir vis
+tiek lieka dviem eilėmis žemiau biudžeto.
 
 
 \subsection{Apibendrinimas}
