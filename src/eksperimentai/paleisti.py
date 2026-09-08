@@ -91,6 +91,7 @@ def paleisti(konfig_kelias: Path, seed: int, vertinimas: str = "val",
     modelis = Klase(konfig.get("hiperparametrai", {}), seed=seed)
 
     # ─── Normalizavimas: fit TIK ant mokymo aibes ───
+    skale = None
     if modelis.reikia_skales:
         skale = pozymiai.Skale().fit(X_train)
         X_train_m = skale.transform(X_train)
@@ -123,12 +124,19 @@ def paleisti(konfig_kelias: Path, seed: int, vertinimas: str = "val",
     delsa = modelis.inferencijos_delsa_us(
         X_vert_m[:n] if isinstance(X_vert_m, np.ndarray) else X_vert_m.iloc[:n])
 
-    zyma = f"{raktas}_{formuluote}_seed{seed}"
+    # Konfigo vardas BUTINAS zymoje: be jo `mokyti_derintus.bat` uzrase
+    # bazinius modelius tais paciais failais, ir palyginimo "pries/po"
+    # nebeliko - liko tik metrikos rezultatai.csv.
+    zyma = f"{Path(konfig_kelias).stem}_{formuluote}_seed{seed}"
     # Patikros rezimo modeliai i tikra aplanka nepatenka: greta tikruju
     # gulintis nuo 50 000 eiluciu apmokytas failas tuo paciu vardu yra
     # klaida, kurios veliau nebeatskirsi.
     aplankas = APMOKYTI / "_patikra" if imties_riba else APMOKYTI
     kelias = modelis.issaugoti(aplankas / f"{zyma}.joblib")
+    if skale is not None:
+        # Be skales issaugotas MLP ar autokoderis yra neveikiantis
+        # artefaktas: ivesties normalizavimo parametrai prarasti.
+        skale.issaugoti(kelias.with_suffix(".skale.joblib"))
     dydis = modelis.dydis_mb(kelias)
 
     if not imties_riba:

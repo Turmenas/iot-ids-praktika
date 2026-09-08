@@ -12,7 +12,7 @@
 | ✅ **T0–T7** | Įkėlimo grandinė · 36 požymiai · skaidymas · balansavimas · keturi modeliai · paleidiklis · **12 paleidimų atlikta** |
 | ✅ **Derinimas** | Atliktas: 20 bandymų × 3 modeliai. Suderinti konfigai — `konfig/*_derintas.yaml` |
 | 🔄 **Permokymas** | `mokyti_derintus.bat` — **dar nepaleistas** |
-| ⬜ **T8** | Prototipas su vizualizacija |
+| ✅ **T8** | Prototipas — `prototipas.bat`. MLP jame pareikalaus permokymo (skalė) |
 | ⬜ **T9** | `04_sprendimas.tex` |
 
 **Turimi rezultatai** (val aibė, ties FPR ≤ 1 %): XGBoost **0,639** · Random Forest 0,604 · MLP 0,546 · autokoderis 0,220 *(FPR 1 %, aptinka 11,8 %)*.

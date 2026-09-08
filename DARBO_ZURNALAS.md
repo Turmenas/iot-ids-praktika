@@ -1592,9 +1592,27 @@ Vakar parašiau, kad GPU→CPU perėjimas išpūs XGBoost delsą. **Išmatuota p
 
 Taisymas tas pats: prieš delsos matavimą modelis perjungiamas į CPU. Skirtumas tas, kad tai ne „ištaisyti išpūstą skaičių", o **atsisakyti aparatūros, kurios diegimo vietoje nebus.**
 
+#### 53. T8 — prototipas veikia; du blokuojantys dalykai pakeliui ⚠️
+
+**`src/prototipas.py`** (Streamlit): srautas → požymiai → inferencija → signalas. Modelio pasirinkimas, **slenksčio slankiklis**, srauto atkūrimas paketais, gyvi rodikliai (apdorota langų, signalai, klaidingi teigiami, delsa), signalų grafikas, kategorijų pasiskirstymas ir paskutinių signalų lentelė su žyma, ar signalas teisingas.
+
+**Prototipas naudoja slenkstį, ne argmax.** Prie argmax jis demonstruotų 21–32 % klaidingų teigiamų — t. y. rodytų būtent tai, ką darbas vadina netinkamu eksploatacijai. Numatytasis τ imamas iš `slenkscio_taskai.csv`, tad demonstracija ir vertinimas naudoja **tą patį** sprendimo tašką.
+
+**Naudojama validacijos aibė.** Test aibė lieka neliesta net demonstracijoje.
+
+**Patikra be sąsajos** (XGBoost, 5 000 langų): klaidingi teigiami **0,43 %**, aptikta **89,0 %** atakų — atitinka viso `val` skaičius (0,94 % / 88,4 %; skirtumą duoda 232 gerybinės eilutės imtyje).
+
+⚠️ **Blokuojantis dalykas 1: modelių failų vardai neturėjo konfigo.** `zyma` buvo `<modelis>_<formuluotė>_seed<N>`, todėl `mokyti_derintus.bat` **užrašė bazinius modelius** tais pačiais failais. Patikrinau metaduomenis: visi išsaugoti modeliai yra suderintieji, bazinių nebeliko.
+
+Praktinės žalos ataskaitai nėra — bazinių modelių metrikos yra `rezultatai.csv`, o jų pačių niekam nebereikia. Bet **slenksčio kreivės, kurias vakar laikiau bazinėmis, iš tikrųjų buvo skaičiuotos jau ant suderintų modelių** — tai paaiškina, kodėl skaičiai sutapo su „po derinimo" verte. Vardas dabar turi konfigo kamieną, o esami failai pervadinti.
+
+⚠️ **Blokuojantis dalykas 2: skalė nebuvo saugoma.** Užrašiau tai rugsėjo 7 d. kaip taisytiną; prototipui tai tapo blokuojančiu. `paleisti.py` dabar išsaugo `.skale.joblib` šalia modelio, o `Skale.ikelti` ją grąžina. **XGBoost ir Random Forest normalizavimo nereikalauja, todėl prototipas veikia jau dabar; MLP pareikalaus permokymo** — jis apie tai praneša aiškia žinute, o ne lūžta.
+
+**Delsa prototipe matuojama CPU** (`set_params(device="cpu")`) — kraštinis šliuzas GPU neturi. Tai ta pati pataisa, kurią numačiau, tik įgyvendinta ten, kur ji labiausiai matoma.
+
 ### Ką darysiu toliau
 
-**Trys taisymai prieš 5 užduotį:** delsa matuojama CPU · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
+**T9 — `04_sprendimas.tex`.** Prieš 5 užduotį lieka trys taisymai: delsa CPU ir `paleisti.py` (prototipe jau padaryta) · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 

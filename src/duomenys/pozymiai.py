@@ -164,6 +164,17 @@ class Skale:
         kelias.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump({"scaler": self._s, "stulpeliai": self.stulpeliai}, kelias)
 
+    @classmethod
+    def ikelti(cls, kelias: Path) -> "Skale":
+        """Ikelia issaugota skale. Butina diegimui - be jos modelis bevertis."""
+        import joblib
+        d = joblib.load(kelias)
+        s = cls.__new__(cls)
+        s._s = d["scaler"]
+        s.stulpeliai = d["stulpeliai"]
+        s.pritaikyta = True
+        return s
+
 
 # ─── Patikra ─────────────────────────────────────────────────────────
 

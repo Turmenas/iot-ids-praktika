@@ -22,6 +22,7 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `mokyti_rf.bat` · `mokyti_xgboost.bat` · `mokyti_mlp.bat` · `mokyti_autoencoder.bat` | Po vieną modelį × 3 seed'ai |
 | ✅ `mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
 | ✅ `slenkstis.bat` | ⭐ FPR biudžeto laikymasis **be permokymo** (naudoja išsaugotus modelius) |
+| ✅ `prototipas.bat` | **T8** — Streamlit prototipas naršyklėje |
 | ✅ `derinti.bat` | Hiperparametrų paieška — **protokolo 18 punktas** |
 | ✅ `.gitignore` | Komentarai **tik** atskirose eilutėse |
 | ✅ `.gitattributes` | Eilučių pabaigų normalizavimas |
@@ -76,6 +77,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `eksperimentai\metrikos.py` | **T6.** Protokolo 15 stulpelių; FPR = tikro gerybinio srauto dalis, priskirta atakai |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
+| ✅ `prototipas.py` | ⭐ **T8.** Srautas → požymiai → inferencija → signalas. Naudoja **slenkstį, ne argmax**; inferencija CPU; validacijos aibė, test neliečiama |
 | ✅ `eksperimentai\slenkstis.py` | ⭐ Sprendimo slenkstis: kreivės + operacinis taškas ties FPR ≤ 1 %. `--modeliai` leidžia paleisti dalimis |
 | ✅ `eksperimentai\derinimas.py` | ⭐ Atsitiktinė paieška ant imties; šalia macro-F1 fiksuoja **modelio dydį** |
 | ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
@@ -92,7 +94,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `gradientinis.yaml` · `mlp.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos — **visos keturios užpildytos** |
 | ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
-| ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys |
+| ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys. Failų vardai: `<konfigas>_<formuluotė>_seed<N>.joblib` + `.skale.joblib` modeliams, kuriems reikia normalizavimo |
 | ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
 | ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |
