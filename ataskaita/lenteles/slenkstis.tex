@@ -7,6 +7,18 @@
 \toprule
 \textbf{Modelis} & \textbf{Sprendimo taškas} & \textbf{FPR} & \textbf{Atakų aptikta} & \textbf{macro-F1} \\
 \midrule
+XGBoost (suderintas) & argmax & 21,35~\% & 97,2~\% & 0,718 \\
+ & $\tau$ = 0,9842 & 0,94~\% & 88,4~\% & 0,658 \\
+\addlinespace
+MLP (bazinis) & argmax & 29,13~\% & 96,4~\% & 0,610 \\
+ & $\tau$ = 0,9602 & 0,86~\% & 83,9~\% & 0,546 \\
+\addlinespace
+MLP (suderintas) & argmax & 31,03~\% & 96,8~\% & 0,635 \\
+ & $\tau$ = 0,9842 & 0,67~\% & 85,0~\% & 0,591 \\
+\addlinespace
+Random Forest (suderintas) & argmax & 25,42~\% & 97,4~\% & 0,724 \\
+ & $\tau$ = 0,9602 & 0,94~\% & 88,0~\% & 0,642 \\
+\addlinespace
 Random Forest & argmax & 25,42~\% & 97,4~\% & 0,724 \\
  & $\tau$ = 0,9602 & 0,94~\% & 88,0~\% & 0,642 \\
 \addlinespace

@@ -79,12 +79,17 @@ def rasti_modelius(seed: int = 42) -> tuple[dict, list[str]]:
 
 @st.cache_resource(show_spinner="Ikeliamas modelis...")
 def ikelti_modeli(zyma: str):
-    """Grazina (predict_proba funkcija, klases, skale arba None)."""
+    """Grazina (ivercio funkcija, klases, skale, priziurimas, slenkstis).
+
+    Priziurimiems `ivercio funkcija` grazina (n, k) tikimybiu matrica;
+    autokoderiui - (n,) atkurimo paklaida. Bendra tik tai, kad didesne
+    reiksme reiskia didesne atakos tikimybe.
+    """
     import joblib
 
     kelias = APMOKYTI / f"{zyma}.joblib"
     if not kelias.exists():
-        st.error(f"Nerastas {kelias.name}. Pirma paleiskite mokyti_derintus.bat")
+        st.error(f"Nerastas {kelias.name}. Pirma paleiskite mokyma.")
         st.stop()
 
     d = joblib.load(kelias)
@@ -95,20 +100,41 @@ def ikelti_modeli(zyma: str):
         skale = Skale.ikelti(sk_kelias)
 
     if zyma.startswith("random_forest"):
-        return d.predict_proba, d.classes_, skale
+        return d.predict_proba, d.classes_, skale, True, None
+
     if zyma.startswith("gradientinis"):
         m = d["modelis"]
         try:                       # sliuze GPU nera - inferencija CPU
             m.set_params(device="cpu")
         except Exception:
             pass
-        return m.predict_proba, d["kodavimas"].classes_, skale
+        return m.predict_proba, d["kodavimas"].classes_, skale, True, None
+
     if zyma.startswith("mlp"):
         import tensorflow as tf
         keras = tf.keras.models.load_model(kelias.with_suffix(".keras"))
         return (lambda X: keras.predict(X, batch_size=4096, verbose=0),
-                d["kodavimas"].classes_, skale)
+                d["kodavimas"].classes_, skale, True, None)
+
+    if zyma.startswith("autoencoder"):
+        # Autokoderis klasiu neturi: jis grazina atkurimo paklaida, o
+        # sprendima priima pagal slenksti, kalibruota ant VAL gerybinio
+        # srauto (protokolo 21 punktas). Slenkstis issaugotas su modeliu -
+        # cia jis NEPERSKAICIUOJAMAS, kitaip demonstracija kalibruotusi
+        # ant savo pacios duomenu.
+        import tensorflow as tf
+        keras = tf.keras.models.load_model(kelias.with_suffix(".keras"))
+
+        def paklaida(X):
+            X = np.asarray(X)
+            atkurta = keras.predict(X, batch_size=4096, verbose=0)
+            return np.mean((X - atkurta) ** 2, axis=1)
+
+        return (paklaida, np.array([GERYBINE, "Ataka"]), skale, False,
+                float(d["slenkstis"]))
+
     raise KeyError(zyma)
+
 
 
 @st.cache_data(show_spinner="Ikeliamas srautas...")
@@ -174,11 +200,19 @@ with st.sidebar:
     if praleisti:
         st.caption("Nerodomi: " + " · ".join(praleisti))
 
-    tau = st.slider("Sprendimo slenkstis τ", 0.50, 0.9999,
-                    numatytas_tau(vardas), 0.0001, format="%.4f",
-                    help="Ataka skelbiama, kai bendra atakų tikimybė viršija τ. "
-                         "Didesnis τ — mažiau klaidingų signalų, bet ir mažiau "
-                         "aptiktų atakų.")
+    priziurimas = not zyma.startswith("autoencoder")
+    if priziurimas:
+        tau = st.slider("Sprendimo slenkstis τ", 0.50, 0.9999,
+                        numatytas_tau(vardas), 0.0001, format="%.4f",
+                        help="Ataka skelbiama, kai bendra atakų tikimybė "
+                             "viršija τ. Didesnis τ — mažiau klaidingų "
+                             "signalų, bet ir mažiau aptiktų atakų.")
+    else:
+        tau = None
+        st.info("Autokoderis klasių neturi: sprendimas priimamas pagal "
+                "atkūrimo paklaidos slenkstį, kalibruotą ant validacijos "
+                "aibės gerybinio srauto (99-asis procentilis). Slenkstis "
+                "išsaugotas su modeliu ir čia neperskaičiuojamas.")
     sudetis = st.radio(
         "Srauto sudėtis", ["natūrali", "tolygi (demonstracijai)"],
         help="Natūralioje DDoS sudaro 43 % langų — riba 100 000 taikyta "
@@ -191,9 +225,9 @@ with st.sidebar:
     greitis = st.slider("Pauzė tarp paketų, s", 0.0, 0.5, 0.05, 0.05)
     startas = st.button("Paleisti srautą", type="primary", use_container_width=True)
 
-proba_f, klases, skale = ikelti_modeli(zyma)
+proba_f, klases, skale, priziurimas, ae_slenkstis = ikelti_modeli(zyma)
 X, y = ikelti_srauta(n_eiluciu, tolygi)
-i_ben = list(klases).index(GERYBINE)
+i_ben = list(klases).index(GERYBINE) if priziurimas else None
 
 st.sidebar.metric("Gerybinio srauto dalis", f"{(y == GERYBINE).mean()*100:.1f} %")
 if tolygi:
@@ -234,11 +268,17 @@ for pradzia in range(0, len(X), dydis):
     P = proba_f(ivestis)
     delsos.append((time.perf_counter() - t0) / len(dalis) * 1e6)
 
-    ataku_tik = 1 - np.asarray(P)[:, i_ben]
-    P_be = np.asarray(P).copy()
-    P_be[:, i_ben] = -1
-    kategorija = np.asarray(klases)[P_be.argmax(axis=1)]
-    signalas = ataku_tik > tau
+    if priziurimas:
+        ataku_tik = 1 - np.asarray(P)[:, i_ben]
+        P_be = np.asarray(P).copy()
+        P_be[:, i_ben] = -1
+        kategorija = np.asarray(klases)[P_be.argmax(axis=1)]
+        signalas = ataku_tik > tau
+    else:
+        # Autokoderis: ivertis yra atkurimo paklaida, kategorijos nera.
+        ataku_tik = np.asarray(P)
+        kategorija = np.full(len(ataku_tik), "Ataka")
+        signalas = ataku_tik > ae_slenkstis
 
     n_sig += int(signalas.sum())
     ger = tikra == GERYBINE
