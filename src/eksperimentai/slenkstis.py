@@ -46,12 +46,10 @@ LENTELES = SAKNIS / "ataskaita" / "lenteles"
 
 GERYBINE = "Benign"
 
-#: Priziurimi modeliai: raktas -> (failo zyma, vardas lenteleje)
-MODELIAI = {
-    "random_forest": "Random Forest",
-    "gradientinis": "XGBoost",
-    "mlp": "MLP",
-}
+#: Priziurimu modeliu tipai. Konkretus failai randami aplanke - vardai
+#: nekalami: ikalti jie luzo po failu pervadinimo, ir luzo DVIEJOSE
+#: vietose atskirai (`slenkstis.py` ir `prototipas.py`).
+TIPAI = ("random_forest", "gradientinis", "mlp")
 
 #: Tankus tinklelis: tolygus tarp 0,5 ir 0,9, tada vis ariau prie 1.
 TAU = np.unique(np.concatenate([
@@ -92,12 +90,11 @@ def _duomenys(reikia_skales: bool):
     return Xv, yv, skale
 
 
-def tikimybes(raktas: str, Xv, skale, seed: int):
-    """Ikelia issaugota modeli ir grazina (P, klases)."""
+def tikimybes(raktas: str, Xv, skale, zyma: str):
+    """Ikelia issaugota modeli pagal zyma ir grazina (P, klases)."""
     import joblib
 
-    zyma = "dvejetaine" if raktas == "autoencoder" else "8kat"
-    kelias = APMOKYTI / f"{raktas}_{zyma}_seed{seed}.joblib"
+    kelias = APMOKYTI / f"{zyma}.joblib"
     if not kelias.exists():
         raise SystemExit(f"Nerasta {kelias} - pirma paleiskite mokyma.")
 
@@ -107,7 +104,12 @@ def tikimybes(raktas: str, Xv, skale, seed: int):
         return d.predict_proba(Xv), d.classes_
 
     if raktas == "gradientinis":
-        return d["modelis"].predict_proba(Xv), d["kodavimas"].classes_
+        m = d["modelis"]
+        try:                      # sliuze GPU nera - delsa matuojama CPU
+            m.set_params(device="cpu")
+        except Exception:
+            pass
+        return m.predict_proba(Xv), d["kodavimas"].classes_
 
     if raktas == "mlp":
         # ⚠️ Skale su modeliu NEISSAUGOTA, todel perskaiciuojama is train.
@@ -207,20 +209,27 @@ def main() -> None:
     a = argparse.ArgumentParser()
     a.add_argument("--biudzetas", type=float, default=0.01)
     a.add_argument("--seed", type=int, default=42)
-    a.add_argument("--modeliai", nargs="+", choices=list(MODELIAI),
-                   default=list(MODELIAI),
+    a.add_argument("--modeliai", nargs="+", choices=list(TIPAI),
+                   default=list(TIPAI),
                    help="tik sie modeliai; naudinga, kai Random Forest "
                         "netelpa i atminti")
     n = a.parse_args()
 
-    Xv, yv, skale = _duomenys(reikia_skales="mlp" in n.modeliai)
+    from src.modeliai.bazinis import rasti_issaugotus
+    modeliai = [m for m in rasti_issaugotus(APMOKYTI, n.seed)
+                if m["tipas"] in n.modeliai]
+    if not modeliai:
+        raise SystemExit(f"Aplanke {APMOKYTI} nerasta modeliu su seed {n.seed}.")
+
+    Xv, yv, skale = _duomenys(
+        reikia_skales=any(m["reikia_skales"] for m in modeliai))
     print(f"val {len(Xv):,} eilutes · gerybiniu {int((yv == GERYBINE).sum()):,}")
     print(f"FPR biudzetas: {n.biudzetas*100:g} %\n")
 
     kreives, taskai = [], []
-    for raktas in n.modeliai:
-        vardas = MODELIAI[raktas]
-        P, klases = tikimybes(raktas, Xv, skale, n.seed)
+    for m in modeliai:
+        raktas, vardas = m["tipas"], m["rodomas"]
+        P, klases = tikimybes(raktas, Xv, skale, m["zyma"])
         k = kreive(P, klases, yv)
         k.insert(0, "modelis", vardas)
         kreives.append(k)
@@ -250,7 +259,7 @@ def main() -> None:
             sena = pd.read_csv(kelias)
             sena = sena[~sena.modelis.isin(nauja.modelis.unique())]
             nauja = pd.concat([sena, nauja], ignore_index=True)
-        eile = {v: i for i, v in enumerate(MODELIAI.values())}
+        eile = {m["rodomas"]: i for i, m in enumerate(modeliai)}
         nauja["_e"] = nauja.modelis.map(eile).fillna(99)
         return nauja.sort_values("_e", kind="stable").drop(columns="_e")
 

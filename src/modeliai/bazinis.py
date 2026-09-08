@@ -144,6 +144,50 @@ class Modelis(ABC):
         return sum(f.stat().st_size for f in failai) / 1024 / 1024
 
 
+# ─── Issaugotu modeliu paieska ──────────────────────────────────────
+
+#: Failo priesaga -> (vardas ataskaitoje, ar butinas normalizavimas)
+TIPAI: dict[str, tuple[str, bool]] = {
+    "random_forest": ("Random Forest", False),
+    "gradientinis": ("XGBoost", False),
+    "mlp": ("MLP", True),
+    "autoencoder": ("Autokoderis", True),
+}
+
+
+def rasti_issaugotus(aplankas, seed: int = 42) -> list[dict]:
+    """Suranda issaugotus modelius aplanke.
+
+    Vardai NIEKUR nekalami: `slenkstis.py` ir `prototipas.py` juos turejo
+    ikaltus, ir po failu pervadinimo abu luzo - kiekvienas atskirai.
+    Paieska yra viena, todel ir taisyti reikia vienoje vietoje.
+
+    Grazina po zodyna: zyma · tipas · vardas · konfigas · variantas ·
+    rodomas · reikia_skales · turi_skale.
+    """
+    from pathlib import Path as _P
+
+    rasti = []
+    for f in sorted(_P(aplankas).glob(f"*_seed{seed}.joblib")):
+        if f.name.endswith(".skale.joblib"):
+            continue
+        zyma = f.stem
+        tipas = next((k for k in TIPAI if zyma.startswith(k)), None)
+        if tipas is None:
+            continue
+        vardas, reikia_skales = TIPAI[tipas]
+        konfigas = zyma.split("_8kat")[0].split("_dvejetaine")[0]
+        variantas = "suderintas" if "derintas" in konfigas else "bazinis"
+        rasti.append({
+            "zyma": zyma, "tipas": tipas, "vardas": vardas,
+            "konfigas": konfigas, "variantas": variantas,
+            "rodomas": f"{vardas} ({variantas})",
+            "reikia_skales": reikia_skales,
+            "turi_skale": f.with_suffix(".skale.joblib").exists(),
+        })
+    return rasti
+
+
 # ─── Registras — paleisti.py ieško modelio pagal konfigo vardą ───────
 
 def gauti(raktas: str) -> type[Modelis]:

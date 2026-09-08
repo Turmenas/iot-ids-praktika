@@ -1634,6 +1634,16 @@ Prototipe, kad ir kokie nustatymai, signalų sąraše vyrauja DDoS. Priežastis 
 1. **Srauto sudėties pasirinkimas** — natūrali (kaip rinkinyje) arba tolygi (po lygiai iš kategorijos). Tolygi skirta **tik demonstracijai** ir pažymėta įspėjimu: metrikos joje nereprezentatyvios. Patikrinta: natūralioje DDoS 44,3 %, tolygioje visos po 12,5 %.
 2. **Aptikimo lentelė pagal kategorijas** — kiek langų sraute, kiek signalų, kokia aptikimo dalis, rikiuojant prasčiausiai atpažįstamas viršuje. Iki šiol prototipas rodė bendrą „aptikta 89 %", kuris slėpė tikrąją istoriją: Mirai 99,8 %, o `Web` 26,9 %.
 
+#### 55. Įkalti failų vardai lūžo dviejose vietose atskirai ⚠️
+
+Pervadinus modelius (`<konfigas>_<formuluotė>_seed<N>`) lūžo **ir** prototipas, **ir** `slenkstis.py` — abu turėjo vardus įkaltus, ir kiekvieną teko taisyti atskirai. Pirmą pataisiau nepastebėjęs antrojo.
+
+**Paieška perkelta į vieną vietą** — `bazinis.rasti_issaugotus()`. Ji skenuoja aplanką ir apie kiekvieną modelį pasako: žymą, tipą, konfigą, variantą (bazinis / suderintas), ar reikia normalizavimo ir ar skalė išsaugota. Prototipas pagal tai atrenka tik veikiančius, `slenkstis.py` — visus prižiūrimus.
+
+**Šalutinė nauda:** dabar randami ir baziniai, ir suderinti modeliai, tad slenksčio lentelė gauna abu variantus, o palyginimas „prieš/po" atsiranda savaime, be atskiro darbo.
+
+**Pamoka paprasta ir sena:** dubliuotas sąrašas yra du sąrašai, kurie anksčiau ar vėliau išsiskiria. Vardų šaltinis turi būti vienas — geriausia pati failų sistema.
+
 ### Ką darysiu toliau
 
 **T9 — `04_sprendimas.tex`.** Prieš 5 užduotį lieka trys taisymai: delsa CPU ir `paleisti.py` (prototipe jau padaryta) · `class_weight` aiškiu žodynu · Random Forest dydis per `min_samples_leaf`. Tada 4 skyrius turės ir bazinius, ir suderintus rezultatus prie suderinto FPR. Derinimas yra protokolo 18 punkto vykdymas, iki šiol neatliktas; paieška vyksta ant 400 000 eilučių imties, kad tilptų į 30 min. biudžetą, o geriausia konfigūracija permokoma ant visos aibės.
