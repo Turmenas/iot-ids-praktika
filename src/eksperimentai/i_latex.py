@@ -30,6 +30,7 @@ jis virsija paleidimu sklaida (dietterich1998tests).
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -40,7 +41,7 @@ ISVESTIS = SAKNIS / "ataskaita" / "lenteles"
 
 #: Protokolo 24 punkto schema. Trukstamas stulpelis = klaida, ne ispejimas.
 SCHEMA: list[str] = [
-    "modelis", "formuluote", "seed",
+    "modelis", "formuluote", "seed", "aibe",
     "macro_f1", "weighted_f1", "accuracy", "pr_auc", "roc_auc", "mcc", "fpr",
     "mokymo_laikas_s", "inferencija_us", "modelio_dydis_mb",
     "konfig", "data",
@@ -138,9 +139,39 @@ def ikelti(kelias: Path | None = None) -> pd.DataFrame:
     return df
 
 
+def atrinkti_aibe(df: pd.DataFrame, aibe: str) -> pd.DataFrame:
+    """Palieka tik nurodytos vertinimo aibes eilutes.
+
+    Tylaus numatytojo pasirinkimo cia nera sazmoningai: lentele su test
+    skaiciais ir val isnasa (arba atvirksciai) yra tiksliai ta klaida,
+    del kurios `aibe` stulpelis apskritai atsirado.
+    """
+    t = df[df["aibe"] == aibe]
+    if t.empty:
+        turimos = ", ".join(sorted(df["aibe"].dropna().unique())) or "nera"
+        raise SystemExit(
+            f"rezultatai.csv nera nei vienos `{aibe}` eilutes. "
+            f"Turimos aibes: {turimos}")
+    return t.reset_index(drop=True)
+
+
 def agreguoti(df: pd.DataFrame) -> pd.DataFrame:
     """Vidurkis, standartinis nuokrypis ir seed'u skaicius kiekvienai porai."""
     skaitiniai = [s for s, *_ in KOKYBE + VEIKIMAS]
+
+    # ⚠️ RAKTAI neapima `konfig`, todel bazinis ir suderintas to paties
+    # modelio variantai patenka i TA PACIA grupe ir suvidurkinami. Skaicius
+    # tada nera nei vieno is ju, o isnasa "is N paleidimu" rodo seed'u, ne
+    # eiluciu skaiciu. Tylus vidurkis is dvieju skirtingu modeliu yra
+    # blogiau uz jo nebuvima, todel cia jis pasakomas garsiai.
+    for raktas, grupe in df.groupby(RAKTAI, sort=False):
+        konfigai = sorted(grupe["konfig"].unique())
+        if len(konfigai) > 1:
+            print(f"  [!] {raktas}: {len(grupe)} eilutes is {len(konfigai)} "
+                  f"konfiguraciju suvidurkinamos i viena: {konfigai}")
+            print("      Lentele rodys vidurki tarp skirtingu modeliu. "
+                  "Atrinkite viena konfiguracija arba praplėskite RAKTAI.")
+
     g = df.groupby(RAKTAI, sort=False)
 
     vid = g[skaitiniai].mean().add_suffix("__vid")
@@ -214,31 +245,51 @@ def _lentele(a: pd.DataFrame, stulpeliai: list, antraste: str,
     return "\n".join(sk) + "\n"
 
 
+#: Kaip aibe ivardijama lenteles isnasoje. Isnasa privalo pasakyti, kuria
+#: aibe skaiciai ismatuoti - kitaip val lentele nuo test lenteles skiriasi
+#: tik skaiciais, o tai nera skirtumas, kuri kas nors pastebetu.
+AIBIU_VARDAI = {
+    "val": "validacijos aibėje",
+    "test": "testavimo aibėje",
+}
+
+
 def main() -> None:
-    df = ikelti()
+    a_arg = argparse.ArgumentParser()
+    a_arg.add_argument("--aibe", choices=("val", "test"), default="val",
+                       help="kurios vertinimo aibes rezultatus generuoti")
+    a_arg.add_argument("--priesaga", default="",
+                       help="pridedama prie isvesties failu vardu, pvz. _test")
+    n = a_arg.parse_args()
+
+    df = atrinkti_aibe(ikelti(), n.aibe)
     a = agreguoti(df)
 
     n_seed = sorted(a["n_seed"].unique())
     sklaida = ("vidurkis $\\pm$ standartinis nuokrypis iš %s paleidimų"
                % "/".join(str(n) for n in n_seed)) if max(n_seed) > 1 else \
               "vienas paleidimas, sklaida nematuota"
+    kur = "Rezultatai išmatuoti " + AIBIU_VARDAI[n.aibe] + ". "
 
     ISVESTIS.mkdir(parents=True, exist_ok=True)
+    p = n.priesaga
 
-    (ISVESTIS / "rezultatai.tex").write_text(_lentele(
+    (ISVESTIS / f"rezultatai{p}.tex").write_text(_lentele(
         a, KOKYBE, "Aptikimo kokybe",
-        isnasa=r"\textsuperscript{a}~Bendras tikslumas pateikiamas \emph{tik} "
+        isnasa=kur +
+               r"\textsuperscript{a}~Bendras tikslumas pateikiamas \emph{tik} "
                r"palyginimui su literatūra: prie 41,8:1 santykio jis nėra "
                r"rodiklis. Reikšmės --- " + sklaida + "."), encoding="utf-8")
 
-    (ISVESTIS / "veikimas.tex").write_text(_lentele(
+    (ISVESTIS / f"veikimas{p}.tex").write_text(_lentele(
         a, VEIKIMAS, "Veikimo rodikliai",
-        isnasa=r"Inferencijos delsa matuojama gryna, atskirai nuo srauto lango "
+        isnasa=kur +
+               r"Inferencijos delsa matuojama gryna, atskirai nuo srauto lango "
                r"sukaupimo laiko; kraštinio šliuzo biudžetas --- 20--50~ms. "
                r"Reikšmės --- " + sklaida + "."), encoding="utf-8")
 
-    print(f"[OK] {len(df)} paleidimai -> {len(a)} eilutes")
-    for f in ("rezultatai.tex", "veikimas.tex"):
+    print(f"[OK] aibe={n.aibe} · {len(df)} paleidimai -> {len(a)} eilutes")
+    for f in (f"rezultatai{p}.tex", f"veikimas{p}.tex"):
         print(f"     {(ISVESTIS / f).relative_to(SAKNIS)}")
     print()
     for _, e in a.iterrows():

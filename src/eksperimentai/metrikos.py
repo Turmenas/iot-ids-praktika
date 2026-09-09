@@ -29,12 +29,19 @@ import pandas as pd
 GERYBINE = "Benign"
 
 #: Protokolo 24 punkto schema. Eiluciu tvarka fiksuota.
+#:
+#: `aibe` (val / test) pridetas 2026-09-09, pries pirma 5 uzduoties
+#: paleidima. Be jo `test` eilute butu uzemusi `val` eilutes vieta (zr.
+#: RAKTAS pastaba) ir 21 turimas `val` rezultatas butu dinges TYLIAI.
 SCHEMA = [
-    "modelis", "formuluote", "seed",
+    "modelis", "formuluote", "seed", "aibe",
     "macro_f1", "weighted_f1", "accuracy", "pr_auc", "roc_auc", "mcc", "fpr",
     "mokymo_laikas_s", "inferencija_us", "modelio_dydis_mb",
     "konfig", "data",
 ]
+
+#: Aibes, kuriomis modelis gali buti vertinamas.
+AIBES = ("val", "test")
 
 
 def _rikiavimo_ivertis(proba: np.ndarray, klases, priziurimas: bool):
@@ -104,13 +111,25 @@ def sumaisymo_matrica(y_true, y_pred, klases) -> pd.DataFrame:
 
 def eilute(modelis, formuluote: str, seed: int, metrikos: dict,
            mokymo_laikas_s: float, inferencija_us: float,
-           dydis_mb: float, konfig: str) -> dict:
-    """Suformuoja VIENA rezultatai.csv eilute pagal SCHEMA."""
+           dydis_mb: float, konfig: str, aibe: str) -> dict:
+    """Suformuoja VIENA rezultatai.csv eilute pagal SCHEMA.
+
+    `aibe` yra butinas pozicinis argumentas sazmoningai: numatytoji
+    reiksme "val" butu leidusi test paleidimui tyliai issisaugoti kaip
+    val. Argumentas be numatytosios reiksmes verzia kviecianti koda
+    apsispresti.
+    """
+    if aibe not in AIBES:
+        raise ValueError(f"Nezinoma aibe {aibe!r}. Yra: {AIBES}")
     r = {
         "modelis": modelis,
         "formuluote": formuluote,
         "seed": seed,
-        "mokymo_laikas_s": round(mokymo_laikas_s, 1),
+        "aibe": aibe,
+        # Ikeliant modeli mokymo laikas imamas is metaduomenu ir gali ju
+        # neturėti (seni failai). Nulis butu melas, todel None.
+        "mokymo_laikas_s": (None if mokymo_laikas_s is None
+                            else round(mokymo_laikas_s, 1)),
         "inferencija_us": round(inferencija_us, 3),
         "modelio_dydis_mb": round(dydis_mb, 2),
         "konfig": konfig,
@@ -124,9 +143,15 @@ def eilute(modelis, formuluote: str, seed: int, metrikos: dict,
     return {k: r[k] for k in SCHEMA}
 
 
-#: Kas vienareiksmiskai apibrezia paleidima. Ta pati ketveriuka du kartus
+#: Kas vienareiksmiskai apibrezia paleidima. Ta pati penkeriuka du kartus
 #: reiskia PAKARTOJIMA, ne nauja rezultata.
-RAKTAS = ["modelis", "formuluote", "seed", "konfig"]
+#:
+#: ⚠️ `aibe` cia yra BUTINA. Be jos `--vertinimas test` paleidimas su tuo
+#: paciu konfigu ir seed'u butu perrases atitinkama `val` eilute - be
+#: klaidos, be ispejimo, ir `rezultatai.tex` butu rodes test skaicius po
+#: isnasa apie val. Tai tos pacios rusies klaida kaip `Duration` = TTL:
+#: dalykas, kurio supainiojimas nepasirodo kaip klaida.
+RAKTAS = ["modelis", "formuluote", "seed", "konfig", "aibe"]
 
 
 def prideti(eil: dict, kelias) -> None:
@@ -148,6 +173,14 @@ def prideti(eil: dict, kelias) -> None:
 
     if kelias.exists() and kelias.stat().st_size > 0:
         sena = pd.read_csv(kelias)
+        # Failas is laiku pries `aibe` stulpeli: visos jo eilutes yra val,
+        # nes test aibe iki 2026-09-09 nebuvo atidaryta nei karto
+        # (protokolo 19 punktas). Migracija cia, o ne atskirame skripte,
+        # kad senas failas negaletu tyliai susikirsti su nauju raktu.
+        if "aibe" not in sena.columns:
+            print("  [i] rezultatai.csv be `aibe` stulpelio - "
+                  "esamos eilutes zymimos kaip val")
+            sena.insert(3, "aibe", "val")
         kauke = ~(sena[RAKTAS].astype(str)
                   .eq(nauja[RAKTAS].astype(str).iloc[0]).all(axis=1))
         nauja = pd.concat([sena[kauke], nauja], ignore_index=True)[SCHEMA]

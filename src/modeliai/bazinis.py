@@ -79,6 +79,18 @@ class Modelis(ABC):
     def _issaugoti(self, kelias: Path) -> None:
         """Issaugo pati modeli. Plėtinį parenka realizacija."""
 
+    def _ikelti(self, kelias: Path) -> None:
+        """Atstato modeli is failo, kuri sukure `_issaugoti`.
+
+        Pora `_issaugoti` / `_ikelti` laikoma vienoje vietoje sazmoningai:
+        ikelimo logika jau buvo isbarstyta po `slenkstis.py` ir
+        `prototipas.py`, ir po failu pervadinimo luzo abiejose vietose
+        atskirai. Trecia kopija `paleisti.py` butu pakartojusi ta pacia
+        klaida, todel ikelimas gyvena ten pat, kur issaugojimas.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} neturi `_ikelti` - ikelti negalima.")
+
     # ─── Bendra logika ───────────────────────────────────────────────
 
     def fit(self, X_train, y_train, X_val=None, y_val=None) -> "Modelis":
@@ -126,6 +138,26 @@ class Modelis(ABC):
             "mokymo_laikas_s": self.mokymo_laikas_s,
         }, indent=2, ensure_ascii=False), encoding="utf-8")
         return kelias
+
+    @classmethod
+    def ikelti(cls, kelias: Path) -> "Modelis":
+        """Ikelia issaugota modeli kartu su jo metaduomenimis.
+
+        `mokymo_laikas_s` imamas is salia gulincio `.json`, o NE matuojamas
+        is naujo: modelis cia nemokomas, tad bet koks cia isvestas skaicius
+        butu ne mokymo laikas, o ikelimo laikas su mokymo laiko etikete.
+        """
+        kelias = Path(kelias)
+        meta_kelias = kelias.with_suffix(".json")
+        meta = (json.loads(meta_kelias.read_text(encoding="utf-8"))
+                if meta_kelias.exists() else {})
+
+        m = cls(meta.get("konfig", {}), seed=meta.get("seed", 42))
+        m._ikelti(kelias)
+        m.mokymo_laikas_s = meta.get("mokymo_laikas_s")
+        if m.klases_ is None and meta.get("klases"):
+            m.klases_ = np.array(meta["klases"])
+        return m
 
     def papildomi_failai(self, kelias: Path) -> list[Path]:
         """Failai, kuriuos `_issaugoti` sukuria SALIA pagrindinio.

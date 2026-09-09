@@ -128,3 +128,17 @@ class Gradientinis(Modelis):
         self._modelis.callbacks = None
         joblib.dump({"modelis": self._modelis, "kodavimas": self._kodavimas},
                     kelias, compress=3)
+
+    def _ikelti(self, kelias: Path) -> None:
+        import joblib
+        d = joblib.load(kelias)
+        self._modelis = d["modelis"]
+        self._kodavimas = d["kodavimas"]
+        self.klases_ = self._kodavimas.classes_
+        # Sliuze GPU nera, o modelis galejo buti apmokytas su `device=cuda`.
+        # Delsa, matuota GPU, yra 6,5 karto mazesne uz CPU (2026-09-08),
+        # todel ikeliant grazinama i ta aparatura, kuri bus diegimo vietoje.
+        try:
+            self._modelis.set_params(device="cpu")
+        except Exception:
+            pass

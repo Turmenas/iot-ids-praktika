@@ -1676,3 +1676,155 @@ Suderinto XGBoost delsa CPU **6,5 karto didesnė** nei matuota GPU. Visi keturi 
 Pirmas žingsnis — **`bazinis.py` kontraktas, prieš pirmą modelį**. Nuo jo priklauso, ar 6 užduotis bus vienas ciklas. Autokoderio išlyga (`priziurimas = False`, `predict_proba` kaip anomalijos įvertis) turi būti kontrakte iš karto.
 
 ⚠️ **Nepamiršti:** `src/modeliai/cnn.py` ištrinti, `xgboost.py` **nekurti** — failas tokiu vardu uždengtų biblioteką; vardas `gradientinis.py`.
+
+---
+
+## Rugsėjo 8 d. (antradienis), vakare — 5 užduoties planas
+
+### Ką padariau
+
+**Sudarytas 5 užduoties tikslų planas** (`claude/uzduotis_05_planas.md`): tikslai T0–T9, vertinimo protokolas (12 punktų), nematytų klasių testo taisyklės, patikimumo patikros, dienos biudžetas rugsėjo 9 d., priėmimo kriterijai, rizikos.
+
+**Prieš rašant peržiūrėta ne būklės žymos, o pati repozitorija** — `rezultatai/apmokyti/`, `rezultatai.csv`, `metrikos.py`, `paleisti.py`, `slenkstis.py`. Peržiūros rezultatas pasirodė svarbesnis už patį planą.
+
+### Priimti sprendimai
+
+- **5 užduotis vykdoma rugsėjo 9 d.**, ne 15–16 d. Grafikas eina **6 dienomis į priekį**.
+- ⭐ **`test` aibė liečiama vienu prėjimu.** Visi sprendimai (τ, modeliai, pjūviai, lentelės, paveikslai) priimami ant `val` **prieš**; `test` duoda vieną rezultatų failą, iš kurio generuojama visa kita. Priežastis ta pati kaip 3 užduoties dviejų pakopų filtro: keturi atskiri „paleidimai ir pažiūrėjimai“ reikštų, kad kiekvienas paskesnis pjūvis pasirinktas jau matant ankstesnį rezultatą. Nutekėjimo formaliai nebūtų, **atrankos nutekėjimas būtų**.
+- **Nematytų klasių testas vertinamas dvejetainiu klausimu**, ne macro-F1 — žr. „Ką radau“, 2 punktas.
+- **Autokoderis nematytų klasių testui nepermokomas.** Jis mokomas tik iš `BENIGN`, todėl visos 33 atakų klasės jam ir taip nematytos; permokymas be `DDOS-SLOWLORIS` duotų tą patį modelį. Jo skaičius imamas iš bazinio `test` paleidimo per-klasę aptikimo dalies.
+- **Nematytų klasių testo kaina — 3 permokymai, ne 6.** Tik geriausias prižiūrimas modelis, vienas seed'as.
+- **Rezultato interpretacija užrašoma iš anksto abiem atvejais** (`test` ≈ `val` ir `test` ≠ `val`) — ta pati taisyklė kaip 3 užduoties jautrumo analizėje.
+- **`test` FPR atitikimo patikra yra vienintelė, kurios rezultato nežinau iš anksto**, todėl ji vertingiausia iš penkių.
+
+### Ką radau
+
+#### 58. `test` paleidimas būtų tyliai sunaikinęs visus `val` rezultatus ⚠️⚠️⚠️
+
+`metrikos.py`:
+
+```
+SCHEMA = [modelis, formuluote, seed, macro_f1, ..., konfig, data]
+RAKTAS = [modelis, formuluote, seed, konfig]
+```
+
+Vertinimo aibės **nėra nei schemoje, nei rakte**. `prideti()` eilutę su tuo pačiu raktu perrašo — tai buvo teisingas rugsėjo 7 d. sprendimas prieš dublikatus (24 eilutės vietoj 12). Bet paleidus `--vertinimas test` su tuo pačiu konfigu ir seed'u **`test` eilutė užimtų `val` eilutės vietą**, ir visi 21 turimas `val` rezultatas dingtų.
+
+**Blogiausia, kad tyliai.** Klaidos nebūtų, failas liktų tvarkingas, o `rezultatai.tex` rodytų `test` skaičius po išnaša apie `val`. Tai **šeštas** tos pačios rūšies atvejis darbe: dalykas, kurio supainiojimas nepasirodo kaip klaida.
+
+**Ta pati problema mažesniu mastu:** `sumaisymas_{zyma}.csv` vardas irgi neturi aibės, tad `test` matricos perrašytų `val`. Lygiai tai, kas rugsėjo 8 d. atsitiko su modelių vardais, kai `mokyti_derintus.bat` užrašė bazinius modelius — tik dabar pagauta **prieš**, ne po.
+
+#### 59. `--vertinimas test` permoko modelius, o ne tik vertina ⚠️
+
+`paleisti()` visada kviečia `fit()` ir `issaugoti()`. Vadinasi, 12 „vertinimo“ paleidimų yra 12 permokymų: vien suderintas Random Forest (~8 min. vienam seed'ui) suvalgytų ~25 min., o modelių failai būtų be reikalo perrašyti.
+
+`bazinis.rasti_issaugotus()` jau egzistuoja nuo rugsėjo 8 d. ryto — reikia tik `--tik-vertinti` veliavos. **Funkcija, parašyta kitam tikslui, sutaupys pusvalandį rytoj.**
+
+#### 60. `slenkstis.py` `test` aibės neatidaro iš viso
+
+Kode `idx["val"]` įkalta, o dokumentacijoje parašyta „test aibė čia neatidaroma“. Tai buvo **sąmoningas ir teisingas** 4 užduoties sprendimas. 5 užduočiai reikia režimo, kurio nėra: τ **skaitomas iš `slenkscio_taskai.csv`** ir taikomas `test`, o perskaičiavimo galimybės tame režime neturi būti iš viso — taisyklė, kurios niekas netikrina, yra ketinimas.
+
+#### 61. Trys iš keturių būklės žymų nesutapo su failais ⭐
+
+| Žyma | Tikrovė |
+|---|---|
+| `uzduotis_04_planas.md`: „Permokymas — **dar nepaleistas**“ | ✅ **Atliktas** rugs. 8 d. 06:07–06:47; `*_derintas_8kat_seed42..44` yra visiems trims |
+| Žurnalas: RF suderintas **637,9 MB** | Faile **670 MB**; trys seed'ai ≈ **2 GB** |
+| `STRUKTURA.md`: `metadata.json` — metaduomenys Git'e | Failas **tuščias** (`{"modeliai": {}}`); metaduomenys guli kiekvieno modelio `.json` šalia |
+
+**Septintas kartas.** Rugsėjo 6 d. užsirašiau taisyklę „kriterijus, kurio patikra yra viena komanda, žymimas tik po tos komandos“. Šįkart ji pritaikyta **planuojant**, ne po fakto — visas plano 0 skyrius sudarytas iš `ls` ir `grep`, ne iš ankstesnių dokumentų. Kaina — apie 15 min.; nauda — trys blokuojantys dalykai, rasti prieš dieną, kurios negalima pakartoti.
+
+#### 62. `DICTIONARYBRUTEFORCE` pašalinimas ištuština visą kategoriją ⭐⭐
+
+Ji yra **vienintelė savo kategorijos klasė**. Vadinasi, permokytas be jos prižiūrimas modelis 8 kategorijų formuluotėje turės **7 klases**, ir jo macro-F1 su bazinio modelio macro-F1 **nepalyginamas** — vidurkinama per skirtingą klasių skaičių.
+
+Būčiau tai pastebėjęs rugsėjo 9 d. viduryje eksperimento, ir tada rinktis būtų reikėję tarp perdarytos lentelės ir tylaus neteisingo palyginimo.
+
+**Sprendimas: nematytų klasių testas vertinamas dvejetainiu klausimu** — ar pašalintos klasės eilutės pažymimos kaip ataka (bet kuri), ar praleidžiamos, prie to paties FPR biudžeto. macro-F1 ten nenaudojamas nė vienam modeliui.
+
+⭐ **Kartu paaiškėjo, ko lentelėje trūko.** Trys stulpeliai (n · prižiūrimas be klasės · autokoderis) parodo tik tiek, ar klasė aptinkama. **Ketvirtasis — prižiūrimo modelio aptikimo dalis, kai klasė buvo mokyme** — parodo, *kiek kainuoja* jos nematyti. Būtent jis paverčia lentelę atsakymu į 2 skyriaus zero-day klausimą, o ne dar viena metrikų lentele.
+
+### Ką darysiu rytoj (rugs. 9, trečiadienis)
+
+**T0 pirmas ir be išimčių:** `aibe` stulpelis į `SCHEMA` ir `RAKTAS` · `zyma` su aibe · `--tik-vertinti` · `slenkstis --taikyti test`. ⚠️ **Prieš pirmą `test` paleidimą — `git commit` su esamu `rezultatai.csv`**, kad 21 `val` eilutė turėtų atsarginę kopiją, jei taisymas nesuveiktų.
+
+Tik po to protokolo užrakinimas (T1) ir vienintelis prėjimas per `test` (T2).
+
+---
+
+## Rugsėjo 9 d. (trečiadienis) — T0: infrastruktūra `test` vertinimui
+
+### Ką padariau
+
+**Keturi taisymai, be kurių pirmas prėjimas per `test` būtų sunaikinęs `val` rezultatus.** Visi patikrinti paleidimu, ne peržiūra.
+
+| Kas | Kur |
+|---|---|
+| `aibe` stulpelis į `SCHEMA` ir `RAKTAS`; migracija sename faile | `metrikos.py` |
+| Aibė `sumaisymas_*.csv` varde; `--tik-vertinti` veliava | `paleisti.py` |
+| `Modelis.ikelti()` + `_ikelti()` visiems keturiems modeliams | `bazinis.py` ir 4 modulai |
+| `--taikyti test`: τ **skaitomas iš failo**, ne perrenkamas | `slenkstis.py` |
+| `--aibe {val,test}` filtras; aibė įrašoma į lentelės išnašą | `i_latex.py` |
+| `rezultatai.csv` migruotas: 21 eilutė gavo `aibe=val` | — |
+
+**Sintetinis testas — 16 patikrų iš 16.** Tikrinama: `aibe` yra abiejose vietose; `eilute()` atmeta nežinomą aibę; senas failas be stulpelio migruojamas; **`test` eilutė neperrašo `val` eilutės**; pakartotinis `test` paleidimas lieka idempotentiškas; `atrinkti_aibe` tuščiai aibei meta klaidą; `mokymo_laikas_s = None` nevirsta nuliu.
+
+### Ką radau
+
+#### 63. Kontrolinis paleidimas patvirtino, kad grėsmė buvo reali, o ne teorinė ⭐⭐⭐
+
+Prieš taisant paleidau **seną** `metrikos.prideti` su `test` eilute ant tikros `rezultatai.csv` kopijos:
+
+```
+pries: 21 eilutes
+po   : 21 eilutes
+XGBoost derintas seed42 macro_f1: buvo 0,71847 -> tapo 0,5
+```
+
+**Eilučių skaičius nepakito, klaidos nebuvo, o rezultatas dingo.** Tai ne prognozė ir ne atsargumas — tai išmatuotas faktas ant to paties failo, kuris būtų buvęs naudojamas rytoj.
+
+**Verta atkreipti dėmesį, kad tai buvo teisingo sprendimo pasekmė.** Rugsėjo 7 d. idempotentiškas įrašymas buvo taisymas — jis pašalino 24 eilutes vietoj 12. Bet raktas, apibrėžtas be vertinimo aibės, tą patį mechanizmą pavertė naikinimo įrankiu, kai atsirado antra aibė. **Idempotentiškumas yra tiek pat saugus, kiek tikslus jo raktas.**
+
+#### 64. `--vertinimas test` būtų buvęs 12 permokymų, ne 12 vertinimų
+
+`paleisti()` visada kviečia `fit()` ir `issaugoti()`. Suderintas Random Forest mokosi ~8 min., tad vien jis būtų suvalgęs ~25 min., o modelių failai būtų perrašyti be reikalo.
+
+`--tik-vertinti` įkelia išsaugotą modelį ir **mokymo aibės neatidaro visai**, kai skalė išsaugota — 1,7 mln. × 36 yra ~490 MB, kurių neužimant 670 MB Random Forest turi realią galimybę išsitekti. Mokymo laikas imamas iš metaduomenų; perskaičiuotas jis būtų ne mokymo, o įkėlimo laikas su mokymo laiko etikete.
+
+#### 65. Įkėlimo logika gyveno trijose vietose, ir aš rengiausi pridėti ketvirtą ⭐
+
+`slenkstis.py` ir `prototipas.py` kiekvienas turėjo savo `joblib.load` su modelio tipo šakojimu — būtent tai, dėl ko rugsėjo 8 d. abu lūžo atskirai po failų pervadinimo. Rašydamas `--tik-vertinti` pirmą minutę galvojau nukopijuoti tą patį trečią kartą.
+
+**Vietoj to `_ikelti()` atsidūrė ten pat, kur `_issaugoti()`** — kiekvienoje modelio klasėje, o `Modelis.ikelti()` yra vienintelis įėjimo taškas. Pora, kurios pusės guli skirtinguose failuose, anksčiau ar vėliau išsiskiria.
+
+Šalutinis rezultatas: `gradientinis._ikelti` **įkeldamas grąžina modelį į CPU**. Delsa GPU yra 6,5 karto mažesnė nei CPU, o šliuze GPU nėra — dabar to nebereikia atsiminti kiekvienoje matavimo vietoje atskirai.
+
+#### 66. `i_latex` vidurkina bazinį ir suderintą modelį į vieną eilutę ⚠️⚠️
+
+Rastas tikrinant migruotą CSV. `RAKTAI = ["modelis", "formuluote"]` neapima `konfig`, todėl:
+
+| Lentelėje | Iš tikrųjų |
+|---|---|
+| XGBoost macro-F1 **0,7012** | vidurkis tarp bazinio 0,6838 ir suderinto 0,7185 — **nė vieno iš jų** |
+| „vidurkis iš **3** paleidimų“ | suvidurkintos **6** eilutės; `n_seed` skaičiuoja seed'us, ne eilutes |
+
+**Vadinasi, dabartinė `rezultatai.tex` 4 skyriuje rodo skaičius, kurių neturi nė vienas modelis.** Tai ta pati klasė kaip ir šios dienos pagrindinis radinys: teisingas mechanizmas su per siauru raktu.
+
+**Nepataisiau — tai turinio sprendimas.** Praplėtus `RAKTAI` lentelė gautų po dvi eilutes kiekvienam modeliui, o 4 skyriaus tekstas rašytas prie dabartinės sandaros. Vietoj to `agreguoti()` dabar **garsiai praneša**, kai į vieną grupę patenka kelios konfigūracijos. **5 užduočiai grėsmės nėra**: į `test` eina tik suderinti konfigai (protokolo 3.2 punktas), tad po vieną konfigą modeliui.
+
+#### 67. Lentelės išnaša dabar pati pasako, kuria aibe išmatuota ⭐
+
+`val` ir `test` lentelės skiriasi tik skaičiais, o skaičių niekas neatpažįsta iš atminties. Todėl `i_latex --aibe` įrašo į išnašą „Rezultatai išmatuoti testavimo aibėje“, o `slenkstis --taikyti test` — dar ir tai, kad τ parinktas validacijos aibėje ir čia **netaikomas iš naujo**.
+
+**Tai pigiausia šios dienos apsauga:** dokumentas, kuris pats pasako, iš kur jo skaičiai, negali būti tyliai supainiotas.
+
+### Kas nepavyko
+
+**Failų sistema per `device_bash` neprisijungė** (`no Plan9 drive shares mounted`), todėl kodas taisytas debesies konteineryje ir grąžintas per failų perkėlimą. Praktinė pasekmė viena: **pakeitimai nepatikrinti Windows pusėje su tikrais duomenimis ir modeliais.** Sintetinis testas tikrina logiką, ne integraciją — lygiai kaip rugsėjo 6 d., kai 537 eilučių testas praėjo, o tikras rinkinys parodė OOM.
+
+### Ką darysiu toliau
+
+1. ⚠️ **`git commit` prieš bet ką kitą** — `rezultatai.csv` su `aibe=val` turi turėti atsarginę kopiją.
+2. `patikra.bat` ir `python -m src.eksperimentai.i_latex --aibe val` — patvirtinti, kad taisymai veikia su tikrais duomenimis. Laukiama: 21 val eilutė, trys įspėjimai dėl sumaišytų konfigūracijų.
+3. Vienas modelis `--vertinimas test --tik-vertinti --seed 42` kaip **integracijos patikra**, ir tik po jos pilnas ciklas: `wc -l rezultatai.csv` prieš ir po turi duoti 21 → 22.
+4. Tada T1 — protokolo užrakinimas prieš likusius 11 paleidimų.

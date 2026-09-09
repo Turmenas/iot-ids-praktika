@@ -67,3 +67,8 @@ class RandomForest(Modelis):
     def _issaugoti(self, kelias: Path) -> None:
         import joblib
         joblib.dump(self._modelis, kelias, compress=3)
+
+    def _ikelti(self, kelias: Path) -> None:
+        import joblib
+        self._modelis = joblib.load(kelias)
+        self.klases_ = self._modelis.classes_

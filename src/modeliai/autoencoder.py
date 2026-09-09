@@ -145,5 +145,18 @@ class Autokoderis(Modelis):
         joblib.dump({"slenkstis": self.slenkstis_,
                      "procentilis": self.procentilis_, "keras": k.name}, kelias)
 
+    def _ikelti(self, kelias: Path) -> None:
+        import joblib
+        import tensorflow as tf
+        d = joblib.load(kelias)
+        # Slenkstis ateina IS FAILO, o ne perskaiciuojamas. Perskaiciuotas
+        # ant vertinimo aibes jis butu kalibruotas ta pacia aibe, kuria
+        # matuojama - protokolo 21 punkto pazeidimas.
+        self.slenkstis_ = d["slenkstis"]
+        self.procentilis_ = d["procentilis"]
+        self.klases_ = np.array([GERYBINE, "Ataka"])
+        self._modelis = tf.keras.models.load_model(
+            Path(kelias).with_suffix(".keras"), compile=False)
+
     def papildomi_failai(self, kelias: Path) -> list[Path]:
         return [Path(kelias).with_suffix(".keras")]

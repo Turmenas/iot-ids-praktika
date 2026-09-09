@@ -10,8 +10,16 @@ Paleidimas:
     # greita patikra pries tikra paleidima (imtis is mokymo aibes):
     python -m src.eksperimentai.paleisti konfig/random_forest.yaml --imtis 50000
 
-    # 5 UZDUOTIS ir tik ji:
-    python -m src.eksperimentai.paleisti konfig/random_forest.yaml --vertinimas test
+    # 5 UZDUOTIS ir tik ji - modeliai jau apmokyti, todel NEPERMOKOMI:
+    python -m src.eksperimentai.paleisti konfig/gradientinis_derintas.yaml \
+        --seed 42 43 44 --vertinimas test --tik-vertinti
+
+
+AIBE YRA REZULTATO DALIS, NE PALEIDIMO NUSTATYMAS
+-------------------------------------------------
+`rezultatai.csv` eilute apibreziama penkeriuka (modelis, formuluote,
+seed, konfig, AIBE). Iki 2026-09-09 aibes rakte nebuvo, todel `test`
+paleidimas butu perrases atitinkama `val` eilute - tyliai, be klaidos.
 
 
 TEST AIBE NELIECIAMA IKI 5 UZDUOTIES
@@ -56,13 +64,22 @@ def _y(y_et: pd.Series, y_kat: pd.Series, formuluote: str) -> np.ndarray:
 
 
 def paleisti(konfig_kelias: Path, seed: int, vertinimas: str = "val",
-             imties_riba: int | None = None) -> dict:
+             imties_riba: int | None = None,
+             tik_vertinti: bool = False) -> dict:
     konfig = yaml.safe_load(Path(konfig_kelias).read_text(encoding="utf-8"))
     raktas = konfig["modelis"]
     formuluote = konfig.get("formuluote", "8kat")
 
     print(f"\n{'='*64}\n{konfig_kelias.name} · {raktas} · {formuluote} · seed {seed}"
-          f"\n{'='*64}")
+          f" · {vertinimas}\n{'='*64}")
+
+    zyma = f"{Path(konfig_kelias).stem}_{formuluote}_seed{seed}"
+    aplankas = APMOKYTI / "_patikra" if imties_riba else APMOKYTI
+    kelias = aplankas / f"{zyma}.joblib"
+
+    if tik_vertinti and not kelias.exists():
+        raise SystemExit(f"Nerasta {kelias} - `--tik-vertinti` reikalauja "
+                         f"jau apmokyto modelio.")
 
     df = pd.read_parquet(pozymiai.IMTIS)
     idx = skaidymas.ikelti()
@@ -80,38 +97,63 @@ def paleisti(konfig_kelias: Path, seed: int, vertinimas: str = "val",
         print("[!] Naudojama TEST aibe (5 uzduotis)")
     i_vert = idx[vertinimas]
 
-    X_train, y_train = X.iloc[i_train], y[i_train]
     X_vert, y_vert = X.iloc[i_vert], y[i_vert]
-    X_val, y_val = X.iloc[idx["val"]], y[idx["val"]]
-
-    print(f"train {len(X_train):,} · {vertinimas} {len(X_vert):,} · "
-          f"{len(np.unique(y_train))} klases")
 
     Klase = bazinis.gauti(raktas)
     modelis = Klase(konfig.get("hiperparametrai", {}), seed=seed)
 
-    # ─── Normalizavimas: fit TIK ant mokymo aibes ───
-    skale = None
-    if modelis.reikia_skales:
-        skale = pozymiai.Skale().fit(X_train)
-        X_train_m = skale.transform(X_train)
-        X_vert_m = skale.transform(X_vert)
-        X_val_m = skale.transform(X_val)
+    skale_kelias = kelias.with_suffix(".skale.joblib")
+
+    if tik_vertinti:
+        # Mokymo aibe cia neikeliama: ji reikalinga tik skalei, o ta
+        # issaugota salia modelio. Prie 1,7 mln. x 36 tai ~490 MB, kuriu
+        # neuzimant Random Forest turi realia galimybe issitekti.
+        print(f"[i] Modelis NEPERMOKOMAS - ikeliamas {kelias.name}")
+        modelis = Klase.ikelti(kelias)
+        skale = None
+        if modelis.reikia_skales:
+            if skale_kelias.exists():
+                skale = pozymiai.Skale.ikelti(skale_kelias)
+            else:
+                # StandardScaler deterministinis, tad perskaiciuota is tos
+                # pacios mokymo aibes skale yra tapati. Bet tai pasakoma
+                # garsiai: tylus perskaiciavimas paslepia, kad modelis
+                # issaugotas be savo normalizavimo parametru.
+                print("  [!] Skale su modeliu neissaugota - "
+                      "perskaiciuojama is train")
+                skale = pozymiai.Skale().fit(X.iloc[idx["train"]])
+        X_vert_m = skale.transform(X_vert) if skale is not None else X_vert
+        print(f"{vertinimas} {len(X_vert):,} eilutes · "
+              f"mokymo laikas is metaduomenu: {modelis.mokymo_laikas_s}")
     else:
-        X_train_m, X_vert_m, X_val_m = X_train, X_vert, X_val
+        X_train, y_train = X.iloc[i_train], y[i_train]
+        X_val, y_val = X.iloc[idx["val"]], y[idx["val"]]
 
-    # ─── SMOTE abliacija: TIK train, TIK jei konfigas praso ───
-    if konfig.get("smote"):
-        balansavimas.patikrinti_tik_train(i_train, idx["train"])
-        pries = len(X_train_m)
-        X_train_m, y_train = balansavimas.smote(
-            X_train_m, y_train, riba_dalis=konfig.get("smote_riba", 0.10),
-            seed=seed)
-        print(f"SMOTE: {pries:,} -> {len(X_train_m):,}")
+        print(f"train {len(X_train):,} · {vertinimas} {len(X_vert):,} · "
+              f"{len(np.unique(y_train))} klases")
 
-    print("Mokoma...")
-    modelis.fit(X_train_m, y_train, X_val_m, y_val)
-    print(f"  mokymo laikas {modelis.mokymo_laikas_s:.1f} s")
+        # ─── Normalizavimas: fit TIK ant mokymo aibes ───
+        skale = None
+        if modelis.reikia_skales:
+            skale = pozymiai.Skale().fit(X_train)
+            X_train_m = skale.transform(X_train)
+            X_vert_m = skale.transform(X_vert)
+            X_val_m = skale.transform(X_val)
+        else:
+            X_train_m, X_vert_m, X_val_m = X_train, X_vert, X_val
+
+        # ─── SMOTE abliacija: TIK train, TIK jei konfigas praso ───
+        if konfig.get("smote"):
+            balansavimas.patikrinti_tik_train(i_train, idx["train"])
+            pries = len(X_train_m)
+            X_train_m, y_train = balansavimas.smote(
+                X_train_m, y_train, riba_dalis=konfig.get("smote_riba", 0.10),
+                seed=seed)
+            print(f"SMOTE: {pries:,} -> {len(X_train_m):,}")
+
+        print("Mokoma...")
+        modelis.fit(X_train_m, y_train, X_val_m, y_val)
+        print(f"  mokymo laikas {modelis.mokymo_laikas_s:.1f} s")
 
     y_pred = modelis.predict(X_vert_m)
     proba = modelis.predict_proba(X_vert_m)
@@ -127,25 +169,27 @@ def paleisti(konfig_kelias: Path, seed: int, vertinimas: str = "val",
     # Konfigo vardas BUTINAS zymoje: be jo `mokyti_derintus.bat` uzrase
     # bazinius modelius tais paciais failais, ir palyginimo "pries/po"
     # nebeliko - liko tik metrikos rezultatai.csv.
-    zyma = f"{Path(konfig_kelias).stem}_{formuluote}_seed{seed}"
     # Patikros rezimo modeliai i tikra aplanka nepatenka: greta tikruju
     # gulintis nuo 50 000 eiluciu apmokytas failas tuo paciu vardu yra
     # klaida, kurios veliau nebeatskirsi.
-    aplankas = APMOKYTI / "_patikra" if imties_riba else APMOKYTI
-    kelias = modelis.issaugoti(aplankas / f"{zyma}.joblib")
-    if skale is not None:
-        # Be skales issaugotas MLP ar autokoderis yra neveikiantis
-        # artefaktas: ivesties normalizavimo parametrai prarasti.
-        skale.issaugoti(kelias.with_suffix(".skale.joblib"))
+    if not tik_vertinti:
+        kelias = modelis.issaugoti(kelias)
+        if skale is not None:
+            # Be skales issaugotas MLP ar autokoderis yra neveikiantis
+            # artefaktas: ivesties normalizavimo parametrai prarasti.
+            skale.issaugoti(skale_kelias)
     dydis = modelis.dydis_mb(kelias)
 
     if not imties_riba:
+        # ⚠️ Aibe zymoje BUTINA: be jos test sumaisymo matrica butu
+        # perrasiusi val matrica tuo paciu vardu. Ta pati klaida, kuri
+        # 2026-09-08 istrynė bazinius modelius, tik pagauta pries, ne po.
         metrikos.sumaisymo_matrica(y_vert, y_pred, modelis.klases_).to_csv(
-            DARBINIAI / f"sumaisymas_{zyma}.csv")
+            DARBINIAI / f"sumaisymas_{zyma}_{vertinimas}.csv")
 
     eil = metrikos.eilute(modelis.vardas, formuluote, seed, m,
                           modelis.mokymo_laikas_s, delsa, dydis,
-                          str(Path(konfig_kelias).as_posix()))
+                          str(Path(konfig_kelias).as_posix()), vertinimas)
     if not imties_riba:
         metrikos.prideti(eil, REZULTATAI)
 
@@ -165,7 +209,21 @@ def main() -> None:
     a.add_argument("--vertinimas", choices=("val", "test"), default="val")
     a.add_argument("--imtis", type=int, default=None,
                    help="apkarpyti mokymo aibe - TIK greitai patikrai")
+    a.add_argument("--tik-vertinti", action="store_true", dest="tik_vertinti",
+                   help="neikelti mokymo aibes ir nepermokyti: ikelti "
+                        "issaugota modeli ir tik ji ivertinti")
     n = a.parse_args()
+
+    if n.tik_vertinti and n.imtis:
+        raise SystemExit("--tik-vertinti ir --imtis viena kito neisskiria: "
+                         "pirmasis nemoko, antrasis keicia mokymo aibe.")
+
+    if n.vertinimas == "test":
+        print("\n" + "=" * 64)
+        print("TEST AIBE. Eilutes rasomos su `aibe=test`;")
+        print("`aibe=val` eilutes NELIECIAMOS (metrikos.RAKTAS).")
+        print("Slenkstis tau NEPERRENKAMAS - jis imamas is val.")
+        print("=" * 64)
 
     import time
     darbai = [(k, s) for k in n.konfigai for s in n.seed]
@@ -177,7 +235,7 @@ def main() -> None:
                 f"{praejo/(i-1)*(len(darbai)-i+1)/60:.0f} min" if i > 1 else "")
         print(f"\n>>> PALEIDIMAS {i}/{len(darbai)}{liko}")
         try:
-            paleisti(k, s, n.vertinimas, n.imtis)
+            paleisti(k, s, n.vertinimas, n.imtis, n.tik_vertinti)
         except Exception as e:
             print(f"\n[KLAIDA] {k.name} seed {s}: {type(e).__name__}: {e}")
             raise

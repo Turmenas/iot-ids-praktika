@@ -11,7 +11,7 @@
 |---|---|
 | ✅ **T0–T7** | Įkėlimo grandinė · 36 požymiai · skaidymas · balansavimas · keturi modeliai · paleidiklis · **12 paleidimų atlikta** |
 | ✅ **Derinimas** | Atliktas: 20 bandymų × 3 modeliai. Suderinti konfigai — `konfig/*_derintas.yaml` |
-| 🔄 **Permokymas** | `mokyti_derintus.bat` — **dar nepaleistas** |
+| ✅ **Permokymas** | `mokyti_derintus.bat` — **atliktas 2026-09-08 06:07–06:47**; `*_derintas_8kat_seed42..44` yra visiems trims prižiūrimiems *(žyma pataisyta 09-08 vakare, patikrinus failus)* |
 | ✅ **T8** | Prototipas — `prototipas.bat`. MLP jame pareikalaus permokymo (skalė) |
 | ✅ **T9** | `04_sprendimas.tex` — 7 poskyriai, 3 lentelės, 2 paveikslai. **Sukompiliuota: 37 psl., 0 klaidų** |
 

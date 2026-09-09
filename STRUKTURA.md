@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-08 — **4 UŽDUOTIS BAIGTA**: T0–T9, ataskaita 37 psl., 0 klaidų
+**Atnaujinta:** 2026-09-09 — **5 užd. T0 atliktas**: `aibe` stulpelis, `--tik-vertinti`, `slenkstis --taikyti test`
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -38,6 +38,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `uzduotis_02_planas.md` | **2 užd.** tikslų planas |
 | ✅ `uzduotis_03_planas.md` | **3 užd.** tikslų planas — **dviejų pakopų filtras + eksperimento protokolas** *(2026-09-03)* |
 | ✅ `uzduotis_04_planas.md` | **4 užd.** tikslų planas — **įkėlimo grandinė, modelių kontraktas, 3 dienų biudžetas** *(2026-09-06)* |
+| ✅ `uzduotis_05_planas.md` | **5 užd.** tikslų planas — **vienas prėjimas per `test`, vertinimo protokolas, nematytų klasių taisyklės** *(2026-09-08)* |
 | ⬛ `uzduotis_01_planas.md` · `praktikos_planas.md` · `kontekstas.md` | Kol kas tik Claude projekte |
 
 ## `ataskaita\`
@@ -70,24 +71,24 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\pozymiai.py` | ⭐ **T2 (09-07).** 39 → **36** požymiai, šalinama sąrašu; tapatybės tikrinamos kaskart; `Skale` su apsauga (`fit` tik ant train, antras kvietimas meta klaidą) |
 | ✅ `duomenys\skaidymas.py` | ⭐ **T3 (09-07).** Stratifikuotas 70/15/15 pagal **34 etiketes**; **keturios nutekėjimo patikros**; indeksai išsaugomi |
 | ✅ `duomenys\balansavimas.py` | ⭐ **T4 (09-07).** Klasių svoriai (santykis 83,9), `sample_weight` XGBoost'ui, SMOTE abliacijai. **Gerybinis srautas nesintetinamas** |
-| ✅ `modeliai\bazinis.py` | ⭐ **T5.** Kontraktas: `fit` / `predict` / `predict_proba` / `issaugoti`; laukai `priziurimas`, `reikia_skales`; delsos matavimas; registras `gauti()` |
+| ✅ `modeliai\bazinis.py` | ⭐ **T5.** Kontraktas: `fit` / `predict` / `predict_proba` / `issaugoti` / **`ikelti`** (09-09); laukai `priziurimas`, `reikia_skales`; delsos matavimas; registras `gauti()`. **`_ikelti` guli šalia `_issaugoti`** kiekvienoje klasėje — įkėlimo logika nebedubliuojama `slenkstis.py` ir `prototipas.py` |
 | ✅ `modeliai\random_forest.py` | **T5.** `class_weight=balanced`; normalizavimo nereikia |
 | ✅ `modeliai\gradientinis.py` | **T5.** XGBoost. ⚠️ Vardas **ne** `xgboost.py` — uždengtų biblioteką. `sample_weight`, ne `scale_pos_weight` |
 | ✅ `modeliai\mlp.py` | **T5.** Keras; ankstyvas stabdymas pagal **mūsų** `val`; `.keras` failas skaičiuojamas į dydį |
 | ✅ `modeliai\autoencoder.py` | ⭐ **T5.** Mokomas tik iš `BENIGN`; slenkstis — **99-asis** `val` procentilis (ne 95: procentilis nustato FPR) |
 | 🗑 `modeliai\cnn.py` | Ištrintinas — neatitinka ketverto |
-| ✅ `eksperimentai\paleisti.py` | ⭐ **T6.** Konfigas → mokymas → metrikos → `rezultatai.csv`. `--imtis` greitai patikrai (į CSV nerašo), `--vertinimas test` **tik 5 užduočiai** |
+| ✅ `eksperimentai\paleisti.py` | ⭐ **T6.** Konfigas → mokymas → metrikos → `rezultatai.csv`. `--imtis` greitai patikrai (į CSV nerašo), `--vertinimas test` **tik 5 užduočiai**. ⭐ **`--tik-vertinti` (09-09):** įkelia išsaugotą modelį, mokymo aibės neatidaro; `sumaisymas_*` vardas turi aibę |
 | ✅ `eksperimentai\metrikos.py` | **T6.** Protokolo 15 stulpelių; FPR = tikro gerybinio srauto dalis, priskirta atakai |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
 | ✅ `eksperimentai\jautrumas.py` | ⭐ **3 užd. (T5):** ±10 p. p. + tikrųjų ribų paieška → `lenteles\jautrumas.tex` |
 | ✅ `prototipas.py` | ⭐ **T8.** Srautas → požymiai → inferencija → signalas. Naudoja **slenkstį, ne argmax**; inferencija CPU; validacijos aibė, test neliečiama |
-| ✅ `eksperimentai\slenkstis.py` | ⭐ Sprendimo slenkstis: kreivės + operacinis taškas ties FPR ≤ 1 %. `--modeliai` leidžia paleisti dalimis |
+| ✅ `eksperimentai\slenkstis.py` | ⭐ Sprendimo slenkstis: kreivės + operacinis taškas ties FPR ≤ 1 %. `--modeliai` leidžia paleisti dalimis. ⭐ **`--taikyti test` (09-09):** τ **skaitomas iš `slenkscio_taskai.csv`**, `parinkti()` tame režime nekviečiamas; išvestis — atskiri `*_test` failai, val nepaliečiama |
 | ✅ `eksperimentai\derinimas.py` | ⭐ Atsitiktinė paieška ant imties; šalia macro-F1 fiksuoja **modelio dydį** |
 | ✅ `eksperimentai\delsa.py` | Delsos permatavimas CPU. ⚠️ Visi modeliai — **vienu paleidimu, vienoje mašinoje** |
 | ✅ `eksperimentai\lenteles.py` | `imties_pasiskirstymas.csv` → `lenteles/imtis.tex` |
 | ✅ `eksperimentai\paveikslai.py` | `paveikslai/architektura.pdf`; PDF data išjungta, kad būtų atkartojama |
 | ✅ `eksperimentai\eiga.py` | Eigos juosta (RF, XGBoost) |
-| ✅ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06 (T0).** Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
+| ⚠️ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06.** **09-09: `--aibe {val,test}` filtras, aibė įrašoma į išnašą.** ⚠️ `RAKTAI` neapima `konfig`, todėl bazinis ir suderintas modelis suvidurkinami į vieną eilutę — dabar apie tai **pranešama garsiai**, bet nepataisyta (turinio sprendimas).  Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
 
 ## Duomenys, konfigūracijos, rezultatai
 
@@ -100,8 +101,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
 | ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `gradientinis.yaml` · `mlp.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos — **visos keturios užpildytos** |
-| ⬜ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**. Schema fiksuota 3 užd. protokolo 24 punkte |
-| ⬜ `rezultatai\apmokyti\metadata.json` | Git'e tik metaduomenys. Failų vardai: `<konfigas>_<formuluotė>_seed<N>.joblib` + `.skale.joblib` modeliams, kuriems reikia normalizavimo |
+| ✅ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**, 21 eilutė, visos `aibe=val`. ⭐ **`aibe` stulpelis pridėtas 09-09** ir įrašytas į `RAKTAS`: `test` eilutė nebegali užimti `val` eilutės vietos. Kontroliniu paleidimu patvirtinta, kad senas kodas jas naikino tyliai |
+| ⚠️ `rezultatai\apmokyti\metadata.json` | **Tuščias** (`{"modeliai": {}}`) — metaduomenys realiai guli kiekvieno modelio `.json` šalia. Pildyti arba išbraukti. Failų vardai: `<konfigas>_<formuluotė>_seed<N>.joblib` + `.skale.joblib` |
 | ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
 | ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |

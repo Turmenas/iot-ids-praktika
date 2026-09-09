@@ -96,5 +96,18 @@ class MLP(Modelis):
         self._modelis.save(k)
         joblib.dump({"kodavimas": self._kodavimas, "keras": k.name}, kelias)
 
+    def _ikelti(self, kelias: Path) -> None:
+        import joblib
+        import tensorflow as tf
+        d = joblib.load(kelias)
+        self._kodavimas = d["kodavimas"]
+        self.klases_ = self._kodavimas.classes_
+        # `compile=False`: ikeliant reikia tik inferencijos, o optimizatoriaus
+        # busenos deserializavimas yra dazniausia Keras versiju nesutapimo
+        # vieta. Tai NEISSPRENDZIA `quantization_config` klaidos, matytos
+        # kitoje masinoje - ta kyla is sluoksniu, ne is kompiliavimo.
+        self._modelis = tf.keras.models.load_model(
+            Path(kelias).with_suffix(".keras"), compile=False)
+
     def papildomi_failai(self, kelias: Path) -> list[Path]:
         return [Path(kelias).with_suffix(".keras")]
