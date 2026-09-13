@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-13 — **ATASKAITA SURINKTA**: visos šešios užduotys, įvadas, išvados ir titulinis puslapis. **54 psl., 0 klaidų, 0 neišspręstų nuorodų, 0 `TODO`**. **`.bat` failai sunumeruoti paleidimo eile (01–14).** Liko `build.ps1` Windows pusėje
+**Atnaujinta:** 2026-09-13 — **ATASKAITA SURINKTA**: visos šešios užduotys, įvadas, išvados ir titulinis puslapis. **57 psl. (54 + bibliografija), 0 klaidų, 0 neišspręstų nuorodų, 0 `TODO`**. **`.bat` failai sunumeruoti paleidimo eile (01–14).** **Atkartojamumas patikrintas švarioje aplinkoje.** Liko tik neprivalomi likučiai
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -15,8 +15,8 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `DARBO_ZURNALAS.md` | Kasdienis žurnalas — **tik sprendimai, radiniai, pamokos** |
 | ✅ `STRUKTURA.md` | Šis failas |
 | ✅ `README.md` | Projekto apžvalga — **atnaujinta 09-13:** visos 6 užduotys ✅, rezultatas, pilna `.bat` paleidimo seka |
-| ✅ `requirements.txt` · `requirements-lock.txt` | Priklausomybės *(lock nuo 09-01; žurnale klaidingai laikyta neatlikta)* |
-| ✅ `patikra.py` | Aplinkos patikra (bibliotekos + aplankai) |
+| ✅ `requirements.txt` · `requirements-lock.txt` | Priklausomybės. **Lock pergeneruotas 09-13** — 95 paketai; ankstesnis (09-01) neturėjo `streamlit`, tad prototipas švarioje aplinkoje nebūtų pasileidęs. ⚠️ PowerShell 5.1 `-Encoding utf8` rašo **su BOM**; `pip` jį nurija — patikrinta švariu diegimu 09-13 |
+| ✅ `patikra.py` | Aplinkos patikra (bibliotekos + aplankai). **09-13:** pridėtos `PAPILDOMOS` — `streamlit` rodomas atskirai, nes jo trūkumas nėra klaida, bet turi būti matomas |
 | ✅ `sutvarkyti.ps1` | ⭐ **Vienkartinis (09-13), atliktas:** ištrynė nebereikalingus failus, perkėlė `ciciot2023_pozymiai.md` į `duomenys\`, pašalino senus `.bat` vardus |
 | ✅ `sutvarkyti_diska.ps1` | ⭐ **Vienkartinis (09-13):** ~4,2 GB — `archive.zip`, Random Forest ir 34 klasių modeliai, `_patikra\`, `__pycache__`. Kiekvienas įrašas turi pastabą, **kaip jį susigrąžinti**. `-Perziura` — peržiūra nieko nekeičiant |
 | ✅ `_aplinka.bat` | ⭐ Bendra dalis visiems `.bat`: aktyvuoja `iot-ids`, **nutraukia darbą, jei aktyvi kita aplinka**, išjungia `%APPDATA%` paketų nutekėjimą |
@@ -225,7 +225,7 @@ Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1
 | `.gitignore` eilutė neveikia | Komentaras eilutės gale — perkelti į atskirą eilutę |
 | `ModuleNotFoundError` | Promptas rodo `(base)` — `conda activate iot-ids` |
 | ⚠️ **`NumPy 1.x cannot be run in NumPy 2.x`** | Paleista `(base)`, ne `(iot-ids)`. Base aplinkoje `%APPDATA%\Python\Python312\site-packages` uždengia anaconda paketus. `iot-ids` yra Python 3.11, todėl jos tai neliečia |
-| `pip install -r requirements-lock.txt` nesuveikia | PowerShell `>` rašo **UTF-16**, pip laukia UTF-8. Naudoti `\| Out-File -Encoding utf8` *(failas pataisytas 09-07)* |
+| `pip install -r requirements-lock.txt` nesuveikia | PowerShell `>` rašo **UTF-16**, pip laukia UTF-8. Naudoti `\| Out-File -Encoding utf8`. ⚠️ PS 5.1 tai duoda UTF-8 **su BOM** — pip jį nurija, bet failui be BOM reikia `Set-Content -Encoding ascii` |
 
 ### LaTeX
 

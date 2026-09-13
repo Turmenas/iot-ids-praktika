@@ -2390,3 +2390,41 @@ Tai ta pati klasė kaip rugsėjo 8 d. įkalti modelių vardai dviejose vietose: 
 Tikrindamas, kurios `lenteles\*.tex` iš tikrųjų įtraukiamos į skyrius, radau, kad iš penkiolikos **nenaudojama tik viena — `rezultatai.tex`** (validacijos aibės kokybės lentelė). Skyriai naudoja `rezultatai_test.tex`.
 
 Ir tai kaip tik tas failas, kuriame gyveno rugsėjo 9 d. rastas `i_latex` trūkumas: `RAKTAI` neapima `konfig`, todėl bazinis ir suderintas modelis suvidurkinami į vieną eilutę. Tada nusprendžiau jo netaisyti, nes „5 užduočiai grėsmės nėra“ — dabar paaiškėjo, kad **failo, kurį ta yda gadina, apskritai niekas neįtraukia.** Problema, dėl kurios dvejojau, buvo nulinės apimties.
+
+
+### Atkartojamumo patikra: radinys dar prieš pradedant
+
+Prieš leidžiant švarią aplinką sutikrinau `requirements.txt` su `requirements-lock.txt`.
+
+#### 99. Lock faile nėra `streamlit` ⚠️⭐
+
+`requirements-lock.txt` sudarytas **rugsėjo 1 d.**, o `streamlit` įdiegtas **rugsėjo 8 d.**, kuriant prototipą. Vadinasi, aplinka, surinkta iš lock failo, prototipo nepaleistų.
+
+**Blogiausia, kad patikra to nerodytų.** `patikra.py` tikrino dvylika bibliotekų, ir `streamlit` tarp jų nebuvo — švari aplinka būtų pranešusi „Aplinka paruosta“ ir lūžusi tik ties `07_prototipas.bat`. Tai ta pati klasė kaip `requirements-lock.txt` UTF-16 problema rugsėjo 7 d.: **failas egzistuoja, atrodo teisingas ir savo funkcijos neatlieka.**
+
+**Pataisyta `patikra.py`:** pridėtas `PAPILDOMOS` sąrašas — bibliotekos, kurių trūkumas nėra klaida, bet **turi būti matomas**. `streamlit` dabar rodomas su žyma, kuriam žingsniui jo reikia. Griežta patikra lieka dvylikai pagrindinių.
+
+**Lock failas turi būti sugeneruotas iš naujo** — jam dvylika dienų, o per jas pasikeitė ne tik `streamlit`.
+
+> **Pamoka:** lock failas yra momentinė nuotrauka, o ne aprašas. Jei aplinka keitėsi po jo sudarymo, jis meluoja būtent apie tai, kas pridėta vėliausiai — t. y. apie naujausią darbo dalį.
+
+
+### Atkartojamumo patikra atlikta ✅
+
+Švari `conda` aplinka (`python=3.11`), `pip install -r requirements-lock.txt` — **95 paketai, nė vieno konflikto**. Trys patikros toje aplinkoje:
+
+| Patikra | Rezultatas |
+|---|---|
+| `python patikra.py` | 12/12 privalomų + `streamlit` · 11/11 aplankų · „Aplinka paruosta“ |
+| `python -m src.duomenys.etiketes` | 34 etiketės → 8 kategorijos, savipatikra praėjo |
+| `python -m src.modeliai.bazinis` | 4/4 klasės realizuoja pilną kontraktą |
+
+**Tai paskutinis neuždarytas rugsėjo 1 d. punktas.** Aplinka atkuriama iš nulio, o ataskaitos teiginys apie atkartojamumą dabar remiasi paleidimu, ne prielaida.
+
+#### 100. `Out-File -Encoding utf8` PowerShell 5.1 rašo su BOM ⚠️
+
+Naujas lock failas — **UTF-8 su BOM**. Rugsėjo 7 d. taisyklė („`>` rašo UTF-16, naudoti `| Out-File -Encoding utf8`“) išsprendė pagrindinę problemą, bet ne iki galo: PowerShell 5.1 `utf8` reiškia „su BOM“, o `utf8NoBOM` atsirado tik PowerShell 6.
+
+**Šįkart tai nekenkia — ir tai ne prielaida:** `pip install` iš to paties failo švarioje aplinkoje praėjo, vadinasi, pip BOM nurija. Bet taisyklė patikslinta: jei kada prireiktų failo be BOM, PowerShell 5.1 kelias yra `Set-Content -Encoding ascii`, ne `Out-File -Encoding utf8`.
+
+> Trečias kartas, kai ta pati komanda ta pačia kryptimi nustebina: `>` → UTF-16, `-Encoding utf8` → BOM. **Teksto failo koduotė Windows'e niekada nėra numatytoji — ji visada pasirinkimas, kurį kažkas padarė už tave.**
