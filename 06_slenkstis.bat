@@ -21,6 +21,8 @@ echo Rezultatai:
 echo   rezultatai\darbiniai\slenkscio_kreives.csv
 echo   rezultatai\darbiniai\slenkscio_taskai.csv
 echo   ataskaita\lenteles\slenkstis.tex
+echo.
+echo TOLIAU:  07_prototipas.bat (demonstracija) arba 08_vertinti_test.bat
 goto :pabaiga
 
 :klaida

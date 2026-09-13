@@ -1,0 +1,25 @@
+% Pozymiu svarba (gain) - 6 uzduotis
+% GENERUOJAMA is rezultatai/apmokyti/*.joblib
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.pozymiu_svarba
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedleft\arraybackslash}p{0.7cm}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.2cm}@{}}
+\toprule
+\textbf{Nr.} & \textbf{Požymis} & \textbf{Ką matuoja} & \textbf{Prieaugio dalis} \\
+\midrule
+1 & \texttt{Number} & paketų skaičius lange & 62,3~\% \\
+2 & \texttt{Protocol Type} & protokolo kodas & 6,0~\% \\
+3 & \texttt{SSH} & SSH srauto dalis & 5,9~\% \\
+4 & \texttt{Min} & mažiausias paketo dydis & 3,5~\% \\
+5 & \texttt{TCP} & TCP srauto dalis & 2,8~\% \\
+6 & \texttt{rst\_count} & RST paketų skaičius & 1,4~\% \\
+7 & \texttt{Max} & didžiausias paketo dydis & 1,3~\% \\
+8 & \texttt{rst\_flag\_number} & RST vėliavėlių dalis & 1,1~\% \\
+9 & \texttt{ack\_count} & ACK paketų skaičius & 1,0~\% \\
+10 & \texttt{ack\_flag\_number} & ACK vėliavėlių dalis & 0,9~\% \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Vidutinis informacijos prieaugis (\emph{gain}), normalizuotas iki visų 36 naudotų požymių sumos; XGBoost, aštuonių kategorijų formuluotė, pradinis dydis 42. Skaičiuojama iš paties modelio --- duomenų aibė neatidaroma. Penki pirmieji požymiai surenka 80,4~\%, dešimt --- 86,2~\% viso prieaugio. Šeši sąmoningai palikti mažos dispersijos požymiai kartu surenka 1,9~\%. Gain nerodo krypties: jis pasako, kuo modelis remiasi, o ne kokia požymio reikšmė reiškia ataką.
+\endgroup

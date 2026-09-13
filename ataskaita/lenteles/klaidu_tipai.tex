@@ -1,0 +1,16 @@
+% GENERUOJAMA - paleisti: python -m src.eksperimentai.klaidos
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.1cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Klaidų iš viso} & \textbf{Klaidingi teigiami} & \textbf{Praleistos atakos} & \textbf{Tarp atakų} \\
+\midrule
+XGBoost & 16,9~\% & 5,2~\% & 16,1~\% & \textbf{78,7~\%} \\
+Random Forest & 16,6~\% & 6,3~\% & 15,1~\% & \textbf{78,6~\%} \\
+MLP & 21,8~\% & 5,8~\% & 14,5~\% & \textbf{79,7~\%} \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize testavimo aibė, \emph{argmax}. Pirmasis stulpelis --- klaidingai suklasifikuotų eilučių dalis; kiti trys --- tų klaidų pasiskirstymas. \textbf{Tarp atakų} reiškia, kad pavojaus signalas įvyko, o suklysta tik kategorija; eksploatacijai tai pigiausia klaidos rūšis, nors bendras tikslumas ją skaičiuoja taip pat kaip praleistą ataką.
+\endgroup

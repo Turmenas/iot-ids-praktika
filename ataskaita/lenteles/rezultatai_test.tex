@@ -1,0 +1,23 @@
+% Aptikimo kokybe
+% GENERUOJAMA is rezultatai/rezultatai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.i_latex
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Formuluotė} & \textbf{macro-F1} & \textbf{PR-AUC} & \textbf{ROC-AUC} & \textbf{MCC} & \textbf{FPR} & \textbf{Tikslumas\textsuperscript{a}} \\
+\midrule
+XGBoost & 8 kategorijos & 0,721 & 0,792 & 0,983 & 0,785 & 0,2130\,$\pm$\,0,0006 & 0,830 \\
+Random Forest & 8 kategorijos & \textbf{0,728} & 0,778 & 0,981 & 0,790 & 0,2524\,$\pm$\,0,0011 & 0,834 \\
+MLP & 8 kategorijos & 0,635\,$\pm$\,0,005 & 0,740\,$\pm$\,0,001 & 0,976 & 0,722\,$\pm$\,0,007 & 0,3087\,$\pm$\,0,0227 & 0,776\,$\pm$\,0,010 \\
+\addlinespace
+XGBoost & Dvejetainė & \textbf{0,769} & 0,837 & 0,981 & 0,590\,$\pm$\,0,001 & 0,0969\,$\pm$\,0,0014 & 0,943 \\
+Autokoderis & Dvejetainė & 0,219\,$\pm$\,0,044 & 0,996 & 0,932\,$\pm$\,0,001 & 0,098\,$\pm$\,0,019 & 0,0093\,$\pm$\,0,0003 & 0,239\,$\pm$\,0,058 \\
+\addlinespace
+XGBoost & 34 klasės & 0,646\,$\pm$\,0,001 & 0,682 & 0,986 & 0,762 & 0,2914\,$\pm$\,0,0025 & 0,771 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Rezultatai išmatuoti testavimo aibėje. \textsuperscript{a}~Bendras tikslumas pateikiamas \emph{tik} palyginimui su literatūra: prie 41,8:1 santykio jis nėra rodiklis. Reikšmės --- vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
+\endgroup

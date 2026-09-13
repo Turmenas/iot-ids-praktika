@@ -1,0 +1,4 @@
+klase,n_test,tau,fpr_test,nematyta_priziurimas,autokoderis,matyta_priziurimas,pagrindimas
+DDOS-SLOWLORIS,3360,0.984151,0.010133333333333333,0.9994047619047619,0.3142857142857143,0.9994047619047619,zemo intensyvumo ataka; pagrindinio pozymio (srauto trukmes) sis leidimas neisreiskia
+RECON-PORTSCAN,11518,0.984151,0.008866666666666667,0.4723042194825491,0.12779996527174856,0.48732418822712276,"zvalgyba; kategorija, kuria modelis painioja su gerybiniu srautu"
+DICTIONARYBRUTEFORCE,1878,0.984151,0.0092,0.24440894568690097,0.2534611288604899,0.45740149094781685,"vienintele savo kategorijos klase, todel priziurimas modelis etiketes neturi is principo"

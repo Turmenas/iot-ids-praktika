@@ -5,7 +5,7 @@ rem
 rem  Atskiri konfigai (*_derintas.yaml), kad baziniai rezultatai
 rem  rezultatai.csv liktu - ataskaitai reikia palyginimo pries/po.
 rem
-rem  Po sio: slenkstis.bat, tada i_latex.
+rem  Po sio: 06_slenkstis.bat, tada i_latex.
 rem ====================================================================
 call "%~dp0_aplinka.bat"
 if errorlevel 1 goto :pabaiga
@@ -18,7 +18,7 @@ if errorlevel 1 goto :klaida
 echo.
 echo Pabaiga: %DATE% %TIME%
 echo.
-echo TOLIAU:  slenkstis.bat   (operaciniai taskai suderintiems modeliams)
+echo TOLIAU:  06_slenkstis.bat   (operaciniai taskai suderintiems modeliams)
 echo          python -m src.eksperimentai.i_latex
 goto :pabaiga
 

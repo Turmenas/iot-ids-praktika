@@ -1,0 +1,139 @@
+% ---------------------------------------------------------------------
+%  IŠVADOS — rašomos paskutinės, kai visi šeši skyriai baigti.
+%  Sandara: po vieną išvadą kiekvienam darbo uždaviniui, tada
+%  apribojimai ir tolesnių tyrimų kryptys.
+%  Skaičiai čia NEPERRAŠOMI ranka iš atminties — visi jau yra
+%  atitinkamų skyrių lentelėse.
+% ---------------------------------------------------------------------
+
+Darbo tikslas --- sukurti ir eksperimentiškai įvertinti dirbtiniu
+intelektu pagrįstą IoT tinklo kibernetinių atakų aptikimo sprendimą ---
+pasiektas: sukurtas veikiantis aptikimo prototipas, jis įvertintas
+nepriklausoma testavimo aibe, o keturi metodai palyginti ties
+eksploatacijai reikšmingu sprendimo tašku. Toliau pateikiamos išvados
+pagal kiekvieną uždavinį.
+
+\begin{enumerate}\itemsep4pt
+
+\item \textbf{IoT atakų ir jų aptikimo metodų analizė} parodė, kad
+  aptikimo vieta ir įvesties tipas nulemia visa kita. Reikalavimas
+  veikti be per-įrenginio konfigūravimo ir remtis tik tinklo srautu
+  palieka vieną diegimo vietą --- kraštinį šliuzą, --- o iš jos seka
+  20--50~ms inferencijos biudžetas ir reikalavimas neviršyti
+  1~\% klaidingų teigiamų. Analizė davė ir tikrinamą
+  prognozę: duomenų rinkinio leidime, kuriame nėra srauto krypties ir
+  trukmės požymių, žvalgybos atakos turi būti painiojamos su gerybiniu
+  srautu. Eksperimentas šią prognozę patvirtino
+  (\ref{sec:klaidu_analize} poskyris).
+
+\item \textbf{DI metodų taikymo galimybių analizė} apėmė 18 metodų
+  penkiose mokymosi paradigmose. Svarbiausia išvada --- ribojantis
+  veiksnys yra ne skaičiavimo ištekliai, o duomenų struktūra:
+  keturi iš aštuonių atmetimų kyla iš to, kad duomenyse nėra nei laiko
+  eilės, nei šaltinio ir paskirties identifikatorių, todėl sekų
+  modeliai, grafų neuroniniai tinklai ir federuotas mokymasis šiam
+  rinkiniui netaikytini iš principo, o ne dėl aparatūros.
+
+\item \textbf{Metodų parinkimas} atliktas dviem pakopomis: kietieji
+  apribojimai (18 metodų $\rightarrow$ 8), tada svertinė sprendimų
+  matrica pagal keturis kriterijus, kurių kiekvienas išvestas iš
+  \ref{sec:atakos} skyriaus reikalavimų. Parinkti keturi metodai ---
+  Random~Forest, XGBoost, daugiasluoksnis perceptronas ir
+  autokoderis. Kartu užrakintas eksperimento protokolas, kurio
+  svarbiausias punktas --- pasikartojančių eilučių šalinimas: jų
+  rinkinyje yra 53,3~\%, ir be šio žingsnio atsitiktinis
+  skaidymas garantuotų, kad dalis testavimo aibės modeliui jau matyta.
+
+\item \textbf{Sukurtas aptikimo sprendimas} apima visą grandinę nuo
+  žalio srauto iki pavojaus signalo: duomenų valymą ir dedublikavimą,
+  36 požymių atranką, stratifikuotą 70/15/15 skaidymą, keturis
+  vienodą sąsają turinčius modelius, sprendimo slenkstį ir
+  demonstracinį prototipą. Architektūriškai svarbiausias sprendimas ---
+  mokymo atskyrimas nuo diegimo: į šliuzą keliauja tik apmokytas
+  modelis ir slenksčio reikšmė, o slenkstis nustatomas iš validacijos
+  aibės, ne iš stebimo srauto.
+
+\item \textbf{Eksperimentinis vertinimas} atliktas vienu prėjimu per
+  testavimo aibę. Geriausias rezultatas ties reikalaujamu klaidingų
+  teigiamų biudžetu --- makro-F1 \num{0.6626} prie
+  0,95~\% klaidingų teigiamų, aptinkant
+  88,5~\% atakų srauto. Vertinimas parodė, kad bendras
+  tikslumas šiam uždaviniui netinka ne tik dėl klasių disbalanso:
+  78,7~\% visų klaidų yra painiava \emph{tarp atakų}, kai
+  pavojaus signalas įvyksta, o suklystama tik kategorija, ir du
+  trečdaliai jų --- DoS ir DDoS riba, kurios turimi požymiai
+  nubrėžti neleidžia.
+
+\item \textbf{Metodų efektyvumo palyginimas} davė svarbiausią
+  metodinį darbo rezultatą: \emph{palyginimas ties didžiausios
+  tikimybės tašku ir palyginimas ties klaidingų teigiamų biudžetu
+  duoda skirtingą nugalėtoją}. Ties argmax pirmauja Random~Forest,
+  ties biudžetu --- XGBoost, o pastarasis taškas yra vienintelis,
+  kuriuo sistema realiai dirbtų. Palyginimas taip pat paneigė darbo
+  prielaidą, kad nematytoms atakoms būtinas neprižiūrimas metodas:
+  prižiūrimas modelis, klasės niekada nematęs, aptinka ją geriau
+  dviem atvejais iš trijų, o apibendrinimo geba priklauso ne nuo
+  paradigmos, o nuo to, ar mokymo aibėje lieka gimininga klasė.
+
+\end{enumerate}
+
+\subsection*{Praktinė rekomendacija}
+
+Kraštinio šliuzo įrenginiui, laikantis 1~\% klaidingų
+teigiamų biudžeto, tinkamiausias yra XGBoost su sprendimo slenksčiu:
+45~MB, 29,6 mikrosekundės vienam įrašui ir
+88,5~\% aptikimo. Griežtai ribotos atminties įrenginiui
+tinka daugiasluoksnis perceptronas --- 86 kartus mažesnis už
+10~\% makro-F1 kainą. Random~Forest nerekomenduojamas:
+jis ties operaciniu tašku prastesnis, 14 kartų didesnis ir vienintelis
+peržengė klaidingų teigiamų biudžetą. Autokoderis kaip vienintelis
+aptikimo metodas netinka, bet lieka svarstytinas kaip papildoma
+rikiavimo pakopa.
+
+\subsection*{Darbo apribojimai}
+
+Rezultatų galiojimo ribos kyla iš duomenų, ne iš metodų, ir yra
+trejopos.
+
+Pirma, naudotas vienas duomenų rinkinys. Literatūroje kryžminis
+modelių perkėlimas tarp IoT rinkinių smarkiai griūva
+\cite{eren2026drift}, todėl gauta metodų rikiuotė galioja šio pobūdžio
+srautui, o ne bet kuriam IoT tinklui.
+
+Antra, rinkinio leidime nėra laiko žymos, srauto krypties ir trukmės
+požymių. Dėl laiko žymos nebuvimo neįmanomas chronologinis skaidymas,
+todėl rezultatai nieko nesako apie modelio elgseną srautui kintant
+laikui bėgant; dėl krypties ir trukmės požymių nebuvimo lieka
+nepadengtos dvi klaidų grupės --- gerybinio srauto painiava su
+žvalgyba ir DoS bei DDoS riba.
+
+Trečia, nematytų atakų klasių testas tikrino tris klases, kurių
+kategorijos, išskyrus vieną, mokymo aibėje liko. Išvada apie
+apibendrinimą galioja naujai tos pačios šeimos klasei, o ne atakai,
+nepriklausančiai nė vienai iš aštuonių kategorijų.
+
+\subsection*{Tolesnių tyrimų kryptys}
+
+\begin{enumerate}\itemsep3pt
+  \item \textbf{Kryžminis patikrinimas antru duomenų rinkiniu.} Tai
+    vienintelis būdas patikrinti, ar rikiuotė ties klaidingų teigiamų
+    biudžetu išlieka, ar yra šio rinkinio savybė.
+  \item \textbf{Slenksčio parinkimas su atsarga.} Mažiausias
+    biudžetą tenkinantis slenkstis pagal konstrukciją atsiduria prie
+    pat ribos, ir testavimo aibėje vienas modelis ją peržengė.
+    Reikia įvertinti, kiek atsargos pakanka, kad operacinis taškas
+    persikeltų patikimai.
+  \item \textbf{Pigūs atskaitos metodai.} Sprendimų medis sprendimų
+    matricoje aplenkė Random~Forest, o Isolation~Forest ---
+    autokoderį; nė vienas iš jų į eksperimentą nepateko, todėl
+    atsakymo, ar paprastesnis metodas prilygtų gradientiniam
+    stiprinimui, darbas neturi.
+  \item \textbf{Sprendimų paaiškinamumas.} Informacijos prieaugis
+    parodo, kuo modelis remiasi, bet ne kokia požymio reikšmė reiškia
+    ataką; signalo pagrindimui analitikui reikėtų
+    \cite{mohale2025xai} aprašytų priemonių.
+  \item \textbf{Modelio suspaudimas.} INT8 kvantavimas literatūroje
+    mažina modelį daugiau nei dešimteriopai beveik neprarandant
+    tikslumo \cite{mazinani2026constrained}; tai tiesiogiai liečia
+    vienintelį ribojantį šio darbo resursų rodiklį --- modelio dydį.
+\end{enumerate}

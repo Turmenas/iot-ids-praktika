@@ -313,8 +313,11 @@ def main() -> None:
     n = a.parse_args()
 
     from src.modeliai.bazinis import rasti_issaugotus
+    # Tik 8 kategoriju formuluote: slenkscio taisykle remiasi "Benign"
+    # stulpeliu tikimybiu matricoje, o 34 klasiu modelyje tokio stulpelio
+    # nera - butu `ValueError` viduryje ciklo.
     modeliai = [m for m in rasti_issaugotus(APMOKYTI, n.seed)
-                if m["tipas"] in n.modeliai]
+                if m["tipas"] in n.modeliai and m.get("formuluote") == "8kat"]
     if not modeliai:
         raise SystemExit(f"Aplanke {APMOKYTI} nerasta modeliu su seed {n.seed}.")
 

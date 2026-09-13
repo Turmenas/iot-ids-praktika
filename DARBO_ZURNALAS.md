@@ -1822,9 +1822,554 @@ Rastas tikrinant migruotą CSV. `RAKTAI = ["modelis", "formuluote"]` neapima `ko
 
 **Failų sistema per `device_bash` neprisijungė** (`no Plan9 drive shares mounted`), todėl kodas taisytas debesies konteineryje ir grąžintas per failų perkėlimą. Praktinė pasekmė viena: **pakeitimai nepatikrinti Windows pusėje su tikrais duomenimis ir modeliais.** Sintetinis testas tikrina logiką, ne integraciją — lygiai kaip rugsėjo 6 d., kai 537 eilučių testas praėjo, o tikras rinkinys parodė OOM.
 
+### Integracijos patikra praėjo — ir davė pirmą `test` skaičių ⭐
+
+XGBoost (suderintas, seed 42), `--vertinimas test --tik-vertinti`:
+
+| | val (3 seed'ai) | **test** |
+|---|---|---|
+| macro-F1 | 0,71847 / 0,71815 / 0,71896 | **0,7210** |
+| tikslumas | 0,83069 | **0,83058** |
+| PR-AUC | 0,78652 | **0,79205** |
+| FPR (argmax) | 0,21347 | **0,21367** |
+
+**Visi keturi T0 taisymai patvirtinti tikrais duomenimis, ne sintetiniu testu:**
+
+- `rezultatai.csv` **21 → 22 eilutės**; `val` liko 21, `test` 1. Perrašymo nebuvo.
+- `sumaisymas_gradientinis_derintas_8kat_seed42_test.csv` atsirado **šalia** val versijos, o ne vietoj jos.
+- `mokymo_laikas_s` 112,2 s **paimtas iš metaduomenų** — modelis nepermokytas.
+- `inferencija_us` **27,44** sutampa su rugsėjo 8 d. CPU matavimu (27,42), ne su GPU (4,13). Įkėlimo metu grąžinimas į CPU veikia.
+
+⭐ **`test` ≈ `val` — tai pirmoji plano 1.3 punkto šaka.** Skirtumas macro-F1 +0,0025, tikslumo −0,0001, FPR +0,0002. Vadinasi, stratifikuotas skaidymas ir slenksčio parinkimas rezultatų neišpūtė, o skirtumą nuo literatūros teks aiškinti trimis išmatuotais veiksniais, ne skaidymo artefaktu.
+
+⚠️ **Dvi išlygos, kad skaičius nebūtų per stiprus.** Pirma, macro-F1 skirtumas (+0,0025) yra didesnis už **val seed'ų** sklaidą (0,0004), bet ta sklaida matuoja seed'ų, ne aibių kintamumą — turint vieną `test` paleidimą, `test` sklaida dar neišmatuota. Antra, visi šie skaičiai yra **ties argmax**, ne ties FPR biudžetu; pagrindinis palyginimas bus kitas.
+
+**Tikslumas 0,8306 yra gerokai žemiau 99,78 % teorinės ribos** — patikra Nr. 3 praeina, nutekėjimo požymių nėra. **Patikra Nr. 4 (ar val *τ* persikelia į `test`) lieka atvira** — ji reikalauja `slenkstis --taikyti test`, ir jos rezultato vis dar nežinau.
+
 ### Ką darysiu toliau
 
-1. ⚠️ **`git commit` prieš bet ką kitą** — `rezultatai.csv` su `aibe=val` turi turėti atsarginę kopiją.
-2. `patikra.bat` ir `python -m src.eksperimentai.i_latex --aibe val` — patvirtinti, kad taisymai veikia su tikrais duomenimis. Laukiama: 21 val eilutė, trys įspėjimai dėl sumaišytų konfigūracijų.
-3. Vienas modelis `--vertinimas test --tik-vertinti --seed 42` kaip **integracijos patikra**, ir tik po jos pilnas ciklas: `wc -l rezultatai.csv` prieš ir po turi duoti 21 → 22.
-4. Tada T1 — protokolo užrakinimas prieš likusius 11 paleidimų.
+T1 — protokolo užrakinimas ir laukiamų lentelių sąrašas, tada likę 11 paleidimų. ⚠️ Random Forest paleidžiamas **atskirai**: trys 670 MB modeliai viename procese yra ta pati atminties riba, kuri rugsėjo 8 d. nužudė `joblib.load`.
+
+---
+
+## Rugsėjo 9 d. — T2 ir T3: prėjimas per `test`
+
+### Ką padariau
+
+**`vertinti_test.bat` ir `slenkstis_test.bat` paleisti.** `rezultatai.csv`: **33 eilutės — 21 `val` + 12 `test`**. Į `test` pateko tik suderinti konfigai, po tris seed'us, kaip numatyta protokole.
+
+| Modelis (argmax) | `test` macro-F1 | `val` macro-F1 | Skirtumas |
+|---|---:|---:|---:|
+| Random Forest | 0,7276 ± 0,0001 | 0,7235 ± 0,0003 | +0,0041 |
+| XGBoost | 0,7210 ± 0,0001 | 0,7185 ± 0,0004 | +0,0025 |
+| MLP | 0,6346 ± 0,0047 | 0,6334 ± 0,0043 | +0,0012 |
+| Autokoderis | 0,2187 ± 0,0441 | 0,2196 ± 0,0442 | −0,0009 |
+
+Tikslumas 0,8344 (didžiausias) — **gerokai žemiau 99,78 % teorinės ribos**, tad patikra Nr. 3 praeina ir nutekėjimo požymių nėra.
+
+### Ką radau
+
+#### 68. Patikra Nr. 4: operacinis taškas persikelia — bet Random Forest peržengia biudžetą ⭐⭐⭐
+
+Tai vienintelė patikra, kurios rezultato nežinojau iš anksto. Atsakymas nėra nei „taip“, nei „ne“.
+
+| Modelis | *τ* | FPR `val` | FPR `test` | Santykis | Biudžetas |
+|---|---:|---:|---:|---:|---|
+| MLP (suderintas) | 0,9842 | 0,67 % | 0,64 % | 0,95× | telpa |
+| XGBoost | 0,9842 | 0,94 % | 0,95 % | 1,01× | telpa |
+| MLP (bazinis) | 0,9602 | 0,86 % | 0,97 % | 1,13× | telpa |
+| **Random Forest** | 0,9602 | 0,94 % | **1,02 %** | 1,09× | ⚠️ **viršija** |
+
+*τ* visais atvejais **identiškas** — imtas iš failo, neperrinktas. Aptikimo dalis persikelia beveik tiksliai (88,4 → 88,5 %; 88,0 → 88,0 %).
+
+⭐ **Bet iš to seka dalykas, kurio protokole nebuvo.** `parinkti()` renka **mažiausią** *τ*, tenkinantį FPR ≤ 1 % — taigi pagal konstrukciją atsiduria **prie pat biudžeto krašto**. Random Forest ant `val` gavo 0,94 %, t. y. 6 % atsargos; ant `test` tos atsargos neužteko. XGBoost nuo to paties 0,94 % nukrito į 0,95 % ir liko viduje — **skirtumą lėmė ne modelio kokybė, o atsitiktinis kritimo dydis**.
+
+**Vadinasi, biudžeto laikymasis, išmatuotas ant tos pačios aibės, kurioje *τ* parinktas, yra optimistiškas.** Tai ne klaida rezultatuose — tai apribojimas, kurį reikia įvardyti 5 skyriuje: eksploatacijai *τ* turėtų būti renkamas su atsarga (pvz., ties 0,8 × biudžeto), o ne ties riba.
+
+⚠️ **Mano įtaisyta patikra to nepagavo.** `_taikyti_test` įspėja tik tada, kai `test` FPR viršija biudžetą **daugiau nei 2×** — slenkstis parinktas atvejui „operacinis taškas nepersikėlė iš viso“. 1,02 % yra 1,02× biudžeto, tad skriptas tylėjo, o radau lygindamas lenteles ranka. **Ribinis peržengimas ir visiškas nepersikėlimas yra du skirtingi dalykai, ir antrajam skirta patikra pirmojo nemato.**
+
+#### 69. Rikiuotės apsivertimas patvirtintas `test` aibėje ⭐⭐
+
+| | Random Forest | XGBoost | Nugalėtojas |
+|---|---:|---:|---|
+| argmax | **0,7275** (FPR 25,3 %) | 0,7210 (FPR 21,4 %) | Random Forest |
+| ties FPR biudžetu | 0,6455 (FPR 1,02 %) | **0,6626** (FPR 0,95 %) | **XGBoost** |
+
+Rugsėjo 8 d. tai buvo pastebėta ant `val` ir įvardyta kaip savybė, ne atsitiktinumas. **Dabar tas pats reiškinys pasikartojo nepriklausomoje aibėje** — su tais pačiais modeliais, bet duomenimis, kurių jie nematė.
+
+Tai stiprina 6 skyriaus teiginį iki tokio, kokį galima pasakyti be išlygų: **palyginimas ties argmax duoda kitą nugalėtoją nei palyginimas ties reikalaujamu klaidingų teigiamų biudžetu**, ir pirmasis yra metodinė klaida, nes matuoja tašką, kurio darbas pats nepriima.
+
+#### 70. Į `test` slenksčio lentelę pateko bazinis MLP — protokolo nukrypimas ⚠️
+
+Protokolo 3.2 punktas sako, kad į `test` eina **tik suderinti** konfigai. `slenkstis_test.bat` tai pažeidė: `rasti_issaugotus()` randa **visus** aplanke gulinčius modelius, o bazinis MLP ten tebėra (bazinis RF ir XGBoost — ne, juos rugsėjo 8 d. perrašė suderinti).
+
+Žalos rezultatams nėra — tai papildoma eilutė, ne pakeista. Bet dvi pasekmės tikros: **į `test` pažiūrėta modeliu, kurio ten neturėjo būti**, ir lentelė nebeatitinka protokolo. Sprendimas 5 skyriui: arba eilutė išimama, arba paliekama **įvardijant, kad pateko dėl paieškos aplanke, o ne pagal planą**. Antras variantas sąžiningesnis ir nieko nekainuoja.
+
+**Pamoka bendresnė:** taisyklė, įrašyta į protokolą, bet neįrašyta į kodą, galioja tik tol, kol ją kas nors prisimena. `paleisti.py` konfigus gauna iš komandinės eilutės, todėl ten taisyklė laikėsi; `slenkstis.py` juos randa pats, todėl nesilaikė.
+
+### Ką darysiu toliau
+
+T4 — klaidų analizė ant `test`: sumaišymo matricos, per-klasę P/R/F1 su *n* stulpeliu, `Benign`↔`Recon` poros patikra. Sumaišymo matricos jau sugeneruotos (`sumaisymas_*_test.csv`).
+
+---
+
+## Rugsėjo 9 d. — T4: klaidų analizė
+
+### Ką padariau
+
+**`src/eksperimentai/klaidos.py` + `klaidos.bat`.** Modulis **`test` aibės neatidaro**: viskas skaičiuojama iš jau išsaugotų sumaišymo matricų, kurias sukūrė `vertinti_test.bat`. Modeliai neįkeliami, `imtis.parquet` neatidaroma — tad atminties problemos nėra, o vieno prėjimo taisyklė lieka nepažeista.
+
+Išvestis: `perklasiu_test.csv`, `klaidu_tipai_test.csv`, `perklase.tex`, `klaidu_tipai.tex`, `sumaisymas.pdf`.
+
+### Ką radau
+
+#### 71. 79 % visų klaidų yra tarp atakų — bendras tikslumas matuoja ne tai, kas svarbu ⭐⭐⭐
+
+Suskirsčius klaidas ne pagal dydį, o pagal **eksploatacinę kainą**:
+
+| Modelis | Klaidų | Klaidingi teigiami | Praleistos atakos | **Tarp atakų** |
+|---|---:|---:|---:|---:|
+| XGBoost | 16,9 % | 5,2 % | 16,1 % | **78,7 %** |
+| Random Forest | 16,6 % | 6,3 % | 15,1 % | **78,6 %** |
+| MLP | 21,8 % | 5,8 % | 14,5 % | **79,7 %** |
+
+„Tarp atakų“ reiškia, kad **pavojaus signalas įvyko**, o suklysta tik kategorija — analitikas įspėjimą vis tiek gauna. Bendras tikslumas tokią klaidą skaičiuoja lygiai taip pat, kaip praleistą ataką.
+
+⭐ **Ir beveik visa ta dalis yra viena pora.** Didžiausios atskiros painiavos (XGBoost): `DDoS → DoS` **33 379** ir `DoS → DDoS` **5 776** — kartu **39 155 iš 61 651 klaidos, t. y. 63,5 %**. Abi kategorijos kraštiniame šliuze sukelia tą patį veiksmą.
+
+**Vadinasi, tikslumas 0,83 nėra „modelis klysta kas šeštą kartą“.** Du trečdaliai atotrūkio yra riba tarp DoS ir DDoS — skirtumas, kuris yra srauto šaltinių skaičius, o ne atakos pobūdis, ir kurio 39 požymių leidime nėra kuo išmatuoti (nėra krypties ir šaltinio identifikatorių — rugs. 2 d. radinys). **Tai geriausias turimas paaiškinimas, kodėl 15,6 p. p. atotrūkis nuo literatūros nereiškia tiek, kiek atrodo.**
+
+#### 72. `Benign` ↔ `Recon`: 1 užduoties prognozė patvirtinta `test` aibėje ⭐⭐
+
+Į ką virsta tikras gerybinis srautas (`test`, argmax, seed 42):
+
+| Modelis | Lieka `Benign` | → `Recon` | Trečias |
+|---|---:|---:|---|
+| Random Forest | 74,7 % | **21,2 %** | Spoofing 2,3 % |
+| XGBoost | 78,6 % | **14,5 %** | Spoofing 2,8 % |
+| MLP | 69,3 % | Web 11,2 % | BruteForce 8,4 % |
+
+Rugsėjo 8 d. tas pats buvo išmatuotas `val` aibėje (RF 28,0 %). **Dabar tai patvirtinta duomenimis, kurių modeliai nematė** — o prognozė kilo dar iš 1 užduoties, kur `01_atakos.tex` apie žvalgybą parašyta: *„Srauto kryptis, trukmė ir unikalių taikinių skaičius nefiksuojami.“*
+
+Painiava abipusė: `Recon → Benign` 7 770 eilučių, `Benign → Recon` 2 171. Todėl `Benign` tikslumas tik **0,543** — kas antra „gerybine“ pavadinta eilutė iš tikrųjų yra ataka.
+
+⚠️ **MLP klysta kitaip, ir tai nauja.** Jo klaidingi teigiami eina ne į `Recon`, o į `Web` ir `BruteForce` — dvi rečiausias klases. Kartu jo `Web` tikslumas **0,125** prie atkūrimo **0,617**: modelis retas klases **per dažnai skelbia**. Tai klasių svorių pasekmė, veikianti priešinga kryptimi nei medžių ansambliuose, ir 6 skyriuje ji paaiškina, kodėl MLP macro-F1 mažesnis ne dėl to, kad retų klasių neranda.
+
+#### 73. `Web` ir `BruteForce` — macro-F1 stabdis, patvirtintas `test` aibėje
+
+| Kategorija | *n* | XGBoost F1 | RF F1 | MLP F1 |
+|---|---:|---:|---:|---:|
+| `Web` | 3 556 | 0,380 | 0,390 | **0,208** |
+| `BruteForce` | 1 878 | 0,439 | 0,474 | **0,223** |
+| `Mirai` | 45 000 | 0,998 | 0,998 | 0,996 |
+
+Dvi mažiausios kategorijos ir dvi prasčiausiai atpažįstamos — tiksliai kaip numatyta rugsėjo 2 d., aiškinant `almahaqeri2026gradient` macro-F1 kritimą. Seed'ų sklaida jose didžiausia (MLP `BruteForce` ±0,0132 prieš `Mirai` ±0,0010), todėl **`n` stulpelis lentelėje yra ne formalumas**: būtent šios klasės lemia pagrindinį rodiklį ir būtent jos matuojamos nepatikimiausiai.
+
+### Ko šiame žingsnyje NĖRA
+
+Per-klasę metrikos skaičiuotos **ties argmax**, nes tokios yra išsaugotos matricos. Ties FPR biudžetu per-klasę pjūvio dar nėra, ir lentelės išnaša tai pasako, kad skaitytojas nesugretintų su 5.2 skyriaus skaičiais.
+
+**Sprendimas: jis daromas kartu su T5**, kuriam prėjimas per `test` reikalingas šiaip ar taip. Taip lieka vienas papildomas prėjimas vietoj dviejų, ir jis daromas dėl pjūvio, kuris buvo užrakintame sąraše, o ne dėl to, ką pamačiau.
+
+⚠️ **Tai T0 spraga, kurios nepastebėjau:** protokolo 3.2 punktas reikalavo vienu prėjimu išsaugoti ir prognozių tikimybes, bet `paleisti.py` jų nesaugo. Būtų kainavę kelias eilutes tada; dabar kainuoja papildomą prėjimą.
+
+### Ką darysiu toliau
+
+T5 — nematytų klasių testas: trys permokymai be klasės (`DDOS-SLOWLORIS`, `RECON-PORTSCAN`, `DICTIONARYBRUTEFORCE`), autokoderis **nepermokomas**. Tame pačiame prėjime — per-klasę pjūvis ties FPR biudžetu.
+
+---
+
+## Rugsėjo 9 d. — T5: nematytų atakų klasių testas
+
+### Ką padariau
+
+`src/eksperimentai/nematytos.py` + `nematytos.bat`. Trys XGBoost permokymai be klasės, autokoderis nepermokytas, *τ* kiekvienam parinktas ant `val`. Kartu sugeneruotas per-kategorijų pjūvis **ties FPR biudžetu** — tas, kurio T4 neturėjo.
+
+| Pašalinta klasė | *n* | Prižiūrimas, **nematęs** | Autokoderis | Prižiūrimas, **matęs** |
+|---|---:|---:|---:|---:|
+| `DDOS-SLOWLORIS` | 3 360 | **99,94 %** | 31,4 % | 99,94 % |
+| `RECON-PORTSCAN` | 11 518 | **47,2 %** | 12,8 % | 48,7 % |
+| `DICTIONARYBRUTEFORCE` | 1 878 | **24,4 %** | 25,4 % | 45,7 % |
+
+### Ką radau
+
+#### 74. Autokoderio hipotezė patikrinta ir nepasitvirtino ⭐⭐⭐
+
+3 užduotyje autokoderis į ketvertą įtrauktas **ne dėl balo, o dėl funkcinio reikalavimo**: matricoje jis pralaimėjo Isolation Forest (2,95 prieš 3,50), bet buvo paliktas, nes „reikalavimas aptikti nematytas atakas yra funkcinis, ne sveriamas“. Tai buvo **patikrinamas teiginys**, ir dabar jis patikrintas.
+
+**Prižiūrimas modelis, niekada nematęs klasės, aptinka ją geriau nei neprižiūrimas — dviem atvejais iš trijų**, o trečiuoju jie lygūs (24,4 prieš 25,4 %). Autokoderis nė karto neaplenkia reikšmingai.
+
+Vadinasi, prielaida, kad zero-day atakoms reikia neprižiūrimo metodo, **šiuose duomenyse negalioja**: prižiūrimas modelis nematytą ataką atpažįsta per jos kategorijos giminingas klases, ir tai veikia geriau nei atkūrimo paklaida.
+
+⚠️ **Riba, be kurios teiginys per stiprus:** tikrinamos trys klasės, kurių kategorijos (išskyrus vieną) mokyme liko. Tikra zero-day ataka gali nepriklausyti nė vienai iš aštuonių kategorijų, ir tokio atvejo šie duomenys neturi. Teiginys galioja **naujai tos pačios šeimos klasei**, ne naujai atakos rūšiai.
+
+#### 75. Kaina priklauso ne nuo klasės, o nuo to, ar išlieka jos kategorija ⭐⭐⭐
+
+Palyginus paskutinius du stulpelius:
+
+| Pašalinta klasė | Kategorija po pašalinimo | Kaina (matęs − nematęs) |
+|---|---|---:|
+| `DDOS-SLOWLORIS` | `DDoS` lieka (11 kitų klasių) | **0,0 p. p.** |
+| `RECON-PORTSCAN` | `Recon` lieka (4 kitos klasės) | **1,5 p. p.** |
+| `DICTIONARYBRUTEFORCE` | `BruteForce` **ištuštėja** | **21,3 p. p.** |
+
+**Kai pašalinama tik klasė, o jos kategorija lieka, apibendrinimas beveik nemokamas. Kai dingsta visa kategorija, aptikimas krenta perpus.**
+
+Tai švariausia įmanoma šio testo formuluotė, ir ji buvo **struktūriškai numatyta**: `DICTIONARYBRUTEFORCE` pasirinkta būtent todėl, kad ji vienintelė savo kategorijoje. Rugsėjo 9 d. ryte tai atrodė kaip metodinė kliūtis (macro-F1 tampa nepalyginamas); pasirodė, kad tai pats informatyviausias atvejis.
+
+#### 76. `DDOS-SLOWLORIS` prognozė buvo klaidinga — ir priežastis iškalbinga ⭐⭐
+
+Rugsėjo 3 d. ją pasirinkau kaip **sunkiausią atvejį**: „žemo intensyvumo ataka, kurios pagrindinio požymio šiame leidime nėra“. Išmatuota: **99,94 %, tiek pat, kiek turint klasę mokyme.**
+
+Priežastis yra ta pati, dėl kurios laukiau priešingo rezultato. Kadangi `flow_duration` leidime nėra, `DDOS-SLOWLORIS` požymių erdvėje **nesiskiria** nuo kitų DDoS klasių — o jų mokyme yra vienuolika. Trūkstamas požymis, dėl kurio ataka turėjo būti sunkiai atpažįstama, kaip tik ir padaro ją neatskiriamą nuo to, kas jau išmokta.
+
+**Aptinkama patikimai, bet ne todėl, kad modelis ją atpažįsta — todėl, kad nesugeba jos atskirti.** Eksploatacijai to pakanka (signalas įvyksta), bet kategorija bus nurodyta neteisingai, ir 5 skyriuje tai reikia pasakyti kartu su skaičiumi.
+
+#### 77. Ties operaciniu tašku `Recon` aptinkamas mažiau nei perpus ⭐⭐
+
+Per-kategorijų pjūvis ties FPR 0,95 % (XGBoost, `test`):
+
+| Kategorija | *n* | Pažymėta kaip ataka |
+|---|---:|---:|
+| `DDoS` · `Mirai` · `DoS` | 257 766 | 100,0 % |
+| `Spoofing` | 30 000 | 80,8 % |
+| `BruteForce` | 1 878 | 45,7 % |
+| **`Recon`** | 55 691 | **43,9 %** |
+| `Web` | 3 556 | 37,5 % |
+| `Benign` | 15 000 | 0,95 % *(FPR)* |
+
+⭐ **Bendras „aptinka 88,4 % atakų“ yra svertinis vidurkis, kurį lemia `DDoS`.** Ji viena yra 157 500 iš 348 891 atakos eilutės ir aptinkama 100 %. Per kategorijas aptikimas svyruoja **37–100 %**, ir trys prasčiausios yra kaip tik tos, kurios svarbios saugumui: žvalgyba, žiniatinklio atakos, slaptažodžių parinkimas.
+
+**Tai tiesioginė 1 skyriaus prognozės kaina.** Kad klaidingi teigiami tilptų į 1 % biudžetą, modelis turi būti atsargus būtent ten, kur gerybinis srautas ir žvalgyba persidengia — o persidengia jie todėl, kad krypties ir trukmės požymių šiame leidime nėra. Biudžeto laikymasis perkamas žvalgybos aptikimu.
+
+Autokoderis ties savo tašku (FPR 0,90 %) nė vienoje kategorijoje neviršija 30,9 %.
+
+#### 78. Regresija, kurią įvedžiau pats, ir kodėl patikra dabar kitokia ⚠️
+
+Pirmas `nematytos.bat` paleidimas lūžo: `Gradientinis neturi _ikelti`. Priežastis ne kode, o darbo tvarkoje — kurdamas T5 nukopijavau `gradientinis.py` iš senesnės kopijos ant jau pataisyto failo ir taip **atšaukiau savo paties T0 pataisymą**. Kiti trys modeliai nenukentėjo.
+
+Svarbiau už patį taisymą yra tai, **kada** klaida pasirodė: po to, kai jau buvo įkeltas 2,4 mln. eilučių parquet ir modelis — apie pusantros minutės, nors atsakymas buvo žinomas iš pirmos sekundės.
+
+**Pridėta `python -m src.modeliai.bazinis`** — pereina visas keturias registro klases ir tikrina, ar `_fit`, `predict`, `predict_proba`, `_issaugoti`, `_ikelti` tikrai perrašyti, o ne paveldėti. `nematytos.bat` ją kviečia **prieš** duomenų įkėlimą. Patikra patikrinta abiem kryptimis dirbtinėmis klasėmis: pilnas kontraktas praeina, klasė be `_ikelti` pagaunama.
+
+**Pamoka apie tvarką, ne apie kodą:** failo kopija yra momentinė nuotrauka, ir užrašius ją ant redaguoto failo darbas dingsta tyliai. Tai tas pats „dvi kopijos išsiskiria“ atvejis, kurį rugsėjo 8 d. užsirašiau apie dubliuotus sąrašus — tik šįkart kopijos buvo mano paties.
+
+### Ką darysiu toliau
+
+T6 (dvejetainė ir 34 klasių formuluotės) · T7 (penkios patikimumo patikros) · T8 (likę paveikslai) · T9 (5 skyrius).
+
+---
+
+## Rugsėjo 9 d. — T6: dvejetainė ir 34 klasių formuluotės
+
+### Ką padariau
+
+`konfig/gradientinis_dvejetaine.yaml`, `konfig/gradientinis_34klases.yaml`, `formuluotes.bat`. Tie patys suderinti hiperparametrai, tik kita formuluotė — perderinti kiekvienai atskirai reikštų lyginti su literatūra jau kitokį modelį. `rezultatai.csv`: **45 eilutės — 27 `val` + 18 `test`.**
+
+XGBoost, `test` aibė, **ties argmax** (literatūra skelbia argmax, tad gretinti galima tik tame pačiame taške):
+
+| Formuluotė | Tikslumas | macro-F1 | FPR | Dydis | Mokymas | Delsa |
+|---|---:|---:|---:|---:|---:|---:|
+| Dvejetainė | 0,9435 | 0,7692 | 9,7 % | 5,7 MB | 16 s | 2,8 µs |
+| 8 kategorijos | 0,8303 | 0,7210 | 21,3 % | 45,0 MB | 112 s | 29,6 µs |
+| 34 klasės | 0,7708 | 0,6464 | 29,1 % | 112,9 MB | 407 s | 90,1 µs |
+
+### Ką radau
+
+#### 79. Mūsų ir literatūros dėsningumai yra priešingi ⭐⭐⭐
+
+Tai vertingiausias T6 rezultatas, ir jis nėra „mūsų skaičiai mažesni“.
+
+| | `almahaqeri2026gradient` | Šis darbas |
+|---|---|---|
+| Tikslumas per tris formuluotes | 99,61 → 99,59 → 99,48 (**0,13 p. p.**) | 94,35 → 83,03 → 77,08 (**17,3 p. p.**) |
+| macro-F1 per tris formuluotes | 0,9952 → 0,8903 → 0,8876 (**0,11**) | 0,7692 → 0,7210 → 0,6464 (**0,12**) |
+
+**Literatūroje užduoties detalumas tikslumui beveik neturi įtakos, o pas mus jį nulemia.** macro-F1 kritimas abiejuose darbuose panašus (0,11 ir 0,12) — skiriasi būtent tikslumas.
+
+⭐ **Toks skirtumas yra tai, ko tikėtumeisi, jei rinkinyje liktų dublikatų.** Įsiminta eilutė atsakoma teisingai bet kokiu detalumu — jai nesvarbu, ar klasių dvi, aštuonios ar 34. Duomenyse be dublikatų modelis privalo tikrai atskirti, todėl kiekvienas detalumo lygis kainuoja.
+
+⚠️ **Tai suderinama su dublikatų paaiškinimu, bet ne įrodymas.** Skiriasi ir požymių aibė (39 prieš 46), ir imtis. Teigti galima tiek: **dėsningumo forma, o ne tik lygis, skiriasi taip, kaip skirtųsi šalinus dublikatus.** Tai stipresnis argumentas nei 15,6 p. p. atotrūkis, nes remiasi trijų taškų kryptimi, o ne vienu skaičiumi.
+
+#### 80. Didžiausias atotrūkis nuo literatūros — paprasčiausioje užduotyje ⭐⭐
+
+| Formuluotė | macro-F1 skirtumas nuo literatūros |
+|---|---:|
+| **Dvejetainė** | **−0,226** |
+| 8 kategorijos | −0,169 |
+| 34 klasės | −0,241 |
+
+Dvejetainė užduotis yra lengviausia iš trijų, o atotrūkis joje beveik didžiausias. Priežastis matoma iš mūsų pačių skaičių: dvejetainėje **viskas priklauso nuo `Benign` ir atakos ribos** — tos pačios, kurioje glūdi `Benign` ↔ `Recon` painiava ir trūkstami krypties požymiai. Daugiaklasėje formuluotėje macro-F1 tą ribą **atskiedžia** lengvomis klasėmis (`Mirai` 0,998).
+
+Vadinasi, dvejetainis 0,9435 tikslumas atrodo geras tik todėl, kad gerybinis srautas sudaro 4,1 % eilučių. macro-F1 0,7692 rodo tikrą vaizdą.
+
+#### 81. Detalumas kainuoja pagal visas ašis ir neduoda nieko ⭐
+
+Nuo 8 kategorijų prie 34 klasių: **modelis 2,5 karto didesnis** (45,0 → 112,9 MB), **mokymas 3,6 karto ilgesnis** (112 → 407 s), **delsa 3,0 karto didesnė** (29,6 → 90,1 µs), o **macro-F1 nukrenta** (0,7210 → 0,6464).
+
+Priežastis struktūrinė: XGBoost daugiaklasėje užduotyje augina `n_estimators × n_klasių` medžių, tad 34 klasėms tai 27 200 medžių vietoj 6 400.
+
+**8 kategorijų detalumas, pasirinktas 2 užduotyje dėl paleidimų skaičiaus, dabar pagrįstas ir matavimu.** Tada tai buvo biudžeto sprendimas; dabar matyti, kad smulkesnis detalumas blogina rezultatą ir kainuoja daugiau.
+
+Delsa 90,1 µs vis tiek telpa į 20–50 ms šliuzo biudžetą su ~220–550 kartų atsarga — resursų riba čia ne delsa, o dydis.
+
+#### 82. Dvi tylios klaidos, pagautos prieš paleidimą ⚠️
+
+**34 klasių formuluotėje `fpr` būtų buvęs `NaN`.** `metrikos.GERYBINE` yra `"Benign"`, bet 34 klasių užduotyje etiketė ateina tiesiai iš failo — **`"BENIGN"` didžiosiomis**. Nė viena eilutė nebūtų sutapusi, klaida nebūtų mesta, o lentelėje liktų brūkšnys ten, kur turi būti skaičius. Pridėta `gerybines_kauke()`, atpažįstanti visas tris žymas.
+
+**Nauji modeliai būtų sulaužę `slenkstis.bat`.** `rasti_issaugotus()` randa modelius pagal vardo pradžią, tad 34 klasių XGBoost būtų patekęs į slenksčio skaičiavimą ir lūžęs ties `.index("Benign")` — tikimybių matricoje tokio stulpelio nėra. Pridėtas `formuluote` laukas ir filtras: slenkstis ima **tik `8kat`** modelius.
+
+Abi rastos rašant, ne paleidus. Pirmoji būtų buvusi blogesnė: ji nemeta klaidos.
+
+### Ką darysiu toliau
+
+T7 (penkios patikimumo patikros) · T8 (likę paveikslai) · T9 (5 skyriaus tekstas).
+
+---
+
+## Rugsėjo 9 d. — T7: rezultatų patikimumo patikros
+
+### Ką padariau
+
+`src/eksperimentai/patikimumas.py` + `patikimumas.bat`. Patikros **skaičiuojamos, o ne surašomos**: priėmimo kriterijus, pažymėtas atliktu nepaleidus komandos, yra spėjimas apie savo paties darbą.
+
+Modulis turi **tris būsenas**: `PRAEJO` · `RADINYS` (negalioja, bet tai rezultatas ataskaitai) · `NEPRAEJO` (negerai pati grandinė). Galutinis rezultatas — **3 praėjo · 2 radiniai · 0 nepraėjo**.
+
+| Nr. | Patikra | Būsena | Skaičiai |
+|---|---|---|---|
+| 1 | `test` neįtakojo jokio sprendimo | PRAĖJO | *τ* sutampa 4/4; 18/18 test eilučių turi `val` porą |
+| 2 | train ∩ test | **RADINYS** | 39 stulpelių erdvėje **0**; 36 požymių — **30** (0,0082 %) |
+| 3 | tikslumas ≤ 99,78 % | PRAĖJO | didžiausias 0,9436; atsarga 5,42 p. p. |
+| 4 | operacinis taškas persikelia | **RADINYS** | FPR 0,95–1,13×; RF 1,02 % viršija biudžetą |
+| 5 | metrikos atkuriamos | PRAĖJO | 12 paleidimų, skirtumas ≤ 4,5·10⁻⁶ |
+
+### Ką radau
+
+#### 83. Dedublikavimas ir požymių atranka turi vykti ta pačia tvarka ⭐⭐⭐
+
+2-oji patikra pirmiausia parodė **1 118 sutapimų** ir `NEPRAEJO`. Prieš skelbiant nutekėjimą pritaikiau rugsėjo 3 d. taisyklę — kai patikra praneša apie katastrofą, pirma tikrinama pati patikra — ir ji buvo teisinga: lyginau **tik požymių vektorius**, o protokolas dublikatus šalino pagal **visą eilutę** ir prieštaringas etiketes paliko sąmoningai.
+
+Pataisius į pilną eilutę liko **30**. Diagnostika parodė priežastį iki paskutinio skaitmens:
+
+```
+Variance:  train 1,9797979797979728
+           test  1,9797979797979723
+```
+
+**Skiriasi vienu bitu, ir `Variance` yra vienas iš trijų pašalintų požymių.** Vadinasi:
+
+- 39 stulpelių erdvėje šios eilutės **skiriasi** → dedublikavimas jas paliko teisingai;
+- 36 požymių erdvėje, kurioje mokosi modelis, jos **tapačios**.
+
+**Spraga buvo ne kode, o veiksmų tvarkoje: dedublikuota prieš požymių šalinimą, o ne po jo.**
+
+⭐ **Tai patikslina ir rugsėjo 7 d. radinį.** `Variance` = `Std`² tikrinta su `rtol=1e-9`, ir vieno bito skirtumai tą patikrą praeina — teisingai, nes ryšys tikrai tikslus. Bet dublikatų šalinimas lygino **tiksliai**. Dvi patikros, dvi skirtingos tikslumo sampratos, ir tarp jų — 30 eilučių.
+
+**Paliestos klasės nėra atsitiktinės:** 19 iš 30 yra `DoS`, 9 — `DDoS`. Tai potvynio kategorijos, kuriose dublikatų dalis 41–72 %, t. y. ten, kur tokių beveik-sutapimų ir tikėtumeisi.
+
+**Sprendimas: imtis neperdaroma.** Trys priežastys: poveikis ≤ 0,0082 p. p. (po ketvirto skaitmens); perdarymas anuliuotų visus 45 jau patikrintus rezultatus dėl pokyčio, kurio lentelėse nesimatytų; o pats radinys ataskaitai vertingesnis už jo nebuvimą. `ikelimas.py` **sąmoningai neliestas** — tvarkos keitimas ten reikštų naują imtį. Rekomendacija būsimam paleidimui: dedublikuoti **po** požymių atrankos arba abi operacijas atlikti toje pačioje erdvėje.
+
+**Būsena `RADINYS`, ne `NEPRAEJO`, ir tai ne švelninimas:** dedublikavimas atliko tiksliai tai, kas nurodyta, ir jo garantija galioja (2a = 0). Perklasifikavimas be priežasties būtų buvęs skaičiaus derinimas prie norimo atsakymo; dabar priežastis įvardyta ir išmatuota.
+
+#### 84. 5-oji patikra pakeista stipresne, nei buvo plane ⭐
+
+Plane buvo „paleisti antrą kartą ir palyginti“ — bet tai tikrina tik determinizmą. Vietoj to metrikos **perskaičiuojamos iš išsaugotų sumaišymo matricų** ir lyginamos su `rezultatai.csv`.
+
+Tai **nepriklausomas kelias**: CSV skaičiai gauti per `sklearn.metrics`, o šie — iš matricos. Sutapimas iki **4,5·10⁻⁶** reiškia, kad lentelėje esantys skaičiai tikrai yra tie, kuriuos modelis davė, o ne tie, kuriuos kažkur pakeliui perrašė. Determinizmas jau buvo patvirtintas rugsėjo 8 d. dviem pilnais paleidimais.
+
+#### 85. Dukart failas nepasiekė disko, nors įrankis pranešė, kad įrašyta ⚠️
+
+Du kartus iš eilės `patikimumas.py` liko senos versijos, nors perkėlimas grąžino „įrašyta“. Pastebėta tik todėl, kad išvestis buvo **identiška** ankstesnei — jei pataisymas būtų buvęs smulkesnis, skirtumo nebūčiau pamatęs ir būčiau ieškojęs klaidos ten, kur jos nėra.
+
+**Taisyklė, kurią nuo šiol taikau visiems perkėlimams: po įrašymo failas nuskaitomas atgal ir lyginamas baitas į baitą.** Pranešimas „įrašyta“ pasirodė nepakankamas įrodymas — tas pats principas kaip su būklės žymomis failuose.
+
+### Ką darysiu toliau
+
+T8 (ROC/PR kreivės — sumaišymo matricos paveikslas jau yra) ir T9 (5 skyriaus tekstas). Matavimų daugiau nebereikia.
+
+
+---
+
+## Rugsėjo 9 d. (trečiadienis), vakare — 6 užduotis
+
+### Ką padariau
+
+**Sudarytas 6 užduoties tikslų planas** (`claude/uzduotis_06_planas.md`) ir **6 užduotis atlikta tą patį vakarą.**
+
+| Kas | Kur |
+|---|---|
+| Suvestinė ties FPR biudžetu, dvi dalys | `src/eksperimentai/suvestine.py` → `lenteles/suvestine.tex` |
+| Kompromisų paveikslas (kaina už biudžetą · kokybė prieš dydį) | `paveikslai/kompromisai.pdf` |
+| Požymių svarba iš apmokyto modelio | `src/eksperimentai/pozymiu_svarba.py` → `lenteles/pozymiai.tex` |
+| Skyrius: 7 poskyriai, ~6 psl. | `ataskaita/skyriai/06_palyginimas.tex` |
+| Paleidiklis | `palyginimas.bat` |
+
+**Naujų matavimų nedaryta.** `rezultatai.csv` po dienos turi tas pačias 45 eilutes — patikrinta `md5sum` prieš ir po, ne pažymėta.
+
+### Priimti sprendimai
+
+- ⭐ **6 užduotis vykdoma be nė vieno naujo paleidimo per `test`.** Viskas surenkama iš failų, kuriuos paliko 5 užduoties prėjimas. Priėmimo kriterijus užrašytas taip, kad būtų tikrinamas komanda, o ne prisiminimu: `rezultatai.csv` turi likti nepakitęs.
+- **Suvestinėje tik suderintos konfigūracijos.** Bazinis MLP, į slenksčio lentelę patekęs dėl aplanko skenavimo (5 užd. 70 radinys), į palyginimą neįtrauktas: palyginimas turi lyginti tai, kas buvo planuota lyginti.
+- **Požymių svarba skaičiuojama kaip informacijos prieaugis (gain), ne SHAP.** Gain imamas iš paties modelio, todėl duomenys neatidaromi visai ir vieno prėjimo taisyklė lieka nepažeista. SHAP kaina — `mohale2025xai` kaip tik apie ją ir kalba.
+- **Autokoderio aptikimas suvestinėje skaičiuojamas iš per-kategorijų pjūvio**, o ne imamas iš slenksčio kreivės. Skripte įrašyta kontrolė: tuo pačiu būdu suskaičiuotas XGBoost aptikimas turi sutapti su slenksčio failu. Sutampa iki penkto skaitmens — vadinasi, abu failai iš to paties paleidimo.
+
+### Ką radau
+
+#### 86. Trys iš penkių 6 užduoties darbų jau buvo atlikti 5 užduotyje ⭐
+
+`praktikos_planas.md` 6 užduočiai numatė penkis darbus. Sugretinus su faktine būkle paaiškėjo, kad nematytų klasių testas, palyginimas su literatūra ir kompromisų medžiaga jau surinkti vakar. Liko du — suvestinė ir požymių svarba — plius vienas, kurio pradiniame plane atskirai nebuvo: **rekomendacija**.
+
+Todėl dienos svorio centras buvo ne skaičiavimas, o **ašies pakeitimas**: 5 skyriuje eilutė yra modelis, o stulpelis — metrika; 6 skyriuje turinys sudėliotas pagal kompromiso ašis. Tas pats radinys kaip rugsėjo 3 d. su 3 užduotimi, ir gautas tuo pačiu būdu — lyginant reikalavimus su repozitorija, ne skaitant planą.
+
+#### 87. PDF turėjo neišspręstą nuorodą, nors generatorius jau buvo pataisytas ⚠️⭐
+
+Sukompiliavus visą darbą liko viena `??`: `lenteles/perklase.tex` išnaša nurodė `tab:rezultatai`, o skyrius naudoja `tab:rezultatai_test`.
+
+**Kode klaidos nebuvo** — `klaidos.py` jau pataisytas ir net turi komentarą, kodėl generuojamame faile negali būti nuorodos į skyriaus etiketę. Bet `perklase.tex` liko sugeneruotas **prieš** tą taisymą, ir būtent jis patenka į PDF.
+
+Pergeneravus (`klaidos.bat`) nuoroda dingsta: **0 klaidų, 0 neišspręstų nuorodų, 50 psl.**
+
+> **Pamoka:** generatoriaus taisymas be išvesties pergeneravimo yra ketinimas, ne taisymas. Tai ta pati klasė kaip būklės žymos, rašomos neatidarius failo — tik čia neatidarytas failas yra paties įrankio produktas.
+
+#### 88. Vienas požymis lemia du trečdalius sprendimo ⭐⭐
+
+Informacijos prieaugio pasiskirstymas labai netolygus: `Number` (paketų skaičius lange) — **62,3 %**, penki pirmieji kartu — **80,4 %**. Naudojami visi 36; nė vieno prieaugis nelygus nuliui.
+
+Tai atitinka imties sudėtį (DDoS, DoS ir Mirai kartu 70,8 % eilučių) ir kartu **paaiškina 5 užduoties `DDOS-SLOWLORIS` rezultatą iš kitos pusės**: modelis, kurio sprendimą dviem trečdaliais lemia intensyvumo požymis, žemo intensyvumo atakai turi mažai atramos ir aptinka ją tik per giminingas DDoS klases.
+
+#### 89. `Protocol Type` — rugsėjo 7 d. sprendimas patvirtintas matavimu ⭐
+
+Stulpelis, kurį tądien vos nepašalinau kaip perteklinį ir palikau tik po patikros (sutapimas 70–94 %, t. y. koreliacija, ne tapatybė), svarbos lentelėje yra **antras (6,0 %)**.
+
+Tai pirmas kartas darbe, kai „patikra prieš veiksmą“ gauna ne tik pagrindimą, bet ir **kiekybinį patvirtinimą po fakto**. Automatinis šalinimas būtų kainavęs antrą pagal svarbą požymį.
+
+#### 90. Mažos dispersijos požymiai: sprendimas teisingas, nauda maža ⚠️
+
+Šeši sąmoningai palikti požymiai (rugs. 7 d. 19 radinys) kartu surenka **1,9 %** prieaugio; visi šeši yra paskutiniame svarbos trečdalyje (19, 25, 31, 32, 35 ir 36 vietos iš 36).
+
+Vadinasi, automatinis mažos dispersijos filtras būtų pašalinęs **informaciją, o ne triukšmą** — argumentas galioja. Bet įnašas mažas, ir tai reikia pasakyti taip pat aiškiai, kaip buvo pasakytas pagrindimas juos palikti. Priešingu atveju ataskaitoje liktų teiginys, kurio dydis nenurodytas.
+
+#### 91. Sprendimų matrica: sutapo tvarka, bet ne visi balai ⭐⭐
+
+Matrica prognozavo XGBoost 4,70 · Random Forest 3,55 · MLP 3,25; matavimas ties operaciniu tašku davė 0,663 · 0,646 · 0,595 — **ta pati tvarka**.
+
+Bet sutapimo išlygos vertingesnės už jį patį. Pirma, tvarka sutampa **tik ties operaciniu tašku**: ties argmax pirmauja Random Forest, nors matrica ta pati. Antra, **vienas matricos įvertis buvo klaidingas** — Random Forest už resursus gavo 4 iš 5, o modelis yra 638 MB. Klaida sisteminė: balas rėmėsi algoritmo savybėmis, o dydis priklauso nuo mokymo aibės dydžio, kurio balų skalė neapima. Tas pats pasirodė ir derinimo etape (196 MB imtyje → 638 MB pilnoje aibėje).
+
+Į skyrių įrašytas ir nepatikrintas teiginys: sprendimų medis surinko 3,80 balo, t. y. daugiau nei Random Forest, bet į eksperimentą nepateko, todėl atsakymo apie jį darbas neturi.
+
+#### 92. Zero-day išvada 6 skyriuje formuluojama kitaip nei 5-ame ⭐
+
+5 skyrius konstatuoja matavimą: prižiūrimas modelis nematytą klasę aptinka geriau dviem atvejais iš trijų. 6 skyriuje iš tų pačių skaičių daroma **palyginimo lygio išvada**: apibendrinimo geba priklauso ne nuo paradigmos, o nuo to, ar mokymo aibėje lieka gimininga klasė (0,0–1,5 p. p. prieš 21,3 p. p.).
+
+Tai buvo pagrindinė dienos rizika — kad 6 skyrius taps 5-ojo santrauka. Taisyklė, kuria vadovavausi rašydamas: **pastraipa, kurią galima perkelti į 5 skyrių nieko nepakeitus, į 6 skyrių nepatenka.**
+
+### Kas nepavyko
+
+**Failų sistema per `device_bash` vėl neprisijungė** (`no Plan9 drive shares mounted`), todėl kodas ir skyrius rašyti debesies konteineryje, o failai grąžinti perkėlimu — kaip ir rugsėjo 9 d. ryte.
+
+Kompiliavimas patikrintas **konteineryje**: pilna preambulė be `biblatex` ir `pdfpages`, visi septyni skyriai, lietuviškas `babel`. Rezultatas — **50 psl., 0 klaidų, 0 neišspręstų nuorodų, 0 dubliuotų `\label`**, o 6 skyriaus puslapiuose nė vieno `Overfull \hbox`. ⚠️ **Windows pusėje su `biblatex` dar nebandyta** — pirmas veiksmas rytoj yra `cd ataskaita ; .\build.ps1`.
+
+### Ką darysiu toliau
+
+1. `.\build.ps1` Windows pusėje ir `palyginimas.bat` patikra tikroje aplinkoje.
+2. `07_isvados.tex` ir `00_ivadas.tex` — rašomi paskutiniai.
+3. ⚠️ **Titulinio puslapio fakultetas ir vadovas** — atviras nuo rugs. 1 d., reikia sprendimo.
+4. Smulkūs likučiai: `bibtestas*.tex`, `saltiniai.bib.bak` ir `cnn.py` ištrinti · `metadata.json` pildyti arba išbraukti iš `STRUKTURA.md` · `ciciot2023_pozymiai.md` perkelti į `duomenys/` · `houichi` eilutė iš `tab:susije`.
+
+
+---
+
+## Rugsėjo 13 d. (sekmadienis) — įvadas, išvados, README: ataskaita surinkta
+
+**Rugsėjo 10–12 d. nedirbta** (repozitorijoje jokių pakeitimų po rugs. 9 d. commit'o).
+
+### Ką padariau
+
+| Kas | Kur |
+|---|---|
+| Išvados: po vieną kiekvienam uždaviniui + apribojimai + 5 tyrimų kryptys | `ataskaita/skyriai/07_isvados.tex` |
+| Įvadas perrašytas iki galo (buvo du `TODO`) | `ataskaita/skyriai/00_ivadas.tex` |
+| `README.md`: būklės lentelė, rezultatas, pilna paleidimo seka | `README.md` |
+
+**Ataskaita surinkta: 54 psl., 0 klaidų, 0 neišspręstų nuorodų** *(kompiliuota konteineryje, be `biblatex`)*.
+
+### Priimti sprendimai
+
+- ⭐ **Išvados sudėliotos pagal uždavinius, ne pagal skyrius.** Vadovo vienintelis turimas kriterijus yra užduočių sąrašas, todėl išvadų numeracija 1–6 atitinka uždavinių numeraciją, ir kiekviena išvada pasako, ką tas uždavinys davė. Skyrių santraukos jau yra pačių skyrių pabaigose; kartoti jas išvadose reikštų trečią tos pačios medžiagos pavidalą.
+- **Kiekviena išvada baigiasi tuo, kas išmatuota, o ne tuo, kas padaryta.** „Apžvelgti 18 metodų" nėra išvada; „ribojantis veiksnys yra duomenų struktūra, ne ištekliai" — yra.
+- **Įvade pridėtas poskyris „Darbo prielaidos".** Dvi prielaidos — kraštinis šliuzas ir 1 % klaidingų teigiamų biudžetas — nulemia visą palyginimo metodiką, o iki šiol jos buvo išvedamos tik 1 skyriuje. Skaitytojui, kuris ims skaityti nuo 5 skyriaus, jos turi būti matomos anksčiau.
+- **Įvado pabaigoje — pagrindiniai rezultatai.** Įmonės vadovui svarbu, kas sukurta ir kiek tai pasiekia; laukti 51 puslapio to sužinoti nereikėtų.
+
+### Ką radau
+
+#### 93. Įvade beveik parašiau skaičius, kurių darbe nėra ⚠️
+
+Rašydamas „Temos aktualumą" pirmiausia įdėjau įprastus tokių įvadų teiginius apie IoT įrenginių skaičiaus augimą su konkrečiais milijardais. Sustojau todėl, kad nė vienas tų skaičių neturi šaltinio darbo `saltiniai.bib` faile.
+
+Perrašyta taip, kad kiekvienas įvado teiginys remtųsi jau cituojamu šaltiniu: Mirai mastas — `antonakakis2017mirai`, atakų įvairovė — `neto2023ciciot`, parašais grįstų sistemų ribos — `komal2026idsreview`, išpūsti skelbiami rezultatai — `reddy2026datasets`. Naujų šaltinių nepridėta nė vieno.
+
+> **Pamoka, ta pati kaip rugsėjo 2 d. su duomenų aprašu:** įvadas, rašomas iš bendro įspūdžio apie sritį, yra hipotezė, ne įvadas. Skirtumas tik tas, kad čia spąstai patogesni — tokie sakiniai skamba įtikinamai ir niekas jų netikrina.
+
+#### 94. Išvados parodė, kur darbe liko neatsakytas klausimas ⭐
+
+Rašant 3-ią išvadą paaiškėjo, kad sprendimų matricos ir eksperimento aibė nesutampa dviejose vietose, ir tai geriausia užrašyti kaip tyrimų kryptį, o ne nutylėti: sprendimų medis matricoje aplenkė Random Forest (3,80 prieš 3,55), o Isolation Forest — autokoderį (3,50 prieš 2,95), bet nė vienas jų į eksperimentą nepateko.
+
+Po 6 užduoties, kurioje autokoderio hipotezė nepasitvirtino, tai nustojo būti smulkmena: **abi neįtrauktos alternatyvos buvo pigesnės už tas, kurios pralaimėjo.** Tai įrašyta į „Tolesnių tyrimų kryptis" atvirai.
+
+#### 95. Ataskaita surinkta: 54 psl., proporcijos pasitaisė savaime
+
+| Dalis | Psl. |
+|---|---:|
+| Įvadas | 2 |
+| Teorija (1–3 užd.) | ~30 |
+| Praktika (4–6 užd.) | ~19 |
+| Išvados | 3 |
+
+Rugsėjo 3 d. užrašyta rizika buvo „~23 psl. teorijos prieš plonus 4–6 skyrius". Galutinis santykis — **30 prieš 19**, ir jis susidarė ne trumpinant teoriją, o **nemažinant praktinės dalies**, kaip ir buvo nuspręsta. Trumpinimo klausimas taip ir liko neatidarytas nė karto.
+
+### Titulinis puslapis uždarytas ✅
+
+Klausimas, atviras nuo rugsėjo 1 d., išspręstas ne užpildant laukus, o **pašalinant prielaidą**: dokumentas teikiamas Aineros praktikos vadovui, ne universitetui, todėl universitetinės atributikos jam nereikia. Titulinis dabar yra tema, „Praktikos ataskaita", autorius, studijų programa, praktikos vieta ir data. Fakulteto `% TODO` ir vietaženklis „Vardas Pavardė" dingo kartu su eilutėmis, kurioms jų reikėjo.
+
+> Tai ta pati pamoka kaip rugsėjo 3 d. su apimties norma ir rugsėjo 3 d. su `tab:reikalavimai` perkėlimu: **kai priemonė lieka plane po to, kai jos priežastis dingo, ji ima atrodyti kaip savarankiškas reikalavimas.** Universitetinis titulinis buvo paveldėtas iš prielaidos apie dokumento paskirtį, paneigtos dar rugsėjo 3 d.
+
+### Kas liko
+2. `.\build.ps1` Windows pusėje su `biblatex` — visi skyriai konteineryje kompiliuojasi, bet tikroji aplinka nebandyta nuo rugs. 9 d.
+3. Švarios aplinkos atkartojamumo patikra.
+4. Smulkūs likučiai: `bibtestas*.tex`, `saltiniai.bib.bak`, `src/modeliai/cnn.py`, `nematytos_klaida.txt`, `diagnostika_p2.py` — ištrintini · `rezultatai/apmokyti/metadata.json` tuščias · `ataskaita/skyriai/ciciot2023_pozymiai.md` perkeltinas į `duomenys/`.
+
+
+---
+
+## Rugsėjo 13 d. — repozitorijos sutvarkymas ir `.bat` numeracija
+
+### Ką padariau
+
+**`.bat` failai pervadinti pagal paleidimo eilę: `01_patikra` → `14_palyginimas`.** `_aplinka.bat` numerio negavo sąmoningai — tai ne žingsnis, o bendra dalis, kurią kviečia visi kiti.
+
+**Sutvarkytos vidinės nuorodos.** Septyni `.bat` failai savo komentaruose ir „TOLIAU“ eilutėse minėjo kitus `.bat` vardais; visos nuorodos perrašytos. Kartu „TOLIAU“ eilutės sustiprintos: anksčiau jos nurodydavo tik užduoties numerį („T5 — nematytų klasių testas“), dabar — ir failą, kurį paleisti.
+
+**Paruoštas `sutvarkyti.ps1`** — vienkartinis skriptas, kuris ištrina nebereikalingus failus, perkelia `ciciot2023_pozymiai.md` į `duomenys\` ir pašalina senus `.bat` vardus. Sekamus Git'e failus šalina per `git rm`, nesekamus — paprastu trynimu; `-Perziura` parodo, ką darytų, nieko nekeisdamas.
+
+**Šalinami:** `bibtestas.*` (8 failai), `saltiniai.bib.bak`, `src/modeliai/cnn.py`, `nematytos_klaida.txt`, tuščias `rezultatai/apmokyti/metadata.json`, 18 senų `.bat` vardų.
+
+### Priimti sprendimai
+
+- **`diagnostika_p2.py` paliekamas.** Jis atrodo kaip laikinas failas, bet juo išmatuotas 5.7 poskyryje pateiktas skaičius (30 sutampančių eilučių 36 požymių erdvėje). Ištrynus liktų ataskaitoje teiginys, kurio atkartoti nebūtų kuo.
+- **`metadata.json` šalinamas, o ne pildomas.** `STRUKTURA.md` jį vadino metaduomenų vieta, bet metaduomenys realiai guli kiekvieno modelio `.json` faile šalia. Failas, kuris meluoja apie savo turinį, blogiau nei failo nebuvimas.
+- **`bibtestas.*` šalinami, nors biblatex priežastis taip ir nerasta.** Apėjimas veikia ir yra galutinis; bisekcijos failai atgaunami iš Git istorijos, jei kada prireiktų.
+- **Numeracija su raidėmis `02a..02d`, ne `03..06`.** Keturi `mokyti_*` yra ne atskiri žingsniai, o to paties žingsnio dalys; atskiri numeriai rodytų, kad juos reikia paleisti visus iš eilės, nors jie yra `02_mokyti_viska.bat` alternatyva.
+
+### Ką radau
+
+#### 96. Pervadinimas be nuorodų patikros būtų sulaužęs pusę paleidiklių ⚠️
+
+Prieš pervadindamas patikrinau, ar `.bat` failai mini vieni kitus, ir radau **13 vietų septyniuose failuose** — klaidų pranešimuose („Ar `vertinti_test.bat` jau paleistas?“), komentaruose ir „TOLIAU“ eilutėse. Nė vienos jų nebūtų pagavęs joks kompiliavimas ar paleidimas: pervadinti failai veiktų, o nurodymai juose rodytų į nebeegzistuojančius vardus.
+
+Tai ta pati klasė kaip rugsėjo 8 d. įkalti modelių vardai dviejose vietose: **vardas, minimas tekste, yra nuoroda, kurios niekas netikrina.** Skirtumas tas, kad šįkart paieška atlikta prieš, o ne po.
+
+#### 97. Pervadinti failai pertvarko ir dokumentaciją, ne tik aplanką
+
+`STRUKTURA.md` šaknies lentelė buvo surikiuota pagal tai, kada kuris `.bat` atsirado. Sunumeravus failus ta tvarka tapo matomai neteisinga — lentelė perrikiuota pagal numerius, o `README.md` paleidimo blokas perrašytas kaip viena seka nuo 01 iki 14.
+
+**Pastebėjimas, vertas atsiminti:** numeracija ne tik palengvina paleidimą, ji **atskleidžia, kur dokumentacija buvo surašyta atsitiktine tvarka.** Iki šiol to nesimatė, nes tvarkos nebuvo su kuo palyginti.

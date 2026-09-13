@@ -55,6 +55,8 @@ class Modelis(ABC):
         self.seed = seed
         self.klases_: np.ndarray | None = None
         self.mokymo_laikas_s: float | None = None
+        #: Is isores paduoti eiluciu svoriai; None = skaiciuoti is y_train.
+        self.svoriai_ = None
         self._modelis = None
 
     # ─── Privalomi metodai ───────────────────────────────────────────
@@ -93,13 +95,23 @@ class Modelis(ABC):
 
     # ─── Bendra logika ───────────────────────────────────────────────
 
-    def fit(self, X_train, y_train, X_val=None, y_val=None) -> "Modelis":
+    def fit(self, X_train, y_train, X_val=None, y_val=None,
+            svoriai=None) -> "Modelis":
         """Mokymas su laiko matavimu.
 
         `X_val` naudojamas ankstyvam stabdymui arba slenkscio kalibravimui;
         modeliams, kuriems jo nereikia, jis tiesiog ignoruojamas. TEST aibe
         cia nepatenka niekada (protokolo 19 punktas).
+
+        `svoriai` - eiluciu svoriai, PADUODAMI is isores. Numatytuoju
+        atveju jie skaiciuojami is `y_train` (`class_weight="balanced"`
+        ekvivalentas), bet nematytu klasiu teste to nepakanka: pasalinus
+        viena klase, likusiu svoriai persiskaiciuotu, ir permokytas
+        modelis skirtusi nuo bazinio DVIEM dalykais vienu metu. Tada
+        testas matuotu ne klases nebuvima, o klases nebuvima plius
+        kitokia balansavima.
         """
+        self.svoriai_ = svoriai
         t0 = time.perf_counter()
         self._fit(X_train, y_train, X_val, y_val)
         self.mokymo_laikas_s = time.perf_counter() - t0
@@ -195,8 +207,9 @@ def rasti_issaugotus(aplankas, seed: int = 42) -> list[dict]:
     Paieska yra viena, todel ir taisyti reikia vienoje vietoje.
 
     Grazina po zodyna: zyma · tipas · vardas · konfigas · variantas ·
-    rodomas · reikia_skales · turi_skale.
+    formuluote · rodomas · reikia_skales · turi_skale.
     """
+    import re
     from pathlib import Path as _P
 
     rasti = []
@@ -208,11 +221,18 @@ def rasti_issaugotus(aplankas, seed: int = 42) -> list[dict]:
         if tipas is None:
             continue
         vardas, reikia_skales = TIPAI[tipas]
-        konfigas = zyma.split("_8kat")[0].split("_dvejetaine")[0]
+        # Formuluote isrenkama is zymos: slenkscio logika apibrezta TIK
+        # 8 kategoriju uzduociai (ji remiasi "Benign" stulpeliu), todel
+        # kviecianti puse turi galeti atsirinkti. Be sio lauko 34 klasiu
+        # modelis patektu i `slenkstis.py` ir luztu ties `.index("Benign")`.
+        m_f = re.search(r"_(8kat|dvejetaine|34klases)_seed", zyma)
+        formuluote = m_f.group(1) if m_f else "?"
+        konfigas = zyma.split(f"_{formuluote}_seed")[0]
         variantas = "suderintas" if "derintas" in konfigas else "bazinis"
         rasti.append({
             "zyma": zyma, "tipas": tipas, "vardas": vardas,
             "konfigas": konfigas, "variantas": variantas,
+            "formuluote": formuluote,
             "rodomas": f"{vardas} ({variantas})",
             "reikia_skales": reikia_skales,
             "turi_skale": f.with_suffix(".skale.joblib").exists(),
@@ -238,3 +258,46 @@ def gauti(raktas: str) -> type[Modelis]:
         raise KeyError(f"Nezinomas modelis {raktas!r}. Yra: {sorted(registras)}")
     modulis, klase = registras[raktas]
     return getattr(importlib.import_module(f"src.modeliai.{modulis}"), klase)
+
+
+#: Registro raktai — kad patikra galetu pereiti visus, nekartodama saraso.
+REGISTRO_RAKTAI = ("random_forest", "gradientinis", "mlp", "autoencoder")
+
+
+def patikra() -> int:
+    """Ar visos keturios klases realizuoja pilna kontrakta.
+
+    Paleidimas:  python -m src.modeliai.bazinis
+
+    KODEL SI PATIKRA EGZISTUOJA
+    ---------------------------
+    2026-09-09 `Gradientinis._ikelti` dingo is failo (buvo uzrasytas senesne
+    kopija). Klaida pasirode tik po to, kai `nematytos.py` jau buvo ikeles
+    2,4 mln. eiluciu parquet ir modeli - t. y. po pusantros minutes darbo,
+    nors atsakymas buvo zinomas is karto. Trukstamas kontrakto metodas yra
+    dalykas, kuri galima patikrinti per sekunde, todel jis ir tikrinamas.
+    """
+    blogi = []
+    for raktas in REGISTRO_RAKTAI:
+        try:
+            cls = gauti(raktas)
+        except Exception as e:                      # noqa: BLE001
+            blogi.append(f"{raktas}: importas nepavyko ({type(e).__name__}: {e})")
+            continue
+        truksta = [m for m in ("_fit", "predict", "predict_proba",
+                               "_issaugoti", "_ikelti")
+                   if getattr(cls, m, None) is getattr(Modelis, m, None)]
+        if truksta:
+            blogi.append(f"{cls.__name__}: nerealizuoti {truksta}")
+        else:
+            print(f"  [OK] {cls.__name__:14s} kontraktas pilnas")
+    for eil in blogi:
+        print(f"  [BLOGAI] {eil}")
+    print(f"\n{len(REGISTRO_RAKTAI) - len(blogi)} / {len(REGISTRO_RAKTAI)} "
+          f"klasiu realizuoja pilna kontrakta")
+    return 1 if blogi else 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(patikra())

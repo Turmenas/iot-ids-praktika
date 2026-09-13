@@ -1,0 +1,43 @@
+% GENERUOJAMA is rezultatai/darbiniai/sumaisymas_*.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.klaidos
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.6cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}@{}}
+\toprule
+\textbf{Kategorija} & \textbf{$n$} & \textbf{Tikslumas} & \textbf{Atkūrimas} & \textbf{F1} \\
+\midrule
+\multicolumn{5}{@{}l}{\textbf{XGBoost}} \\
+\quad DDoS & 157\,500 & 0,955 & 0,787 & 0,863 \\
+\quad Recon & 55\,691 & 0,895 & 0,772 & 0,829 \\
+\quad DoS & 55\,266 & 0,596 & 0,896 & 0,716 \\
+\quad Mirai & 45\,000 & 0,998 & 0,998 & 0,998 \\
+\quad Spoofing & 30\,000 & 0,925 & 0,878 & 0,901 \\
+\quad Benign & 15\,000 & 0,543 & 0,787 & 0,643 \\
+\quad Web & 3\,556 & 0,312 & 0,486 & 0,380 \\
+\quad BruteForce & 1\,878 & 0,396 & 0,492 & 0,439 \\
+\addlinespace
+\multicolumn{5}{@{}l}{\textbf{Random Forest}} \\
+\quad DDoS & 157\,500 & 0,954 & 0,787 & 0,862 \\
+\quad Recon & 55\,691 & 0,859 & 0,829 & 0,844 \\
+\quad DoS & 55\,266 & 0,595 & 0,893 & 0,714 \\
+\quad Mirai & 45\,000 & 0,998 & 0,998 & 0,998 \\
+\quad Spoofing & 30\,000 & 0,942 & 0,868 & 0,903 \\
+\quad Benign & 15\,000 & 0,552 & 0,748 & 0,635 \\
+\quad Web & 3\,556 & 0,423 & 0,362 & 0,390 \\
+\quad BruteForce & 1\,878 & 0,559 & 0,411 & 0,474 \\
+\addlinespace
+\multicolumn{5}{@{}l}{\textbf{MLP}} \\
+\quad DDoS & 157\,500 & 0,953 & 0,762 & 0,847 \\
+\quad Recon & 55\,691 & 0,936 & 0,558 & 0,699 \\
+\quad DoS & 55\,266 & 0,571 & 0,892 & 0,696 \\
+\quad Mirai & 45\,000 & 0,995 & 0,998 & 0,996 \\
+\quad Spoofing & 30\,000 & 0,911 & 0,778 & 0,839 \\
+\quad Benign & 15\,000 & 0,483 & 0,691 & 0,568 \\
+\quad Web & 3\,556 & 0,125 & 0,617 & 0,208 \\
+\quad BruteForce & 1\,878 & 0,137 & 0,604 & 0,223 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Rodikliai išmatuoti \textbf{testavimo} aibėje ties \emph{argmax}, o ne ties klaidingų teigiamų biudžetu, todėl su pagrindine aptikimo kokybės lentele tiesiogiai negretinami. $n$ --- tikrų pavyzdžių skaičius; retose kategorijose vienas kitoks sprendimas keičia atkūrimą per dešimtąsias procentinio punkto dalis.
+\endgroup

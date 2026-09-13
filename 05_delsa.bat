@@ -14,7 +14,7 @@ python -m src.eksperimentai.delsa
 if errorlevel 1 goto :klaida
 
 echo.
-echo Perkuriamos lenteles...
+echo Perkuriamos lenteles...   (TOLIAU: 06_slenkstis.bat)
 python -m src.eksperimentai.i_latex
 goto :pabaiga
 

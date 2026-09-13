@@ -1,0 +1,17 @@
+modelis,taskas,kategorija,n,pazymeta_ataka
+XGBoost,slenkstis,Benign,15000,0.009533333333333333
+XGBoost,slenkstis,BruteForce,1878,0.45740149094781685
+XGBoost,slenkstis,DDoS,157500,0.999968253968254
+XGBoost,slenkstis,DoS,55266,0.9999457170774074
+XGBoost,slenkstis,Mirai,45000,1.0
+XGBoost,slenkstis,Recon,55691,0.4393708139555763
+XGBoost,slenkstis,Spoofing,30000,0.8084
+XGBoost,slenkstis,Web,3556,0.374859392575928
+Autokoderis,slenkstis,Benign,15000,0.009
+Autokoderis,slenkstis,BruteForce,1878,0.2534611288604899
+Autokoderis,slenkstis,DDoS,157500,0.30846349206349205
+Autokoderis,slenkstis,DoS,55266,0.14741432345384142
+Autokoderis,slenkstis,Mirai,45000,0.07206666666666667
+Autokoderis,slenkstis,Recon,55691,0.062074661974107125
+Autokoderis,slenkstis,Spoofing,30000,0.0336
+Autokoderis,slenkstis,Web,3556,0.020528683914510685

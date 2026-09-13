@@ -36,7 +36,7 @@ if errorlevel 1 goto :klaida
 
 echo.
 echo ==================================================================
-echo  VISOS PATIKROS PRAEJO - galima paleisti mokyma
+echo  VISOS PATIKROS PRAEJO - TOLIAU: 02_mokyti_viska.bat
 echo ==================================================================
 goto :pabaiga
 

@@ -3,7 +3,7 @@
 Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNALAS.md`.
 
 **Šaknis:** `D:\Ainera\iot-ids-praktika\`
-**Atnaujinta:** 2026-09-09 — **5 užd. T0 atliktas**: `aibe` stulpelis, `--tik-vertinti`, `slenkstis --taikyti test`
+**Atnaujinta:** 2026-09-13 — **ATASKAITA SURINKTA**: visos šešios užduotys, įvadas, išvados ir titulinis puslapis. **54 psl., 0 klaidų, 0 neišspręstų nuorodų, 0 `TODO`**. **`.bat` failai sunumeruoti paleidimo eile (01–14).** Liko `build.ps1` Windows pusėje
 **Žymos:** ✅ turi turinį · ⬜ sukurtas, bet tuščias · ⬛ dar nesukurtas
 
 ---
@@ -14,18 +14,26 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 |---|---|
 | ✅ `DARBO_ZURNALAS.md` | Kasdienis žurnalas — **tik sprendimai, radiniai, pamokos** |
 | ✅ `STRUKTURA.md` | Šis failas |
-| ✅ `README.md` | Projekto apžvalga *(2026-09-03: turi turinį, anksčiau klaidingai žymėta tuščia)* |
+| ✅ `README.md` | Projekto apžvalga — **atnaujinta 09-13:** visos 6 užduotys ✅, rezultatas, pilna `.bat` paleidimo seka |
 | ✅ `requirements.txt` · `requirements-lock.txt` | Priklausomybės *(lock nuo 09-01; žurnale klaidingai laikyta neatlikta)* |
 | ✅ `patikra.py` | Aplinkos patikra (bibliotekos + aplankai) |
+| ✅ `sutvarkyti.ps1` | ⭐ **Vienkartinis (09-13):** ištrina nebereikalingus failus, perkelia `ciciot2023_pozymiai.md` į `duomenys\`, pašalina senus `.bat` vardus. `-Perziura` — peržiūra nieko nekeičiant |
 | ✅ `_aplinka.bat` | ⭐ Bendra dalis visiems `.bat`: aktyvuoja `iot-ids`, **nutraukia darbą, jei aktyvi kita aplinka**, išjungia `%APPDATA%` paketų nutekėjimą |
-| ✅ `patikra.bat` | Keturios patikros prieš mokymą (~1 min., į CSV nerašo) |
-| ✅ `mokyti_rf.bat` · `mokyti_xgboost.bat` · `mokyti_mlp.bat` · `mokyti_autoencoder.bat` | Po vieną modelį × 3 seed'ai |
-| ✅ `mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
-| ✅ `slenkstis.bat` | ⭐ FPR biudžeto laikymasis **be permokymo** (naudoja išsaugotus modelius) |
-| ✅ `prototipas.bat` | **T8** — Streamlit prototipas naršyklėje |
-| ✅ `mokyti_derintus.bat` | Permokymas su suderintais parametrais (`*_derintas.yaml`) |
-| ✅ `delsa.bat` | Delsos permatavimas CPU be permokymo |
-| ✅ `derinti.bat` | Hiperparametrų paieška — **protokolo 18 punktas** |
+| ✅ `01_patikra.bat` | Keturios patikros prieš mokymą (~1 min., į CSV nerašo) |
+| ✅ `02_mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
+| ✅ `02a_mokyti_rf.bat` · `02b_mokyti_xgboost.bat` · `02c_mokyti_mlp.bat` · `02d_mokyti_autoencoder.bat` | Po vieną modelį × 3 seed'ai |
+| ✅ `03_derinti.bat` | Hiperparametrų paieška — **protokolo 18 punktas** |
+| ✅ `04_mokyti_derintus.bat` | Permokymas su suderintais parametrais (`*_derintas.yaml`) |
+| ✅ `05_delsa.bat` | Delsos permatavimas CPU be permokymo |
+| ✅ `06_slenkstis.bat` | ⭐ FPR biudžeto laikymasis **be permokymo** (naudoja išsaugotus modelius) |
+| ✅ `07_prototipas.bat` | **T8** — Streamlit prototipas naršyklėje |
+| ✅ `08_vertinti_test.bat` | ⭐ **5 užd. (09-09):** vienintelis prėjimas per `test`. Modeliai **nepermokomi** (`--tik-vertinti`); Random Forest — po vieną seed'ą. Tikrina `aibe` stulpelį prieš ir `val` eilučių skaičių po |
+| ✅ `09_slenkstis_test.bat` | ⭐ **5 užd. (09-09):** *τ* imamas iš `val` ir taikomas `test`; išvestis į `*_test` failus. Protokolo **patikra Nr. 4** |
+| ✅ `10_klaidos.bat` | ⭐ **5 užd. T4 (09-09):** per-klasę metrikos ir klaidų tipai. **`test` neatidaroma** — skaičiuojama iš išsaugotų sumaišymo matricų |
+| ✅ `11_nematytos.bat` | ⭐ **5 užd. T5 (09-09):** trys permokymai be klasės; autokoderis **nepermokomas**. Prieš duomenų įkėlimą tikrina **modelių kontraktą** |
+| ✅ `12_formuluotes.bat` | ⭐ **5 užd. T6 (09-09):** dvejetainė ir 34 klasių formuluotės palyginimui su literatūra. Mokymas ant `val`, tada `--tik-vertinti` ant `test` |
+| ✅ `13_patikimumas.bat` | ⭐ **5 užd. T7 (09-09):** penkios patikimumo patikros. Trys būsenos: `PRAEJO` · `RADINYS` · `NEPRAEJO` |
+| ✅ `14_palyginimas.bat` | ⭐ **6 užd. (09-09):** suvestinė ir požymių svarba. **Naujų matavimų nedaro** — `rezultatai.csv` po jo turi likti nepakitęs |
 | ✅ `.gitignore` | Komentarai **tik** atskirose eilutėse |
 | ✅ `.gitattributes` | Eilučių pabaigų normalizavimas |
 
@@ -39,27 +47,29 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `uzduotis_03_planas.md` | **3 užd.** tikslų planas — **dviejų pakopų filtras + eksperimento protokolas** *(2026-09-03)* |
 | ✅ `uzduotis_04_planas.md` | **4 užd.** tikslų planas — **įkėlimo grandinė, modelių kontraktas, 3 dienų biudžetas** *(2026-09-06)* |
 | ✅ `uzduotis_05_planas.md` | **5 užd.** tikslų planas — **vienas prėjimas per `test`, vertinimo protokolas, nematytų klasių taisyklės** *(2026-09-08)* |
+| ✅ `uzduotis_06_planas.md` | **6 užd.** tikslų planas — **naujų matavimų nereikia; palyginimas ties FPR biudžetu, rekomendacija** *(2026-09-09)* |
 | ⬛ `uzduotis_01_planas.md` · `praktikos_planas.md` · `kontekstas.md` | Kol kas tik Claude projekte |
 
 ## `ataskaita\`
 
 | Kelias | Kas tai |
 |---|---|
-| ✅ `ataskaita.tex` | Pagrindinis dokumentas — preambulė + `\input` |
+| ✅ `ataskaita.tex` | Pagrindinis dokumentas — preambulė + `\input`. **09-13: titulinis perdarytas** — be universitetinės atributikos, nes dokumentas teikiamas Aineros vadovui |
 | ✅ `saltiniai.bib` | Visi šaltiniai — **20 įrašų**, visi su patikrintu DOI (išsk. `antonakakis2017mirai`) |
 | ✅ `build.ps1` | Kompiliavimas — **gryname ASCII**. `-Clean`, `-Greitas` |
 | ✅ `literatura.tex` → `literatura.pdf` | ⭐ Bibliografija atskirai (žr. žemiau) |
-| ✅ `bibtestas.tex` | Diagnostikai — ištrinti radus priežastį |
-| ✅ `skyriai\00_ivadas.tex` | Įvadas *(rašomas paskutinis)* |
+| ✅ `skyriai\00_ivadas.tex` | **BAIGTAS 09-13** — aktualumas, tikslas, uždaviniai, **prielaidos**, struktūra ir pagrindiniai rezultatai. Naujų šaltinių nepridėta |
 | ✅ `skyriai\01_atakos.tex` | **1 užd.** Baigta. **2026-09-03: `tab:atakos` suderinta su 39 požymių leidimu** (15 taisymų). `tab:reikalavimai` **lieka čia** — perkėlimas atšauktas |
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
-| ⚠️ `skyriai\ciciot2023_pozymiai.md` | **Ne skyrius** — duomenų dokumentas tarp `.tex` failų. Vieta svarstytina |
 | ✅ `skyriai\03_parinkimas.tex` | **3 užd. BAIGTA** — 7 poskyriai, 4 lentelės, ~5 psl. Protokolas 3.6 poskyryje |
 | ✅ `skyriai\04_sprendimas.tex` | **4 užd. BAIGTA** — 7 poskyriai, 3 lentelės, 2 paveikslai |
-| ⬜ `skyriai\05..07_*.tex` | 5–6 užd. ir išvados |
+| ✅ `skyriai\05_vertinimas.tex` | **5 užd. BAIGTA** — 8 poskyriai, 6 lentelės, 3 paveikslai |
+| ✅ `skyriai\06_palyginimas.tex` | **6 užd. BAIGTA** — 7 poskyriai, 2 lentelės, 1 paveikslas, ~6 psl. Baigiasi **rekomendacija** |
+| ✅ `skyriai\07_isvados.tex` | **BAIGTOS 09-13** — po vieną išvadą kiekvienam uždaviniui, rekomendacija, apribojimai, 5 tyrimų kryptys |
 | ⬜ `lenteles\rezultatai.tex` · `lenteles\veikimas.tex` | **Generuojami** per `i_latex.py` — ranka neliesti |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
-| ✅ `paveikslai\architektura.pdf` · `prototipas.png` | Pirmi paveikslai darbe |
+| ✅ `lenteles\suvestine.tex` · `lenteles\pozymiai.tex` | **Generuojami** per `suvestine.py` / `pozymiu_svarba.py` — ranka neliesti |
+| ✅ `paveikslai\architektura.pdf` · `prototipas.png` · `sumaisymas.pdf` · `kreives.pdf` · `kategorijos.pdf` · `kompromisai.pdf` | Visi **generuojami**, PDF data išjungta |
 | ⬜ `skaidres\` | Skaidrės, jei reikės |
 
 ## `src\`
@@ -71,12 +81,11 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\pozymiai.py` | ⭐ **T2 (09-07).** 39 → **36** požymiai, šalinama sąrašu; tapatybės tikrinamos kaskart; `Skale` su apsauga (`fit` tik ant train, antras kvietimas meta klaidą) |
 | ✅ `duomenys\skaidymas.py` | ⭐ **T3 (09-07).** Stratifikuotas 70/15/15 pagal **34 etiketes**; **keturios nutekėjimo patikros**; indeksai išsaugomi |
 | ✅ `duomenys\balansavimas.py` | ⭐ **T4 (09-07).** Klasių svoriai (santykis 83,9), `sample_weight` XGBoost'ui, SMOTE abliacijai. **Gerybinis srautas nesintetinamas** |
-| ✅ `modeliai\bazinis.py` | ⭐ **T5.** Kontraktas: `fit` / `predict` / `predict_proba` / `issaugoti` / **`ikelti`** (09-09); laukai `priziurimas`, `reikia_skales`; delsos matavimas; registras `gauti()`. **`_ikelti` guli šalia `_issaugoti`** kiekvienoje klasėje — įkėlimo logika nebedubliuojama `slenkstis.py` ir `prototipas.py` |
+| ✅ `modeliai\bazinis.py` | ⭐ **T5.** Kontraktas: `fit(..., svoriai=)` / `predict` / `predict_proba` / `issaugoti` / **`ikelti`** (09-09) + **`patikra()`** (`python -m src.modeliai.bazinis`) — tikrina, ar visos keturios klasės realizuoja kontraktą; laukai `priziurimas`, `reikia_skales`; delsos matavimas; registras `gauti()`. **`_ikelti` guli šalia `_issaugoti`** kiekvienoje klasėje — įkėlimo logika nebedubliuojama `slenkstis.py` ir `prototipas.py` |
 | ✅ `modeliai\random_forest.py` | **T5.** `class_weight=balanced`; normalizavimo nereikia |
 | ✅ `modeliai\gradientinis.py` | **T5.** XGBoost. ⚠️ Vardas **ne** `xgboost.py` — uždengtų biblioteką. `sample_weight`, ne `scale_pos_weight` |
 | ✅ `modeliai\mlp.py` | **T5.** Keras; ankstyvas stabdymas pagal **mūsų** `val`; `.keras` failas skaičiuojamas į dydį |
 | ✅ `modeliai\autoencoder.py` | ⭐ **T5.** Mokomas tik iš `BENIGN`; slenkstis — **99-asis** `val` procentilis (ne 95: procentilis nustato FPR) |
-| 🗑 `modeliai\cnn.py` | Ištrintinas — neatitinka ketverto |
 | ✅ `eksperimentai\paleisti.py` | ⭐ **T6.** Konfigas → mokymas → metrikos → `rezultatai.csv`. `--imtis` greitai patikrai (į CSV nerašo), `--vertinimas test` **tik 5 užduočiai**. ⭐ **`--tik-vertinti` (09-09):** įkelia išsaugotą modelį, mokymo aibės neatidaro; `sumaisymas_*` vardas turi aibę |
 | ✅ `eksperimentai\metrikos.py` | **T6.** Protokolo 15 stulpelių; FPR = tikro gerybinio srauto dalis, priskirta atakai |
 | ✅ `eksperimentai\matrica.py` | ⭐ **3 užd.:** `sprendimu_matrica.csv` → `lenteles\matrica.tex`. Svoriai 30/30/25/15 |
@@ -86,7 +95,12 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `eksperimentai\derinimas.py` | ⭐ Atsitiktinė paieška ant imties; šalia macro-F1 fiksuoja **modelio dydį** |
 | ✅ `eksperimentai\delsa.py` | Delsos permatavimas CPU. ⚠️ Visi modeliai — **vienu paleidimu, vienoje mašinoje** |
 | ✅ `eksperimentai\lenteles.py` | `imties_pasiskirstymas.csv` → `lenteles/imtis.tex` |
-| ✅ `eksperimentai\paveikslai.py` | `paveikslai/architektura.pdf`; PDF data išjungta, kad būtų atkartojama |
+| ✅ `eksperimentai\patikimumas.py` | ⭐ **T7 (09-09):** patikros **skaičiuojamos, ne surašomos**. 2-oji matuoja dedublikavimo erdvę (39 st.) ir modelio įvestį (36 st.) **atskirai**; 5-oji perskaičiuoja metrikas iš sumaišymo matricų |
+| ✅ `eksperimentai\nematytos.py` | ⭐ **T5 (09-09):** nematytų klasių testas. Vertinama **dvejetainiu klausimu**; svoriai iš **pilnos** mokymo aibės; *τ* kiekvienam modeliui iš `val` |
+| ✅ `eksperimentai\klaidos.py` | ⭐ **T4 (09-09):** per-klasę P/R/F1 su **`n` stulpeliu**, klaidų skirstymas pagal **eksploatacinę kainą** (klaidingi teigiami / praleistos atakos / **tarp atakų**), sumaišymo matricos paveikslas. Modelių neįkelia |
+| ✅ `eksperimentai\suvestine.py` | ⭐ **6 užd. (09-09):** `lenteles/suvestine.tex` + `paveikslai/kompromisai.pdf`. Dvi lentelės dalys; autokoderio aptikimas skaičiuojamas iš per-kategorijų pjūvio su **kontroline patikra** prieš slenksčio failą. **Test aibės neliečia** |
+| ✅ `eksperimentai\pozymiu_svarba.py` | ⭐ **6 užd. (09-09):** informacijos prieaugis (gain) **iš paties modelio** — duomenys neatidaromi. `lenteles/pozymiai.tex` |
+| ✅ `eksperimentai\paveikslai.py` | `paveikslai/architektura.pdf`, `kreives.pdf`, `kategorijos.pdf`; PDF data išjungta, kad būtų atkartojama |
 | ✅ `eksperimentai\eiga.py` | Eigos juosta (RF, XGBoost) |
 | ⚠️ `eksperimentai\i_latex.py` | ⭐ **Perrašytas 09-06.** **09-09: `--aibe {val,test}` filtras, aibė įrašoma į išnašą.** ⚠️ `RAKTAI` neapima `konfig`, todėl bazinis ir suderintas modelis suvidurkinami į vieną eilutę — dabar apie tai **pranešama garsiai**, bet nepataisyta (turinio sprendimas).  Protokolo 15 stulpelių schema; agreguoja per seed'us (vidurkis ± std); išveda **dvi** lenteles: `rezultatai.tex` (kokybė) ir `veikimas.tex` (delsa, laikas, dydis). Ryškinama **tik macro-F1** |
 
@@ -94,6 +108,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 
 | Kelias | Kas tai |
 |---|---|
+| ✅ `duomenys\ciciot2023_pozymiai.md` | Perkeltas iš `ataskaita\skyriai\` **09-13** — tai duomenų dokumentas, ne skyrius |
 | ✅ `duomenys\README.md` | ⭐ **CICIoT2023: 39 požymiai + `Label`, 45,0 mln. eilučių, spąstai** |
 | ✅ `duomenys\raw\archive\Merged01..63.csv` | **8,7 GB — ne Git'e** |
 | 🗑 `duomenys\raw\archive.zip` | **~2,3 GB** — CSV išpakuoti, archyvas nebereikalingas |
@@ -101,8 +116,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
 | ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `gradientinis.yaml` · `mlp.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos — **visos keturios užpildytos** |
-| ✅ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**, 21 eilutė, visos `aibe=val`. ⭐ **`aibe` stulpelis pridėtas 09-09** ir įrašytas į `RAKTAS`: `test` eilutė nebegali užimti `val` eilutės vietos. Kontroliniu paleidimu patvirtinta, kad senas kodas jas naikino tyliai |
-| ⚠️ `rezultatai\apmokyti\metadata.json` | **Tuščias** (`{"modeliai": {}}`) — metaduomenys realiai guli kiekvieno modelio `.json` šalia. Pildyti arba išbraukti. Failų vardai: `<konfigas>_<formuluotė>_seed<N>.joblib` + `.skale.joblib` |
+| ✅ `konfig\gradientinis_dvejetaine.yaml` · `gradientinis_34klases.yaml` | ⭐ **T6 (09-09):** tik palyginimui su literatūra. Hiperparametrai tie patys kaip `_derintas` |
+| ✅ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**, **45 eilutės** (27 `val` + 18 `test`); 6 užduotis jų nekeičia. ⭐ **`aibe` stulpelis pridėtas 09-09** ir įrašytas į `RAKTAS`: `test` eilutė nebegali užimti `val` eilutės vietos. Kontroliniu paleidimu patvirtinta, kad senas kodas jas naikino tyliai |
 | ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
 | ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |
@@ -130,13 +145,15 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 ### Paprasčiausias būdas — `.bat` failai
 
 ```
-patikra.bat                 pirma sis: 4 patikros, ~1 min.
-mokyti_viska.bat            visi 12 paleidimu nuosekliai
-mokyti_rf.bat               po viena modeli, jei nori dalimis
-mokyti_xgboost.bat
-mokyti_mlp.bat
-mokyti_autoencoder.bat
+01_patikra.bat            04_mokyti_derintus.bat    09_slenkstis_test.bat
+02_mokyti_viska.bat       05_delsa.bat              10_klaidos.bat
+  02a..02d_mokyti_*.bat   06_slenkstis.bat          11_nematytos.bat
+03_derinti.bat            07_prototipas.bat         12_formuluotes.bat
+                          08_vertinti_test.bat      13_patikimumas.bat
+                                                    14_palyginimas.bat
 ```
+
+Numeris = paleidimo eile. `_aplinka.bat` numerio neturi: tai ne zingsnis, o bendra dalis.
 
 Jie patys aktyvuoja `iot-ids` ir **nutraukia darbą**, jei aktyvi kita aplinka —
 būtent tai, kas atsitiko 2026-09-07.
@@ -164,7 +181,10 @@ python -m src.eksperimentai.jautrumas   # T5: svoriu jautrumas
 python -m src.eksperimentai.paleisti konfig/random_forest.yaml --seed 42 43 44
 python -m src.eksperimentai.paleisti konfig/*.yaml --seed 42 43 44
 python -m src.eksperimentai.paleisti konfig/mlp.yaml --imtis 50000   # greita patikra
-python -m src.eksperimentai.i_latex        # -> rezultatai.tex + veikimas.tex
+python -m src.eksperimentai.i_latex --aibe test --priesaga _test
+python -m src.eksperimentai.klaidos --aibe test    # -> perklase.tex + sumaisymas.pdf
+python -m src.eksperimentai.suvestine              # 6 uzd. -> suvestine.tex + kompromisai.pdf
+python -m src.eksperimentai.pozymiu_svarba         # 6 uzd. -> pozymiai.tex
 
 git add . ; git commit -m "..." ; git push
 ```
@@ -214,6 +234,7 @@ Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1
 | `Float too large for page` | `xltabular`/`longtable` **negali būti** `table` float'e |
 | `Improper alphabetic constant` | Žinoma; todėl bibliografija atskirai |
 | Tuščias skyrius, turinys nuslinkęs | Skyrių failuose **`\section` būti negali**; `\label` turi būti unikalūs |
+| **PDF'e `??`, nors kodas pataisytas** | *(09-09)* Generuojamas `lenteles/*.tex` liko senos versijos. **Pataisius generatorių — pergeneruoti išvestį**, kitaip taisymas galioja tik kode |
 
 ### Lietuvių kalba
 

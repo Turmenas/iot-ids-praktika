@@ -1,0 +1,25 @@
+% GENERUOJAMA is rezultatai/darbiniai/slenkscio_taskai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.slenkstis
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Sprendimo taškas} & \textbf{FPR} & \textbf{Atakų aptikta} & \textbf{macro-F1} \\
+\midrule
+XGBoost (suderintas) & argmax & 21,37~\% & 97,2~\% & 0,721 \\
+ & $\tau$ = 0,9842 & 0,95~\% & 88,5~\% & 0,663 \\
+\addlinespace
+MLP (bazinis) & argmax & 28,32~\% & 96,3~\% & 0,611 \\
+ & $\tau$ = 0,9602 & 0,97~\% & 83,9~\% & 0,548 \\
+\addlinespace
+MLP (suderintas) & argmax & 30,71~\% & 96,7~\% & 0,636 \\
+ & $\tau$ = 0,9842 & 0,64~\% & 85,1~\% & 0,595 \\
+\addlinespace
+Random Forest (suderintas) & argmax & 25,32~\% & 97,4~\% & 0,727 \\
+ & $\tau$ = 0,9602 & 1,02~\% & 88,0~\% & 0,646 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Rodikliai išmatuoti \textbf{testavimo} aibėje. $\tau$ parinktas validacijos aibėje ir čia \emph{netaikomas iš naujo}: perrinkimas testavimo aibėje būtų nutekėjimas. Modeliai nepermokomi.
+\endgroup

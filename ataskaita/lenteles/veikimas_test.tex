@@ -1,0 +1,23 @@
+% Veikimo rodikliai
+% GENERUOJAMA is rezultatai/rezultatai.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.i_latex
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{Formuluotė} & \textbf{Mokymo laikas, s} & \textbf{Inferencija, $\mu$s} & \textbf{Dydis, MB} \\
+\midrule
+XGBoost & 8 kategorijos & 111,8\,$\pm$\,0,4 & 29,64\,$\pm$\,5,16 & 44,96\,$\pm$\,0,13 \\
+Random Forest & 8 kategorijos & 459,4\,$\pm$\,14,4 & 10,17\,$\pm$\,0,82 & 637,90\,$\pm$\,2,59 \\
+MLP & 8 kategorijos & \textbf{50,5\,$\pm$\,7,8} & \textbf{3,03\,$\pm$\,0,27} & \textbf{0,52} \\
+\addlinespace
+XGBoost & Dvejetainė & 15,9\,$\pm$\,0,8 & \textbf{2,82\,$\pm$\,0,17} & 5,66\,$\pm$\,0,11 \\
+Autokoderis & Dvejetainė & \textbf{5,7\,$\pm$\,2,6} & 3,24\,$\pm$\,0,55 & \textbf{0,06} \\
+\addlinespace
+XGBoost & 34 klasės & 407,1\,$\pm$\,4,9 & 90,10\,$\pm$\,3,26 & 112,94\,$\pm$\,0,13 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Rezultatai išmatuoti testavimo aibėje. Inferencijos delsa matuojama gryna, atskirai nuo srauto lango sukaupimo laiko; kraštinio šliuzo biudžetas --- 20--50~ms. Reikšmės --- vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
+\endgroup

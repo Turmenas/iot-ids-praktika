@@ -28,6 +28,20 @@ import pandas as pd
 
 GERYBINE = "Benign"
 
+#: Gerybinio srauto zymos visose trijose formuluotese.
+#:
+#: 8 kategoriju ir dvejetaineje uzduotyje tai "Benign" (`etiketes.py`
+#: zodyno reiksme), o 34 klasiu formuluoteje - PATI ETIKETE is failo,
+#: t. y. "BENIGN" didziosiomis. Be sio saraso 34 klasiu paleidimo `fpr`
+#: butu tyliai NaN: joks `y_true` neatitiktu "Benign", klaida nebutu
+#: metama, o lentelėje liktu brūkšnys ten, kur turi buti skaicius.
+GERYBINES_ZYMOS = frozenset({"Benign", "BENIGN", "BenignTraffic"})
+
+
+def gerybines_kauke(y) -> np.ndarray:
+    """True ten, kur eilute yra gerybinis srautas - bet kuria zyma."""
+    return np.isin(np.asarray(y), list(GERYBINES_ZYMOS))
+
 #: Protokolo 24 punkto schema. Eiluciu tvarka fiksuota.
 #:
 #: `aibe` (val / test) pridetas 2026-09-09, pries pirma 5 uzduoties
@@ -76,9 +90,9 @@ def suskaiciuoti(y_true, y_pred, proba=None, klases=None,
     }
 
     # ─── FPR: tikras gerybinis srautas, priskirtas atakai ───
-    gerybines = y_true == GERYBINE
+    gerybines = gerybines_kauke(y_true)
     if gerybines.any():
-        r["fpr"] = float((y_pred[gerybines] != GERYBINE).mean())
+        r["fpr"] = float((~gerybines_kauke(y_pred[gerybines])).mean())
 
     # ─── AUC metrikos ───
     if proba is not None:
@@ -93,7 +107,7 @@ def suskaiciuoti(y_true, y_pred, proba=None, klases=None,
                 r["roc_auc"] = roc_auc_score(Y, s, average="macro",
                                              multi_class="ovr")
             else:                              # nepriziurimas: ivertis (n,)
-                teigiama = (y_true != GERYBINE).astype(int)
+                teigiama = (~gerybines_kauke(y_true)).astype(int)
                 r["pr_auc"] = average_precision_score(teigiama, s)
                 r["roc_auc"] = roc_auc_score(teigiama, s)
         except ValueError as e:

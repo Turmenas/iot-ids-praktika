@@ -1,0 +1,304 @@
+% ---------------------------------------------------------------------
+%  6 UŽDUOTIS — DI metodų efektyvumo palyginimas
+%  REIKALINGA PREAMBULĖJE: tabularx, booktabs, siunitx, graphicx, float
+%  Lentelės ir paveikslai GENERUOJAMI:
+%    python -m src.eksperimentai.suvestine
+%    python -m src.eksperimentai.pozymiu_svarba
+%  Naujų eksperimentų šis skyrius nedaro: visi skaičiai imami iš
+%  5 užduoties palikto vieno prėjimo per testavimo aibę.
+% ---------------------------------------------------------------------
+
+\subsection{Palyginimo pagrindas}
+\label{sec:palyginimo_pagrindas}
+
+\ref{sec:vertinimas} skyrius atsakė, kiek kiekvienas modelis pasiekia.
+Šis skyrius atsako, kuris iš jų ir kuriomis sąlygomis tinkamiausias, o
+tam reikia ne dar vieno metrikų rinkinio, o kompromisų: kiekvienas
+pranašumas kuria nors ašimi perkamas nuolaida kita.
+
+Palyginimas atliekamas ties suderintu klaidingų teigiamų biudžetu.
+Priežastis nėra formali: ties didžiausios tikimybės tašku modelių
+rikiuotė yra kitokia, o pats tas taškas šiame darbe atmestas, nes duoda
+21--31~\% klaidingų teigiamų, t.~y. dvidešimt--trisdešimt
+kartų daugiau, nei \ref{sec:atakos} skyriuje nustatytas eksploatacijos
+biudžetas. Todėl
+palyginimas ties argmax matuotų tašką, kurio sistema niekada nedirbtų.
+
+Suvestinė turi dvi dalis. Trys prižiūrimi modeliai sprendžia aštuonių
+kategorijų uždavinį, autokoderis --- dvejetainį, todėl bendro makro-F1
+stulpelio visiems keturiems sudaryti negalima. Ši asimetrija numatyta dar
+renkantis metodus (\ref{sec:di_metodai} skyrius) ir čia tik pateikiama
+matomu pavidalu.
+
+Skirtumai vertinami ta pačia taisykle kaip \ref{sec:vertinimas} skyriuje:
+tikru laikomas tik toks, kuris viršija paleidimų sklaidą
+\cite{dietterich1998tests}.
+
+
+\subsection{Suvestinė}
+\label{sec:suvestine}
+
+\begin{table}[htbp]
+\centering
+\caption{Metodų palyginimas ties klaidingų teigiamų biudžetu.}
+\label{tab:suvestine}
+\lentele{suvestine.tex}
+\end{table}
+
+Prižiūrimų modelių rikiuotė ties operaciniu tašku yra XGBoost
+(\num{0.663}), Random~Forest (\num{0.646}), MLP (\num{0.595}). Visų trijų
+aptikimo lygis panašus --- 85--89~\% --- todėl skirtumą
+daro ne tai, kiek atakų randama, o kaip tiksliai jos priskiriamos
+kategorijoms ir kokia kaina biudžetas išlaikomas.
+
+Du dalykai lentelėje svarbesni už rikiuotę. Pirma, \textbf{Random~Forest
+biudžeto neišlaiko}: jo klaidingų teigiamų dalis testavimo aibėje yra
+1,02~\%, nors slenkstis validacijos aibėje buvo parinktas
+ties 0,94~\%. Antra, \textbf{modelių dydžiai skiriasi
+tūkstantį kartų, o kokybė --- dešimtadaliu}: nuo 0,52~MB iki
+638~MB makro-F1 pakyla nuo \num{0.595} iki \num{0.646}.
+Būtent šis neproporcingumas, o ne rikiuotė, lemia rekomendaciją.
+
+Autokoderis pateikiamas atskirai ir jo skaičiai su prižiūrimais
+nelyginami tiesiogiai. Ties savo operaciniu tašku
+(0,93~\% klaidingų teigiamų) jis pažymi kaip ataką
+18,6~\% atakų srauto, o geriausiai atpažįstamoje
+kategorijoje --- DDoS --- 30,8~\%. Tuo pačiu jo PR-AUC yra
+\num{0.996}: rikiavimas geras, sprendimas ties reikalaujamu biudžetu ---
+ne.
+
+
+\subsection{Kompromisai}
+\label{sec:kompromisai}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{kompromisai.pdf}
+  \caption{Kairėje --- makro-F1 ties didžiausios tikimybės tašku ir ties
+    klaidingų teigiamų biudžetu; skaičius virš stulpelių rodo santykinį
+    kritimą. Dešinėje --- kokybė ties biudžetu prieš modelio dydį
+    logaritmine skale.}
+  \label{pav:kompromisai}
+\end{figure}
+
+\textbf{Kokybė prieš klaidingus teigiamus.} Biudžeto įvedimas kainuoja
+visiems trims modeliams, bet nevienodai: XGBoost netenka
+8,1~\% makro-F1, Random~Forest ---
+11,3~\%, MLP --- 6,3~\%. Skirtumas
+nedidelis absoliučiais dydžiais, bet jo pakanka rikiuotei apversti: ties
+argmax pirmauja Random~Forest (\num{0.727} prieš \num{0.721}), ties
+biudžetu --- XGBoost (\num{0.663} prieš \num{0.646}).
+
+Priežastis yra tikimybių skiriamoji geba. Random~Forest tikimybė yra
+medžių balsų dalis, todėl ties vienetu ji kinta šuoliais, o aukštas
+slenkstis reikalauja būtent ten smulkios skalės; XGBoost grąžina
+tolydžias reikšmes. Šis reiškinys išmatuotas trimis nepriklausomomis
+sąlygomis --- validacijos aibėje, testavimo aibėje ir su nesuderintomis
+hiperparametrų reikšmėmis --- todėl laikytinas metodų savybe, o ne vieno
+matavimo ypatybe.
+
+Iš to seka bendresnis metodinis teiginys: \emph{palyginimas ties
+didžiausios tikimybės tašku ir palyginimas ties klaidingų teigiamų
+biudžetu gali duoti skirtingą nugalėtoją}. Darbuose, kur skelbiamas tik
+argmax rezultatas, šis skirtumas lieka nematomas.
+
+\textbf{Kokybė prieš resursus.} Ši ašis skiria modelius stipriau nei
+kokybė. Random~Forest yra 14 kartų didesnis už XGBoost
+(638~MB prieš 45~MB) ir ties operaciniu tašku
+prastesnis --- vadinasi, jis nepralaimi kompromise, o yra tiesiog
+nurungtas: nė pagal vieną iš keturių atrankos kriterijų jis nėra
+geresnis. Praktinė riba dar griežtesnė, nei rodo skaičius diske: modelis
+į atmintį įkeliamas kelis kartus didesnis, todėl 1--8~GB
+turinčiame kraštinio šliuzo įrenginyje netelpa iš principo.
+
+Tikras kompromisas yra tarp XGBoost ir MLP. MLP yra
+86 kartus mažesnis (0,52~MB) ir dešimt kartų
+greitesnis, o kainuoja \num{0.068} makro-F1, t.~y.
+10~\% santykinio kokybės. Įrenginiams, kuriems 45~MB
+per daug --- mikrovaldiklių klasei, apie kurią kalba
+\cite{mazinani2026constrained} --- tai reali alternatyva, o ne
+nusileidimas.
+
+Delsa nė vieno modelio neriboja: 3--30 mikrosekundžių
+vienam įrašui yra trys eilės atsargos iki 20--50~ms
+šliuzo biudžeto. Tai patvirtina \ref{sec:di_metodai} skyriuje iš
+literatūros perimtą teiginį savais matavimais ir kartu paaiškina, kodėl
+resursų kriterijų šiame uždavinyje realiai atstoja modelio dydis.
+
+\textbf{Užduoties detalumas.} Detalumas yra ketvirtoji ašis, ir ji
+vienintelė neduoda jokio kompromiso. Perėjus nuo aštuonių kategorijų prie
+34 klasių, modelis padidėja 2,5 karto, mokymas pailgėja
+3,6 karto, delsa auga 3,0 karto, o makro-F1 krenta
+nuo \num{0.721} iki \num{0.646}. Smulkesnis detalumas kainuoja visomis
+ašimis ir negrąžina nieko, todėl aštuonių kategorijų formuluotė yra ne
+kompromisas, o geresnis pasirinkimas.
+
+\textbf{Prižiūrimas prieš neprižiūrimą.} Autokoderio ir prižiūrimų
+modelių skirtumas ties tuo pačiu klaidingų teigiamų biudžetu yra ne
+laipsniškas: 18,6~\% prieš 85--89~\%
+aptikimo. Kartu jo PR-AUC (\num{0.996}) rodo, kad anomalijos įvertis
+atakas nuo gerybinio srauto \emph{rikiuoja} gerai. Abu teiginiai teisingi
+ir neprieštarauja: rikiavimo kokybė virsta sprendimo kokybe tik tada, kai
+egzistuoja slenkstis, ties kuriuo abu reikalavimai tenkinami vienu metu,
+o gerybinio srauto atkūrimo paklaidos pasiskirstyme tokio taško nėra.
+
+
+\subsection{Prognozės ir matavimas}
+\label{sec:prognozes}
+
+Metodai buvo parinkti \ref{sec:parinkimas} skyriuje pagal svertinę
+sprendimų matricą, prieš atliekant eksperimentus. Prižiūrimų modelių
+balai buvo XGBoost \num{4.70}, Random~Forest \num{3.55}, MLP \num{3.25};
+matavimas ties operaciniu tašku davė \num{0.663}, \num{0.646} ir
+\num{0.595} --- \textbf{tą pačią tvarką}. Tai prognozė, pateikta prieš
+eksperimentą ir pasitvirtinusi, o ne paaiškinimas po fakto.
+
+Sutapimas turi dvi išlygas, ir abi vertingesnės už patį sutapimą.
+
+Pirma, \textbf{tvarka sutampa tik ties operaciniu tašku}. Ties argmax
+matavimas duoda kitą pirmąją vietą, nors matrica yra ta pati. Vadinasi,
+sprendimų matrica prognozavo ne šiaip metodo kokybę, o kokybę
+sąlygomis, kurias pati matrica ir aprašo --- klaidingiems teigiamiems ten
+skirta 30~\% svorio.
+
+Antra, \textbf{vienas matricos įvertis buvo klaidingas}. Random~Forest už
+resursus gavo 4 balus iš 5, o realiai jo modelis yra
+638~MB ir į kraštinio šliuzo įrenginį netelpa. Klaida
+sisteminė, ne atsitiktinė: balas remėsi algoritmo savybėmis, o modelio
+dydis priklauso nuo mokymo aibės dydžio, kurio balų skalė neapima. Tas
+pats pasirodė ir derinimo etape --- 400\,000 eilučių imtyje išmatuotas
+196~MB dydis pilnoje aibėje virto 638~MB.
+
+Lieka ir vienas nepatikrintas matricos teiginys: sprendimų medis surinko
+\num{3.80} balo, t.~y. daugiau nei Random~Forest, bet į eksperimentą
+nepateko, nes ketvertas buvo sudarytas ne vien pagal balus. Ar pigiausias
+ir savaime paaiškinamas prižiūrimas metodas ties klaidingų teigiamų
+biudžetu prilygtų gradientiniam stiprinimui, šis darbas atsakymo neturi.
+
+
+\subsection{Nematytos atakos: hipotezės verdiktas}
+\label{sec:zero_day}
+
+Autokoderis į palyginimą įtrauktas ne dėl balo --- matricoje jis
+pralaimėjo Isolation~Forest (\num{2.95} prieš \num{3.50}) --- o dėl
+funkcinio reikalavimo aptikti atakas, kurių pavyzdžių mokymo aibėje
+nebuvo. Toks pagrindimas yra tikrinamas teiginys, ir
+\ref{sec:nematytos} poskyryje jis patikrintas.
+
+Rezultatas neigiamas: prižiūrimas modelis, klasės niekada nematęs,
+aptinka ją geriau dviem atvejais iš trijų, o trečiuoju abu metodai
+lygūs. Palyginimui tai reiškia dvi išvadas.
+
+Pirma, \textbf{neprižiūrimas metodas ketverte savo vietos nepateisino}.
+Jis pralaimi ir pagrindinį uždavinį, ir tą, kuriam buvo įtrauktas. Iš
+matricos seka, kad ketvirtoji vieta būtų buvusi naudingesnė
+Isolation~Forest arba antram prižiūrimam metodui.
+
+Antra --- ir tai svarbiau --- \textbf{apibendrinimo geba priklauso ne nuo
+paradigmos, o nuo to, ar mokymo aibėje lieka gimininga klasė}. Kai
+pašalinama viena klasė, o jos kategorija išlieka, prižiūrimo modelio
+aptikimas nukrenta 0,0--1,5 procentinio punkto; kai
+ištuštėja visa kategorija --- 21,3 punkto. Zero-day
+klausimas todėl yra ne „prižiūrimas ar neprižiūrimas“, o „ar nauja ataka
+patenka į jau žinomą šeimą“.
+
+Teiginio ribos nurodytos \ref{sec:nematytos} poskyryje ir galioja
+nepakitusios: tikrintos trys klasės, ir nė viena jų nebuvo naujo tipo
+ataka, nepriklausanti jokiai iš aštuonių kategorijų.
+
+
+\subsection{Kuo modelis remiasi}
+\label{sec:pozymiu_svarba}
+
+Interpretuojamumui atrankoje skirta 15~\% svorio, ir šis
+kriterijus yra vienintelis, kurio prižiūrimų modelių palyginimas iki šiol
+nelietė. Medžių ansamblis leidžia jį įvertinti be papildomo skaičiavimo:
+vidutinis informacijos prieaugis apskaičiuojamas iš paties modelio, o ne
+iš duomenų.
+
+\begin{table}[htbp]
+\centering
+\caption{Dešimt daugiausiai informacijos prieaugio duodančių požymių.}
+\label{tab:pozymiai}
+\lentele{pozymiai.tex}
+\end{table}
+
+Pasiskirstymas labai netolygus: vienas požymis --- paketų skaičius
+lange --- surenka 62,3~\% viso prieaugio, o penki
+pirmieji kartu 80,4~\%. Tai atitinka imties sudėtį: DDoS,
+DoS ir Mirai kategorijos kartu sudaro 70,8~\% eilučių, o
+nuo gerybinio srauto jas skiria būtent intensyvumas. Tos pačios trys
+kategorijos ties operaciniu tašku aptinkamos 100~\%. Kartu iš to seka
+apribojimas --- modelis, kurio sprendimą dviem trečdaliais lemia vienas
+intensyvumo požymis, žemo intensyvumo atakoms turi mažai atramos, ir
+\ref{sec:nematytos} poskyryje aprašytas \texttt{DDOS-SLOWLORIS} atvejis
+yra tiesioginė to iliustracija.
+
+Antrą vietą užima protokolo kodas (6,0~\%). Tai
+verta atskiro sakinio: rengiant požymių modulį šis stulpelis atrodė
+perteklinis, nes rinkinyje jau yra atskiri TCP, UDP ir ICMP požymiai, ir
+buvo tikrinamas kaip kandidatas šalinti. Patikra parodė, kad sutapimas
+yra 70--94~\%, t.~y. koreliacija, o ne tapatybė, ir
+stulpelis buvo paliktas. Svarbos lentelė šį sprendimą patvirtina
+matavimu.
+
+Šeši sąmoningai palikti mažos dispersijos požymiai kartu surenka
+1,9~\% prieaugio. Jie naudojami visi, tad automatinis
+filtras būtų pašalinęs informaciją, o ne triukšmą, tačiau įnašas mažas,
+ir tai pasakytina taip pat aiškiai, kaip ir jų palikimo pagrindimas.
+
+Metodo riba akivaizdi: informacijos prieaugis nerodo krypties --- jis
+pasako, kuo modelis remiasi, o ne kokia požymio reikšmė reiškia ataką.
+Sprendimų paaiškinimui analitikui to nepakanka, ir čia reikėtų
+\cite{mohale2025xai} aprašytų priemonių, kurių skaičiavimo kaina yra
+atskiro darbo dydžio. MLP ir autokoderis tokio pjūvio be papildomų
+priemonių neduoda visai --- tai ir yra praktinė interpretuojamumo
+kriterijaus išraiška.
+
+
+\subsection{Rekomendacija}
+\label{sec:rekomendacija}
+
+Vieno atsakymo nėra, nes skiriasi diegimo sąlygos. Iš išmatuotų dydžių
+seka keturios rekomendacijos.
+
+\textbf{Kraštinio šliuzo įrenginiui, laikantis 1~\%
+klaidingų teigiamų biudžeto, tinkamiausias yra XGBoost su sprendimo
+slenksčiu.} Jis pasiekia makro-F1 \num{0.663}, aptinka
+88,5~\% atakų prie 0,95~\% klaidingų
+teigiamų, užima 45~MB ir vienam įrašui sunaudoja
+29,6 mikrosekundės. Slenkstis turi būti parenkamas su
+atsarga --- ties maždaug 80~\% biudžeto --- nes ties pačiu
+kraštu parinktas taškas į naują duomenų aibę persikelia be atsargos, kaip
+parodė \ref{sec:patikimumas} poskyrio patikra.
+
+\textbf{Griežtai ribotos atminties įrenginiui tinka MLP.} Jis kainuoja
+10~\% makro-F1, bet yra 86 kartus mažesnis ir
+biudžeto laikosi patikimiausiai iš visų (0,64~\%).
+Alternatyva --- mažesnė gradientinio stiprinimo konfigūracija: derinimo
+paieškoje 200 medžių variantas atsiliko mažiau nei
+1~\% ir buvo 7,4~MB, tačiau šis dydis matuotas
+imtyje, o pilnoje mokymo aibėje jis paauga maždaug pusantro karto.
+
+\textbf{Random~Forest šiam uždaviniui nerekomenduojamas.} Jis ties
+operaciniu tašku prastesnis už XGBoost, vienintelis peržengia klaidingų
+teigiamų biudžetą ir yra 14 kartų didesnis. Jo vertė šiame darbe --- ne
+kaip sprendimo, o kaip atskaitos lygio, ties kuriuo matuojamas
+gradientinio stiprinimo prieaugis.
+
+\textbf{Autokoderis kaip vienintelis aptikimo metodas netinka.} Ties
+reikalaujamu biudžetu jis aptinka mažiau nei penktadalį atakų srauto ir
+nematytoms klasėms neaplenkia prižiūrimo modelio. Kaip papildoma
+pakopa --- signalų rikiavimui arba antram vertinimui šalia prižiūrimo
+modelio --- jis lieka svarstytinas, nes jo PR-AUC aukštas, o mokymas
+trunka sekundes.
+
+Rekomendacijų ribos nurodytinos kartu su jomis. Visi skaičiai gauti
+viename duomenų rinkinyje, o kryžminis perkėlimas tarp rinkinių
+literatūroje smarkiai krenta \cite{eren2026drift}, todėl rikiuotė
+galioja šio pobūdžio srautui, o ne bet kuriam IoT tinklui. Zero-day
+teiginys galioja naujai tos pačios šeimos klasei. Ir dvi svarbiausios
+klaidų rūšys --- gerybinio srauto painiava su žvalgyba bei DoS ir DDoS
+riba --- yra ne modelio, o duomenų savybė: joms atskirti reikalingų
+krypties ir trukmės požymių šiame rinkinio leidime nėra, todėl jokia
+metodo pakaita jų nepašalintų.

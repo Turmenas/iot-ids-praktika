@@ -1,0 +1,17 @@
+% GENERUOJAMA - paleisti: python -m src.eksperimentai.patikimumas
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{$\tau$ (iš val)} & \textbf{FPR val} & \textbf{FPR test} & \textbf{Santykis} \\
+\midrule
+MLP (bazinis) & 0,9602 & 0,86~\% & 0,97~\% & 1,13$\times$ \\
+MLP (suderintas) & 0,9842 & 0,67~\% & 0,64~\% & 0,95$\times$ \\
+Random Forest (suderintas) & 0,9602 & 0,94~\% & 1,02~\%\,$^{*}$ & 1,09$\times$ \\
+XGBoost (suderintas) & 0,9842 & 0,94~\% & 0,95~\% & 1,01$\times$ \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize $\tau$ parinktas validacijos aibėje ir testavimo aibėje \emph{netaikomas iš naujo}. $^{*}$~viršija 1~\% biudžetą: taisyklė renka \emph{mažiausią} $\tau$, tenkinantį biudžetą validacijos aibėje, todėl pagal konstrukciją atsiduria prie pat ribos ir atsargos neturi.
+\endgroup

@@ -1,0 +1,19 @@
+% GENERUOJAMA is rezultatai/darbiniai/nematytos_test.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.nematytos
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.3cm}>{\centering\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.1cm}@{}}
+\toprule
+\multirow{2}{*}{\textbf{Pašalinta klasė}} & \multirow{2}{*}{\textbf{$n$}} & \multicolumn{3}{c}{\textbf{Aptikta (pažymėta kaip ataka)}} \\
+\cmidrule(l){3-5}
+ & & \textbf{Prižiūrimas, klasės nematęs} & \textbf{Autokoderis} & \textbf{Prižiūrimas, klasę matęs} \\
+\midrule
+\texttt{DDOS-SLOWLORIS} & 3\,360 & 99,9~\% & 31,4~\% & 99,9~\% \\
+\texttt{RECON-PORTSCAN} & 11\,518 & 47,2~\% & 12,8~\% & 48,7~\% \\
+\texttt{DICTIONARYBRUTEFORCE} & 1\,878 & 24,4~\% & 25,3~\% & 45,7~\% \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Testavimo aibė. Klausiama tik to, ar eilutė pažymima kaip \emph{bet kuri} ataka: pašalinus \texttt{DICTIONARYBRUTEFORCE} ištuštėja visa \texttt{BruteForce} kategorija, todėl macro-F1 su baziniu modeliu būtų nepalyginamas. Autokoderis \emph{nepermokomas} --- jis mokomas tik iš gerybinio srauto, tad visos atakų klasės jam ir taip nematytos. Paskutinis stulpelis rodo, kiek kainuoja klasės nematyti. Kiekvienam modeliui $\tau$ parinktas validacijos aibėje.
+\endgroup

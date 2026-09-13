@@ -50,7 +50,7 @@ exit /b %errorlevel%
 :klaida
 echo.
 echo [KLAIDA] Mokymas nutruko. Iki siol baigti paleidimai jau yra CSV.
-echo          Likusius galima paleisti atskirai: mokyti_*.bat
+echo          Likusius galima paleisti atskirai: 02a..02d_mokyti_*.bat
 echo.
 
 :pabaiga

@@ -1,0 +1,22 @@
+% Suvestine: palyginimas ties FPR biudzetu (6 uzduotis)
+% GENERUOJAMA is rezultatai.csv + slenkscio_taskai_test.csv
+% Ranka NELIESTI - paleisti: python -m src.eksperimentai.suvestine
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.7cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{1.6cm}>{\centering\arraybackslash}p{1.6cm}@{}}
+\toprule
+\textbf{Modelis} & \textbf{macro-F1 ties $\tau$} & \textbf{FPR} & \textbf{Atakų aptikta} & \textbf{macro-F1 ties argmax} & \textbf{Dydis, MB} & \textbf{Delsa, $\mu$s} \\
+\midrule
+\multicolumn{7}{@{}l}{\emph{Prižiūrimi, aštuonios kategorijos}\textsuperscript{a}} \\
+XGBoost & \textbf{0,663} & 0,95~\% & 88,5~\% & 0,721 & 44,96 & 29,6 \\
+Random Forest & 0,646 & 1,02~\%\textsuperscript{b} & 88,0~\% & 0,727 & 637,90 & 10,2 \\
+MLP & 0,595 & 0,64~\% & 85,1~\% & 0,636 & 0,52 & 3,0 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\emph{Neprižiūrimas, dvejetainė formuluotė}\textsuperscript{a}} \\
+Autokoderis & 0,219 & 0,93~\% & 18,6~\% & --- & 0,06 & 3,2 \\
+\bottomrule
+\end{tabularx}
+\vspace{2pt}
+\raggedright\scriptsize Testavimo aibė, suderintos konfigūracijos, vidurkis iš 3 paleidimų. Slenkstis $\tau$ kiekvienam modeliui parinktas validacijos aibėje. \textsuperscript{a}~Dviejų blokų reikšmės tarpusavyje nepalyginamos: prižiūrimi modeliai sprendžia aštuonių kategorijų uždavinį, autokoderis --- dvejetainį, todėl jam didžiausios tikimybės taškas neapibrėžtas. \textsuperscript{b}~Peržengia 1~\% biudžetą (žr. \ref{sec:patikimumas} poskyrį). Autokoderio PR-AUC --- 0,996, t.~y. rikiavimas geras, nors sprendimas ties biudžetu --- ne.
+\endgroup

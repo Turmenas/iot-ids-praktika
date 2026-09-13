@@ -110,10 +110,13 @@ class Gradientinis(Modelis):
         self._modelis = XGBClassifier(
             random_state=self.seed, eval_metric="mlogloss",
             callbacks=[_eigos_iskvietimas(p["n_estimators"], self.vardas)], **p)
-        # Disbalansas: eiluciu svoriai, ne scale_pos_weight (zr. dokumentacija)
-        self._modelis.fit(X_train, y,
-                          sample_weight=balansavimas.eiluciu_svoriai(y_train),
-                          verbose=False)
+        # Disbalansas: eiluciu svoriai, ne scale_pos_weight (zr. dokumentacija).
+        # Is isores paduoti svoriai turi pirmenybe: nematytu klasiu teste jie
+        # skaiciuojami is PILNOS mokymo aibes, kad permokymas be vienos klases
+        # nepakeistu ir likusiu klasiu balansavimo (zr. bazinis.Modelis.fit).
+        w = (self.svoriai_ if self.svoriai_ is not None
+             else balansavimas.eiluciu_svoriai(y_train))
+        self._modelis.fit(X_train, y, sample_weight=w, verbose=False)
 
     def predict(self, X) -> np.ndarray:
         return self._kodavimas.inverse_transform(self._modelis.predict(X))

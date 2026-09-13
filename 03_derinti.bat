@@ -29,8 +29,9 @@ echo ==================================================================
 echo.
 echo  Rezultatai: rezultatai\darbiniai\derinimas_*.csv
 echo.
-echo  TOLIAU: geriausias reiksmes irasyti i konfig\*.yaml ir permokyti
-echo          ant VISOS aibes - mokyti_viska.bat
+echo  TOLIAU: geriausias reiksmes irasyti i konfig\*_derintas.yaml, tada
+echo          04_mokyti_derintus.bat - permokymas ant visos aibes
+echo          ant VISOS aibes - 02_mokyti_viska.bat
 goto :pabaiga
 
 :vienas

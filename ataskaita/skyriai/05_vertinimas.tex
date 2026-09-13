@@ -1,0 +1,413 @@
+% ---------------------------------------------------------------------
+%  5 UŽDUOTIS — Eksperimentinis vertinimas
+%  REIKALINGA PREAMBULĖJE: xltabular, tabularx, booktabs, siunitx,
+%                          graphicx, float, multirow
+%  Lentelės ir paveikslai GENERUOJAMI:
+%    python -m src.eksperimentai.i_latex --aibe test --priesaga _test
+%    python -m src.eksperimentai.klaidos --aibe test
+%    python -m src.eksperimentai.slenkstis --taikyti test
+%    python -m src.eksperimentai.nematytos
+%    python -m src.eksperimentai.patikimumas --su-duomenimis
+%    python -m src.eksperimentai.paveikslai
+% ---------------------------------------------------------------------
+
+\subsection{Vertinimo protokolas ir operacinis taškas}
+\label{sec:vertinimo_protokolas}
+
+Testavimo aibė iki šio skyriaus nebuvo atidaryta nė karto. Visi
+sprendimai --- hiperparametrai, ankstyvas stabdymas, požymių sąrašas ir
+sprendimo slenkstis --- priimti mokymo ir validacijos aibėse, o testavimo
+aibė panaudota vienu prėjimu, iš kurio gauti visi šiame skyriuje
+pateikiami pjūviai.
+
+Vertinami keturi modeliai suderintomis konfigūracijomis, po tris
+paleidimus su skirtingais pradiniais dydžiais; pateikiamas vidurkis ir
+standartinis nuokrypis. Pagrindinė formuluotė --- aštuonios kategorijos;
+dvejetainė ir 34 klasių nagrinėjamos atskirai (\ref{sec:formuluotes}
+poskyris).
+
+Palyginimas atliekamas ties \textbf{suderintu klaidingų teigiamų
+biudžetu}, o ne ties didžiausios tikimybės taisykle. Slenkstis
+$\tau$ kiekvienam modeliui parinktas validacijos aibėje kaip mažiausias,
+tenkinantis 1~\% biudžetą, ir testavimo aibėje netaikomas iš
+naujo: perrinkimas toje pačioje aibėje, kurioje matuojama, būtų
+nutekėjimas. Didžiausios tikimybės taškas pateikiamas šalia, nes ties juo
+modelių rikiuotė yra kitokia --- tai savarankiškas rezultatas, aptariamas
+\ref{sec:slenkscio_kompromisas} poskyryje.
+
+Skirtumas tarp modelių laikomas tikru tik tada, kai jis viršija
+paleidimų sklaidą. Formalus statistinis testas neatliekamas: trijų
+paleidimų $t$~testas turi pervertintą pirmos rūšies klaidos tikimybę
+\cite{dietterich1998tests}.
+
+
+\subsection{Pagrindiniai rezultatai}
+\label{sec:pagrindiniai_rezultatai}
+
+\begin{table}[htbp]
+\centering
+\caption{Aptikimo kokybė testavimo aibėje.}
+\label{tab:rezultatai_test}
+\lentele{rezultatai_test.tex}
+\end{table}
+
+Ties didžiausios tikimybės tašku geriausią makro-F1 pasiekia
+Random~Forest (\num{0.7276}), po jo XGBoost (\num{0.7210}) ir MLP
+(\num{0.6346}). Skirtumas tarp dviejų pirmųjų yra \num{0.0066}, o
+paleidimų sklaida --- \num{0.0001}, todėl jis nėra atsitiktinis.
+
+Ties klaidingų teigiamų biudžetu rikiuotė apsiverčia: XGBoost pasiekia
+makro-F1 \num{0.6626} prie 0,95~\% klaidingų teigiamų, o
+Random~Forest --- \num{0.6455} prie 1,02~\%. Priežastis yra
+tikimybių skiriamoji geba: Random~Forest tikimybė yra medžių balsų dalis,
+todėl ties vienetu ji kinta šuoliais, o XGBoost grąžina tolydžias
+reikšmes ir aukštą slenkstį pasiekia tiksliau. Tas pats reiškinys buvo
+išmatuotas ir validacijos aibėje, ir su nesuderintomis
+hiperparametrų reikšmėmis, todėl tai modelių savybė, o ne vieno matavimo
+ypatybė.
+
+Autokoderis makro-F1 skalėje su prižiūrimais modeliais nelyginamas: jis
+sprendžia dvejetainį uždavinį, o jo \num{0.2187} gaunamas prie
+0,93~\% klaidingų teigiamų --- taško, kurį jis pasiekia pagal
+konstrukciją, nes slenkstis yra gerybinio srauto atkūrimo paklaidos
+procentilis.
+
+\begin{table}[htbp]
+\centering
+\caption{Veikimo rodikliai testavimo aibėje: mokymo laikas, gryna
+  inferencijos delsa procesoriumi ir modelio dydis diske.}
+\label{tab:veikimas_test}
+\lentele{veikimas_test.tex}
+\end{table}
+
+Inferencijos delsa visiems keturiems modeliams yra
+3--30 mikrosekundžių vienam įrašui, t.~y. tris eiles mažesnė už
+20--50~ms kraštinio šliuzo biudžetą, nustatytą
+\ref{sec:atakos} skyriuje. Ribojantis resursų rodiklis yra ne delsa, o
+\textbf{modelio dydis}: suderintas Random~Forest užima 638~MB
+diske, o įkeliamas į atmintį --- kelis kartus daugiau, todėl kraštinio
+šliuzo klasės įrenginyje, turinčiame 1--8~GB, jis netelpa. XGBoost su
+45~MB telpa be išlygų.
+
+
+\subsection{Klaidų analizė}
+\label{sec:klaidu_analize}
+
+Bendras tikslumas visas klaidas skaičiuoja vienodai, nors eksploatacijai
+jos kainuoja skirtingai. \ref{tab:klaidu_tipai} lentelėje klaidos
+suskirstytos į tris rūšis: klaidingi teigiami (gerybinis srautas
+paskelbtas ataka), praleistos atakos ir painiava \emph{tarp atakų}, kai
+pavojaus signalas įvyksta, o suklystama tik kategorija.
+
+\begin{table}[htbp]
+\centering
+\caption{Klaidų pasiskirstymas pagal eksploatacinę kainą.}
+\label{tab:klaidu_tipai}
+\lentele{klaidu_tipai.tex}
+\end{table}
+
+Beveik keturios klaidos iš penkių yra tarp atakų. Iš XGBoost
+\num{61651} klaidos \num{39155} sudaro viena pora: \num{33379} DDoS
+eilučių priskirtos DoS ir \num{5776} DoS eilučių --- DDoS, t.~y.
+63,5~\% visų klaidų. Abi kategorijos kraštiniame šliuze
+sukelia tą patį veiksmą, o jas skirianti informacija --- srauto šaltinių
+skaičius ir kryptis --- šiame duomenų rinkinio leidime neišreikšta.
+
+Iš to seka, kad tikslumas \num{0.8303} nereiškia, jog modelis praleidžia
+kas šeštą ataką: du trečdaliai atotrūkio nuo vieneto yra riba, kurios
+turimi požymiai neleidžia nubrėžti, o ne neaptiktos atakos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{sumaisymas.pdf}
+  \caption{XGBoost sumaišymo matrica testavimo aibėje, normalizuota per
+    eilutę. Ryškiausi ne įstrižainės langeliai --- DDoS ir DoS riba bei
+    gerybinio srauto ir žvalgybos pora.}
+  \label{pav:sumaisymas}
+\end{figure}
+
+Antra stambi klaidų grupė turi vardą, numatytą dar
+\ref{sec:atakos} skyriuje. Tikras gerybinis srautas, kurį modelis
+paskelbia ataka, beveik visas virsta \emph{žvalgyba}: Random~Forest ---
+21,2~\% viso gerybinio srauto, XGBoost --- 14,5~\%.
+Painiava abipusė: \num{7770} žvalgybos eilučių priskiriamos gerybiniam
+srautui, todėl gerybinio srauto tikslumas tesiekia \num{0.543}.
+
+Tai tiesioginė \ref{tab:atakos} lentelėje užfiksuoto apribojimo pasekmė.
+Žvalgybos eilutėje ten nurodyta, kad srauto kryptis, trukmė ir unikalių
+taikinių skaičius šiame leidime nefiksuojami --- o būtent jie skiria
+prievadų skenavimą nuo įprasto jungčių srauto. Teorinėje dalyje įvardytas
+požymių trūkumas eksperimente pasirodė kaip konkretus, išmatuojamas klaidų
+šablonas.
+
+\begin{table}[htbp]
+\centering
+\caption{Per-kategorijų rodikliai testavimo aibėje.}
+\label{tab:perklase}
+\lentele{perklase.tex}
+\end{table}
+
+Makro-F1 lygį lemia dvi mažiausios kategorijos. \emph{Web}
+($n = \num{3556}$) ir \emph{BruteForce} ($n = \num{1878}$) F1 yra
+0,38--0,47 medžių ansambliuose ir 0,21--0,22 MLP,
+o \emph{Mirai} --- \num{0.998}. Retose kategorijose didžiausia ir
+paleidimų sklaida, todėl pagrindinio rodiklio neapibrėžtumas kyla būtent
+iš jų.
+
+MLP klysta kitaip nei medžių ansambliai: jo klaidingi teigiami eina ne į
+žvalgybą, o į \emph{Web} ir \emph{BruteForce}, kurių tikslumas tesiekia
+0,125--0,137 prie atkūrimo 0,60--0,62. Klasių
+svoriai jį verčia retas kategorijas skelbti per dažnai, o medžių
+ansambliuose tas pats svertas veikia priešinga kryptimi.
+
+
+\subsection{Klaidingi teigiami ir slenksčio kompromisas}
+\label{sec:slenkscio_kompromisas}
+
+\begin{table}[htbp]
+\centering
+\caption{Operaciniai taškai testavimo aibėje. $\tau$ parinktas
+  validacijos aibėje.}
+\label{tab:slenkstis_test}
+\lentele{slenkstis_test.tex}
+\end{table}
+
+Ties didžiausios tikimybės tašku prižiūrimų modelių klaidingų teigiamų
+dalis yra 21--31~\% --- 21--31 kartą daugiau už
+\ref{sec:atakos} skyriuje nustatytą biudžetą. Įvedus slenkstį, XGBoost
+klaidingi teigiami krenta iki 0,95~\%, o aptikimas išlieka
+88,5~\%: klaidingų teigiamų sumažėja daugiau nei
+dvidešimt kartų, o makro-F1 --- 8~\%. Modelis nepermokomas;
+keičiasi tik sprendimo taisyklė.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{kreives.pdf}
+  \caption{Klaidingų teigiamų ir aptikimo kompromisas validacijos aibėje.
+    Kairėje --- visi keturi modeliai; dešinėje priartinti prižiūrimieji su
+    pažymėtais operaciniais taškais.}
+  \label{pav:kreives}
+\end{figure}
+
+Autokoderio kreivė yra kitos rūšies. Tarp 95-ojo ir 99-ojo procentilio
+jo aptikimas krenta nuo 80,9~\% iki 11,8~\%, o
+prižiūrimi modeliai tame pačiame rėžyje lieka virš 83~\%.
+Autokoderis \emph{rikiuoja} gerai --- jo PR-AUC didesnis už atsitiktinio
+rikiavimo lygį --- bet reikalaujamo klaidingų teigiamų biudžeto viduje
+naudingo aptikimo lygio nepasiekia. Tai stipresnis teiginys nei
+konstatavimas, kad jis silpnesnis: jis pasako, kuriame taške ir kodėl.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{kategorijos.pdf}
+  \caption{Aptikimas pagal kategorijas ties klaidingų teigiamų biudžetu
+    testavimo aibėje. Gerybinio srauto eilutės nėra: jai tas pats
+    stulpelis reikštų klaidingus teigiamus, ne aptikimą.}
+  \label{pav:kategorijos}
+\end{figure}
+
+Bendras aptikimo rodiklis yra svertinis vidurkis, kurį lemia gausiausios
+kategorijos. Ties tuo pačiu operaciniu tašku DDoS, DoS ir Mirai
+aptinkamos 100~\%, o \emph{Recon} --- 43,9~\%,
+\emph{Web} --- 37,5~\%. Rėžis per kategorijas yra
+37--100~\%, ir prasčiausiai aptinkamos yra kaip tik tos,
+kurios saugumo požiūriu svarbios kaip ankstyvas įspėjimas. Klaidingų
+teigiamų biudžeto laikymasis perkamas žvalgybos aptikimu.
+
+
+\subsection{Nematytų atakų klasių testas}
+\label{sec:nematytos}
+
+Neprižiūrimo metodo įtraukimas į palyginimą rėmėsi prielaida, kad
+nematytoms atakoms reikia modelio, kuris atakų pavyzdžių nemato. Ši
+prielaida patikrinta tiesiogiai: prižiūrimas modelis permokytas be
+kiekvienos iš trijų klasių, parinktų dar \ref{sec:parinkimas} skyriuje,
+ir įvertintas ta pačia testavimo aibe.
+
+Klausiama vieno dalyko --- ar pašalintos klasės eilutės pažymimos kaip
+\emph{bet kuri} ataka. Makro-F1 čia netinka: pašalinus
+\texttt{DICTIONARYBRUTEFORCE} ištuštėja visa \emph{BruteForce}
+kategorija, ir modelis vidurkinamas per septynias klases vietoj aštuonių.
+Autokoderis nepermokomas --- jis mokomas tik iš gerybinio srauto, todėl
+visos 33 atakų klasės jam ir taip nematytos.
+
+\begin{table}[htbp]
+\centering
+\caption{Nematytų atakų klasių aptikimas testavimo aibėje.}
+\label{tab:nematytos}
+\lentele{nematytos.tex}
+\end{table}
+
+Prižiūrimas modelis, klasės niekada nematęs, aptinka ją geriau už
+neprižiūrimą dviem atvejais iš trijų, o trečiuoju jie lygūs
+(24,4~\% prieš 25,4~\%). Prielaida, kad zero-day
+atakoms būtinas neprižiūrimas metodas, šiuose duomenyse nepasitvirtina.
+
+Svarbesnis už rikiuotę yra klasės nematymo \emph{kaina}, matoma
+sugretinus paskutinius du stulpelius:
+
+\begin{itemize}\itemsep2pt
+  \item \texttt{DDOS-SLOWLORIS} --- 0,0 procentinio punkto;
+  \item \texttt{RECON-PORTSCAN} --- 1,5 procentinio punkto;
+  \item \texttt{DICTIONARYBRUTEFORCE} --- 21,3 procentinio punkto.
+\end{itemize}
+
+Skirtumą lemia ne pati klasė, o tai, ar išlieka jos kategorija. Pirmųjų
+dviejų kategorijose lieka atitinkamai vienuolika ir keturios giminingos
+klasės, ir apibendrinimas joms beveik nemokamas. Trečioji yra vienintelė
+savo kategorijos klasė, todėl ją pašalinus prižiūrimas modelis netenka
+visos kategorijos, ir aptikimas krenta perpus.
+
+\texttt{DDOS-SLOWLORIS} aptinkama 99,94~\% --- tiek pat, kiek
+turint ją mokymo aibėje. Tai neprieštarauja \ref{sec:atakos} skyriuje
+nurodytam apribojimui, o iš jo seka: kadangi srauto trukmės požymio
+šiame leidime nėra, žemo intensyvumo ataka požymių erdvėje nesiskiria nuo
+kitų DDoS klasių. Ji aptinkama patikimai ne todėl, kad modelis ją
+atpažįsta, o todėl, kad neatskiria nuo to, kas jau išmokta ---
+eksploatacijai signalas įvyksta, bet kategorija nurodoma neteisingai.
+
+Teiginio ribos aiškios: tikrintos trys klasės, kurių kategorijos, išskyrus
+vieną, mokymo aibėje liko. Rezultatas galioja naujai tos pačios šeimos
+klasei, o ne atakai, nepriklausančiai nė vienai iš aštuonių kategorijų;
+tokio atvejo šie duomenys neturi.
+
+
+\subsection{Dvejetainė ir 34 klasių formuluotės}
+\label{sec:formuluotes}
+
+Palyginimui su literatūra geriausias prižiūrimas modelis įvertintas ir
+kitomis dviem formuluotėmis, tais pačiais hiperparametrais. Palyginimas
+atliekamas ties didžiausios tikimybės tašku, nes tokius skaičius skelbia
+cituojami darbai.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X
+    >{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}
+    >{\centering\arraybackslash}p{2.0cm}>{\centering\arraybackslash}p{2.0cm}@{}}
+\toprule
+\textbf{Formuluotė} & \multicolumn{2}{c}{\textbf{Šis darbas}}
+  & \multicolumn{2}{c}{\textbf{\cite{almahaqeri2026gradient}}} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+ & tikslumas & makro-F1 & tikslumas & makro-F1 \\
+\midrule
+Dvejetainė      & 0,9435 & 0,7692 & 0,9961 & 0,9952 \\
+8 kategorijos   & 0,8303 & 0,7210 & 0,9959 & 0,8903 \\
+34 klasės       & 0,7708 & 0,6464 & 0,9948 & 0,8876 \\
+\midrule
+\textbf{Rėžis}  & \textbf{0,173} & 0,123 & \textbf{0,001} & 0,108 \\
+\bottomrule
+\end{tabularx}
+\caption{Užduoties detalumo įtaka. Paskutinė eilutė --- skirtumas tarp
+  didžiausios ir mažiausios reikšmės stulpelyje.}
+\label{tab:formuluotes}
+\end{table}
+
+Skiriasi ne tik lygis, bet ir dėsningumo forma. Cituojamame darbe
+užduoties detalumas tikslumui beveik neturi įtakos --- rėžis
+\num{0.001} --- o makro-F1 krenta \num{0.108}. Šiame darbe makro-F1
+kritimas panašus (\num{0.123}), o tikslumo rėžis yra
+\num{0.173}, t.~y. daugiau nei šimtą kartų didesnis.
+
+Toks skirtumas yra tai, ko tikėtumeisi, jei mokymo aibėje liktų
+pasikartojančių eilučių. Įsiminta eilutė atsakoma teisingai bet kokiu
+detalumu --- jai nesvarbu, ar klasių dvi, aštuonios, ar 34. Duomenyse,
+iš kurių pašalinta 53,3~\% tikslių dublikatų, modelis privalo
+klases tikrai atskirti, todėl kiekvienas detalumo lygis kainuoja.
+Sugretinimą riboja ir kiti skirtumai --- 39 požymiai vietoj 46 bei imties
+dydis --- todėl teigiama tiek, kad skiriasi dėsningumo forma, o ne tik
+lygis.
+
+Didžiausias atotrūkis yra paprasčiausioje užduotyje. Dvejetainėje
+formuluotėje viskas priklauso nuo gerybinio srauto ir atakos ribos ---
+tos pačios, kurioje glūdi \ref{sec:klaidu_analize} poskyryje aprašyta
+žvalgybos painiava, --- o daugiaklasėje makro-F1 tą ribą atskiedžia
+lengvai atpažįstamos kategorijos. Dvejetainis tikslumas \num{0.9435}
+atrodo aukštas tik todėl, kad gerybinis srautas sudaro
+4,1~\% eilučių.
+
+Detalumas kainuoja pagal visas ašis. Perėjus nuo aštuonių kategorijų prie
+34 klasių, modelis padidėja nuo 45~MB iki
+113~MB, mokymas pailgėja nuo 112~s iki
+407~s, delsa auga nuo 29,6 mikrosekundės iki
+90,1 mikrosekundės, o makro-F1 krenta. Priežastis struktūrinė:
+gradientinio stiprinimo modelis daugiaklasėje užduotyje augina
+$n_{\text{medžių}} \times n_{\text{klasių}}$ medžių. Aštuonių kategorijų
+detalumas, pasirinktas \ref{sec:di_metodai} skyriuje, taip pasirodo esąs
+pagrįstas ir matavimu.
+
+
+\subsection{Rezultatų patikimumas}
+\label{sec:patikimumas}
+
+Prieš rašant skaičius atliktos penkios patikros. Trys jų galioja be
+išlygų, dvi davė radinius, kurie yra rezultato dalis.
+
+\textbf{Testavimo aibė neįtakojo nė vieno sprendimo.} Slenkstis $\tau$
+testavimo aibėje sutampa su validacijos aibėje parinktu iki paskutinio
+skaitmens visiems keturiems modeliams, o kiekviena testavimo aibės eilutė
+turi atitinkamą validacijos aibės eilutę --- vadinasi, nė vienas modelis
+nebuvo vertintas testavimo aibėje anksčiau nei validacijos.
+
+\textbf{Didžiausias tikslumas neviršija teorinės ribos.} Darbinėje imtyje
+0,43~\% eilučių turi prieštaringas etiketes, todėl geriausias
+įmanomas klasifikatorius klysta bent tiek; riba yra
+99,78~\%, o didžiausias išmatuotas tikslumas ---
+\num{0.9436}. Aukštesnis už ribą rezultatas būtų nutekėjimo požymis, ne
+pasiekimas.
+
+\textbf{Lentelių skaičiai atkuriami nepriklausomu keliu.} Kokybės
+metrikos perskaičiuotos iš išsaugotų sumaišymo matricų ir sugretintos su
+eksperimentų failu: didžiausias skirtumas dvylikoje paleidimų ---
+$4{,}5 \cdot 10^{-6}$.
+
+\begin{table}[htbp]
+\centering
+\caption{Operacinio taško perkeliamumas iš validacijos į testavimo aibę.}
+\label{tab:patikimumas}
+\lentele{patikimumas.tex}
+\end{table}
+
+\textbf{Pirmasis radinys --- operacinio taško perkeliamumas.} Klaidingų
+teigiamų dalis testavimo aibėje nuo validacijos aibės vertės skiriasi
+0,95--1,13 karto, tad taškas persikelia. Tačiau Random~Forest
+peržengia biudžetą: 1,02~\% vietoj 1~\%.
+Priežastis yra parinkimo taisyklėje --- imamas \emph{mažiausias} $\tau$,
+tenkinantis biudžetą, todėl jis pagal konstrukciją atsiduria prie pat
+ribos ir atsargos neturi. Eksploatacijai iš to seka konkretus
+reikalavimas: slenkstį rinkti su atsarga, pavyzdžiui, ties
+80~\% biudžeto.
+
+\textbf{Antrasis radinys --- dedublikavimo ir požymių atrankos tvarka.}
+Mokymo ir testavimo aibės nesikerta 39 stulpelių erdvėje, kurioje buvo
+šalinami dublikatai. Tačiau 36 požymių erdvėje, kurią mato modelis,
+sutampa \num{30} eilučių, t.~y. 0,0082~\% testavimo aibės.
+Priežastis --- pašalinti požymiai. Eilutės, kurios skiriasi paskutiniu
+slankiojo kablelio bitu vien pašalintame stulpelyje, po požymių atrankos
+tampa tapačios. Poveikis rezultatams neviršija \num{0.0082} procentinio
+punkto, t.~y. lieka žemiau pateikiamo tikslumo, tačiau iš to seka
+bendresnė taisyklė: dedublikavimas ir požymių atranka turi vykti toje
+pačioje erdvėje.
+
+
+\subsection{Apibendrinimas}
+\label{sec:vertinimo_apibendrinimas}
+
+Testavimo aibėje išmatuoti visi keturi modeliai trimis paleidimais,
+atlikta klaidų analizė, nematytų atakų klasių testas ir palyginimas su
+literatūra, o rezultatai patikrinti penkiomis patikromis.
+
+Geriausias sprendimas ties reikalaujamu klaidingų teigiamų biudžetu yra
+XGBoost: makro-F1 \num{0.6626}, aptinkama 88,5~\% atakų prie
+0,95~\% klaidingų teigiamų, modelio dydis
+45~MB, delsa 29,6 mikrosekundės. Dviejose užduoties
+vietose rezultatą riboja ne modelis, o duomenys: gerybinio srauto ir
+žvalgybos riba bei DoS ir DDoS skirtis, kurioms reikalingų krypties ir
+trukmės požymių šiame leidime nėra.
+
+\ref{sec:di_metodai} skyriuje nurodytas realistinis makro-F1 taikinys
+0,85--0,90 nepasiektas. Trys išmatuoti veiksniai paaiškina
+skirtumą: pašalinti 53,3~\% tikslių dublikatų, 39 požymių
+leidimas vietoj 46 ir palyginimas ties klaidingų teigiamų biudžetu, o ne
+ties didžiausios tikimybės tašku. Nė vienas iš jų nėra prielaida.
