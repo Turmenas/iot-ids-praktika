@@ -17,7 +17,8 @@ Greita nuoroda: kur kas guli ir ką paleisti. Ilgas kontekstas — `DARBO_ZURNAL
 | ✅ `README.md` | Projekto apžvalga — **atnaujinta 09-13:** visos 6 užduotys ✅, rezultatas, pilna `.bat` paleidimo seka |
 | ✅ `requirements.txt` · `requirements-lock.txt` | Priklausomybės *(lock nuo 09-01; žurnale klaidingai laikyta neatlikta)* |
 | ✅ `patikra.py` | Aplinkos patikra (bibliotekos + aplankai) |
-| ✅ `sutvarkyti.ps1` | ⭐ **Vienkartinis (09-13):** ištrina nebereikalingus failus, perkelia `ciciot2023_pozymiai.md` į `duomenys\`, pašalina senus `.bat` vardus. `-Perziura` — peržiūra nieko nekeičiant |
+| ✅ `sutvarkyti.ps1` | ⭐ **Vienkartinis (09-13), atliktas:** ištrynė nebereikalingus failus, perkėlė `ciciot2023_pozymiai.md` į `duomenys\`, pašalino senus `.bat` vardus |
+| ✅ `sutvarkyti_diska.ps1` | ⭐ **Vienkartinis (09-13):** ~4,2 GB — `archive.zip`, Random Forest ir 34 klasių modeliai, `_patikra\`, `__pycache__`. Kiekvienas įrašas turi pastabą, **kaip jį susigrąžinti**. `-Perziura` — peržiūra nieko nekeičiant |
 | ✅ `_aplinka.bat` | ⭐ Bendra dalis visiems `.bat`: aktyvuoja `iot-ids`, **nutraukia darbą, jei aktyvi kita aplinka**, išjungia `%APPDATA%` paketų nutekėjimą |
 | ✅ `01_patikra.bat` | Keturios patikros prieš mokymą (~1 min., į CSV nerašo) |
 | ✅ `02_mokyti_viska.bat` | Visi 12 paleidimų **nuosekliai** + lentelių generavimas |
@@ -66,7 +67,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\05_vertinimas.tex` | **5 užd. BAIGTA** — 8 poskyriai, 6 lentelės, 3 paveikslai |
 | ✅ `skyriai\06_palyginimas.tex` | **6 užd. BAIGTA** — 7 poskyriai, 2 lentelės, 1 paveikslas, ~6 psl. Baigiasi **rekomendacija** |
 | ✅ `skyriai\07_isvados.tex` | **BAIGTOS 09-13** — po vieną išvadą kiekvienam uždaviniui, rekomendacija, apribojimai, 5 tyrimų kryptys |
-| ⬜ `lenteles\rezultatai.tex` · `lenteles\veikimas.tex` | **Generuojami** per `i_latex.py` — ranka neliesti |
+| ✅ `lenteles\veikimas.tex` · `lenteles\*_test.tex` | **Generuojami** per `i_latex.py` — ranka neliesti. ⚠️ `rezultatai.tex` (val) pašalinta 09-13: nenaudojama nė viename skyriuje ir kaip tik ją lietė `i_latex` vidurkinimo yda |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
 | ✅ `lenteles\suvestine.tex` · `lenteles\pozymiai.tex` | **Generuojami** per `suvestine.py` / `pozymiu_svarba.py` — ranka neliesti |
 | ✅ `paveikslai\architektura.pdf` · `prototipas.png` · `sumaisymas.pdf` · `kreives.pdf` · `kategorijos.pdf` · `kompromisai.pdf` | Visi **generuojami**, PDF data išjungta |
@@ -111,13 +112,14 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `duomenys\ciciot2023_pozymiai.md` | Perkeltas iš `ataskaita\skyriai\` **09-13** — tai duomenų dokumentas, ne skyrius |
 | ✅ `duomenys\README.md` | ⭐ **CICIoT2023: 39 požymiai + `Label`, 45,0 mln. eilučių, spąstai** |
 | ✅ `duomenys\raw\archive\Merged01..63.csv` | **8,7 GB — ne Git'e** |
-| 🗑 `duomenys\raw\archive.zip` | **~2,3 GB** — CSV išpakuoti, archyvas nebereikalingas |
+| — | *`duomenys\raw\archive.zip` pašalintas 09-13 (1,79 GB). Atsisiuntimas iš naujo — `README.md`* |
 | ✅ `duomenys\processed\imtis.parquet` | Imtis (100 000 / klasei) — sudaroma **vieną kartą**, ne Git'e. Vardas suvienodintas 09-06 |
 | ✅ `duomenys\processed\imtis_metadata.json` | Sudarymo data, SEED, valymo skaitliukai, teorinė riba |
 | ✅ `duomenys\processed\skaidymas.npz` | Train/val/test indeksai *(09-07: 1 698 155 / 363 891 / 363 891)* — **išsaugoti**, ne perskaičiuojami |
 | ✅ `konfig\random_forest.yaml` · `gradientinis.yaml` · `mlp.yaml` · `autoencoder.yaml` | Eksperimentų konfigūracijos — **visos keturios užpildytos** |
 | ✅ `konfig\gradientinis_dvejetaine.yaml` · `gradientinis_34klases.yaml` | ⭐ **T6 (09-09):** tik palyginimui su literatūra. Hiperparametrai tie patys kaip `_derintas` |
 | ✅ `rezultatai\rezultatai.csv` | Metrikos — **Git'e**, **45 eilutės** (27 `val` + 18 `test`); 6 užduotis jų nekeičia. ⭐ **`aibe` stulpelis pridėtas 09-09** ir įrašytas į `RAKTAS`: `test` eilutė nebegali užimti `val` eilutės vietos. Kontroliniu paleidimu patvirtinta, kad senas kodas jas naikino tyliai |
+| ✅ `rezultatai\apmokyti\` | Apmokyti modeliai — **ne Git'e**. Vardai: `<konfigas>_<formuluotė>_seed<N>.joblib` + `.skale.joblib` + `.json`. **09-13 pašalinti** Random Forest (2,0 GB) ir 34 klasių (355 MB) modeliai — permokomi per `04_mokyti_derintus.bat` ir `12_formuluotes.bat` |
 | ✅ `rezultatai\darbiniai\imties_ataskaita.md` | ⭐ **Generuojama** — valymas, dublikatai, disbalansas, **patikslinta teorinė riba**. Skaičiai eina į 4 ir 5 skyrius |
 | ✅ `rezultatai\darbiniai\rezultatai_pavyzdys.csv` | `rezultatai.csv` schemos pavyzdys — `paleisti.py` atskaitos taškas |
 | ✅ `rezultatai\darbiniai\klasiu_pasiskirstymas.txt` | ⭐ **Pilnas skenavimas:** 34 klasės, 45 019 243 eilutės |

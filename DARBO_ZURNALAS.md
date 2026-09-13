@@ -2373,3 +2373,20 @@ Tai ta pati klasė kaip rugsėjo 8 d. įkalti modelių vardai dviejose vietose: 
 `STRUKTURA.md` šaknies lentelė buvo surikiuota pagal tai, kada kuris `.bat` atsirado. Sunumeravus failus ta tvarka tapo matomai neteisinga — lentelė perrikiuota pagal numerius, o `README.md` paleidimo blokas perrašytas kaip viena seka nuo 01 iki 14.
 
 **Pastebėjimas, vertas atsiminti:** numeracija ne tik palengvina paleidimą, ji **atskleidžia, kur dokumentacija buvo surašyta atsitiktine tvarka.** Iki šiol to nesimatė, nes tvarkos nebuvo su kuo palyginti.
+
+
+### Antras sutvarkymo etapas — 4,2 GB
+
+`sutvarkyti.ps1` pirmas paleidimas **nutrūko po pirmo failo**: `git ls-files --error-unmatch` rašo į stderr, kai failo Git'e nėra, o su `$ErrorActionPreference = "Stop"` PowerShell tai laiko klaida. Pataisyta — sekamų failų sąrašas imamas vienu `git ls-files` į maišos lentelę, o `git` rezultatas tikrinamas per `$LASTEXITCODE`.
+
+> **Pamoka apie PowerShell, verta atsiminti:** natyvios komandos stderr nėra klaida, bet `Stop` režime ja tampa. Tai ta pati klasė kaip `.ps1` failų koduotė ir `>` peradresavimas — aplinkos elgsena, kurios nė vienas skriptas nepaskelbia iš anksto.
+
+**Paruoštas `sutvarkyti_diska.ps1`** — antras etapas, ~4,2 GB: `archive.zip` (1,79 GB), Random Forest modeliai (2,0 GB), 34 klasių XGBoost (355 MB), `_patikra\`, `__pycache__` ir vienintelė nenaudojama generuojama lentelė `lenteles\rezultatai.tex`. Kiekvienas šalinamas dalykas skripte turi pastabą, **kaip jį susigrąžinti** (`kaggle datasets download`, `04_mokyti_derintus.bat`, `12_formuluotes.bat`).
+
+**`diagnostika_p2.py` paliktas šaknyje** — juo išmatuotas 5.7 poskyryje pateiktas skaičius.
+
+#### 98. Nenaudojama lentelė ir žinoma yda pasirodė esą tas pats failas ⭐
+
+Tikrindamas, kurios `lenteles\*.tex` iš tikrųjų įtraukiamos į skyrius, radau, kad iš penkiolikos **nenaudojama tik viena — `rezultatai.tex`** (validacijos aibės kokybės lentelė). Skyriai naudoja `rezultatai_test.tex`.
+
+Ir tai kaip tik tas failas, kuriame gyveno rugsėjo 9 d. rastas `i_latex` trūkumas: `RAKTAI` neapima `konfig`, todėl bazinis ir suderintas modelis suvidurkinami į vieną eilutę. Tada nusprendžiau jo netaisyti, nes „5 užduočiai grėsmės nėra“ — dabar paaiškėjo, kad **failo, kurį ta yda gadina, apskritai niekas neįtraukia.** Problema, dėl kurios dvejojau, buvo nulinės apimties.
