@@ -75,5 +75,9 @@ desktop.ini
 # Atsargines kodo kopijos
 *.bak
 
-# Claude darbiniai failai - tik vietiniam naudojimui, i GitHub nekeliami
+# Asmeniniai darbiniai failai - tik vietiniam naudojimui, i GitHub nekeliami
 claude/
+Claude outputs/
+DARBO_ZURNALAS.md
+STRUKTURA.md
+literatura/anotacijos.md
