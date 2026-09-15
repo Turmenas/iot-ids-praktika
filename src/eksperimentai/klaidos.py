@@ -231,9 +231,9 @@ def _lentele(a: pd.DataFrame, aibe: str, modeliai: list[str]) -> str:
            # Generuojamas failas apie skyriaus etiketes nezino, todel jos
            # ivardijamos zodziais, ne nuoroda.
            r"\raggedright\scriptsize Rodikliai išmatuoti \textbf{%s} aibėje "
-           r"ties \emph{argmax}, o ne ties klaidingų teigiamų biudžetu, todėl "
+           r"ties argmax, o ne ties klaidingų teigiamų biudžetu, todėl "
            r"su pagrindine aptikimo kokybės lentele tiesiogiai negretinami. "
-           r"$n$ --- tikrų pavyzdžių skaičius; retose kategorijose vienas kitoks "
+           r"$n$ žymi tikrų pavyzdžių skaičių; retose kategorijose vienas kitoks "
            r"sprendimas keičia atkūrimą per dešimtąsias procentinio punkto dalis." % kur,
            r"\endgroup"]
     return "\n".join(sk) + "\n"
@@ -259,9 +259,9 @@ def _tipu_lentele(t: pd.DataFrame, aibe: str) -> str:
     kur = "testavimo" if aibe == "test" else "validacijos"
     sk += [r"\bottomrule", r"\end{tabularx}",
            r"\vspace{2pt}",
-           r"\raggedright\scriptsize %s aibė, \emph{argmax}. Pirmasis stulpelis --- "
-           r"klaidingai suklasifikuotų eilučių dalis; kiti trys --- tų klaidų "
-           r"pasiskirstymas. \textbf{Tarp atakų} reiškia, kad pavojaus signalas "
+           r"\raggedright\scriptsize %s aibė, argmax. Pirmasis stulpelis rodo "
+           r"klaidingai suklasifikuotų eilučių dalį, o kiti trys rodo tų klaidų "
+           r"pasiskirstymą. \textbf{Tarp atakų} reiškia, kad pavojaus signalas "
            r"įvyko, o suklysta tik kategorija; eksploatacijai tai pigiausia "
            r"klaidos rūšis, nors bendras tikslumas ją skaičiuoja taip pat kaip "
            r"praleistą ataką." % kur,

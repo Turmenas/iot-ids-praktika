@@ -159,13 +159,14 @@ def lentele(eilutes: list[dict]) -> str:
         r"Testavimo aibė, suderintos konfigūracijos, vidurkis iš 3 paleidimų. "
         r"Slenkstis $\tau$ kiekvienam modeliui parinktas validacijos aibėje. "
         r"\textsuperscript{a}~Dviejų blokų reikšmės tarpusavyje "
-        r"nepalyginamos: prižiūrimi modeliai sprendžia aštuonių kategorijų "
-        r"uždavinį, autokoderis --- dvejetainį, todėl jam didžiausios "
+        r"nepalyginamos, nes prižiūrimi modeliai sprendžia aštuonių kategorijų "
+        r"uždavinį, o autokoderis dvejetainį, todėl jam didžiausios "
         r"tikimybės taškas neapibrėžtas. "
         r"\textsuperscript{b}~Peržengia 1~\% biudžetą "
         r"(žr. \ref{sec:patikimumas} poskyrį). "
-        r"Autokoderio PR-AUC --- " + _sk(n[0].get("pr_auc", float("nan"))) +
-        r", t.~y. rikiavimas geras, nors sprendimas ties biudžetu --- ne."
+        r"Autokoderio PR-AUC yra " + _sk(n[0].get("pr_auc", float("nan"))) +
+        r", t.~y. rikiavimas geras, nors sprendimas ties reikalaujamu "
+        r"biudžetu nepakankamas."
     )
 
     return "\n".join([
@@ -187,12 +188,12 @@ def lentele(eilutes: list[dict]) -> str:
         r"\textbf{Atakų aptikta} & \textbf{macro-F1 ties argmax} & "
         r"\textbf{Dydis, MB} & \textbf{Delsa, $\mu$s} \\",
         r"\midrule",
-        r"\multicolumn{7}{@{}l}{\emph{Prižiūrimi, aštuonios "
-        r"kategorijos}\textsuperscript{a}} \\",
+        r"\multicolumn{7}{@{}l}{Prižiūrimi, aštuonios "
+        r"kategorijos\textsuperscript{a}} \\",
         *[eilute(e) for e in p],
         r"\addlinespace",
-        r"\multicolumn{7}{@{}l}{\emph{Neprižiūrimas, dvejetainė "
-        r"formuluotė}\textsuperscript{a}} \\",
+        r"\multicolumn{7}{@{}l}{Neprižiūrimas, dvejetainė "
+        r"formuluotė\textsuperscript{a}} \\",
         *[eilute(e) for e in n],
         r"\bottomrule",
         r"\end{tabularx}",

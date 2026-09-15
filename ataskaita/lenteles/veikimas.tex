@@ -4,17 +4,23 @@
 \begingroup
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.1cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{2.6cm}@{}}
 \toprule
-\textbf{Modelis} & \textbf{Formuluotė} & \textbf{Mokymo laikas, s} & \textbf{Inferencija, $\mu$s} & \textbf{Dydis, MB} \\
+\textbf{Modelis} & \textbf{Mokymo laikas, s} & \textbf{Inferencija, $\mu$s} & \textbf{Dydis, MB} \\
 \midrule
-XGBoost & 8 kategorijos & 163,8\,$\pm$\,57,0 & 17,50\,$\pm$\,11,94 & 26,37\,$\pm$\,20,36 \\
-Random Forest & 8 kategorijos & 297,1\,$\pm$\,178,0 & 9,75\,$\pm$\,1,58 & 598,20\,$\pm$\,43,52 \\
-MLP & 8 kategorijos & \textbf{46,8\,$\pm$\,7,6} & \textbf{2,92\,$\pm$\,0,33} & \textbf{0,35\,$\pm$\,0,19} \\
+\multicolumn{4}{@{}l}{\textit{8 kategorijos}} \\
+XGBoost & 163,8\,$\pm$\,57,0 & 17,50\,$\pm$\,11,94 & 26,37\,$\pm$\,20,36 \\
+Random Forest & 297,1\,$\pm$\,178,0 & 9,75\,$\pm$\,1,58 & 598,20\,$\pm$\,43,52 \\
+MLP & \textbf{46,8\,$\pm$\,7,6} & \textbf{2,92\,$\pm$\,0,33} & \textbf{0,35\,$\pm$\,0,19} \\
 \addlinespace
-Autokoderis & Dvejetainė & 5,7\,$\pm$\,2,6 & 2,78\,$\pm$\,0,30 & 0,06 \\
+\multicolumn{4}{@{}l}{\textit{Dvejetainė}} \\
+XGBoost & 15,9\,$\pm$\,0,8 & \textbf{0,68\,$\pm$\,0,02} & 5,66\,$\pm$\,0,11 \\
+Autokoderis & \textbf{5,7\,$\pm$\,2,6} & 2,78\,$\pm$\,0,30 & \textbf{0,06} \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{34 klasės}} \\
+XGBoost & 407,1\,$\pm$\,4,9 & 14,77\,$\pm$\,0,73 & 112,94\,$\pm$\,0,13 \\
 \bottomrule
 \end{tabularx}
 \vspace{2pt}
-\raggedright\scriptsize Rezultatai išmatuoti validacijos aibėje. Inferencijos delsa matuojama gryna, atskirai nuo srauto lango sukaupimo laiko; kraštinio šliuzo biudžetas --- 20--50~ms. Reikšmės --- vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
+\raggedright\scriptsize Rezultatai išmatuoti validacijos aibėje. Inferencijos delsa matuojama gryna, atskirai nuo srauto lango sukaupimo laiko; kraštinio šliuzo biudžetas yra 20--50~ms. Reikšmės yra vidurkis $\pm$ standartinis nuokrypis iš 3 paleidimų.
 \endgroup

@@ -198,7 +198,12 @@ def patikra_4() -> dict:
     t = t[t.taskas == "slenkstis"].set_index("modelis")
 
     eil, virsija = [], []
+    # I ataskaita eina tik suderintos konfiguracijos: 6.1 poskyris sako,
+    # kad vertinami keturi modeliai suderintomis konfiguracijomis, o
+    # bazines cia patekdavo tik todel, kad guli tame paciame CSV.
     for m in sorted(set(v.index) & set(t.index)):
+        if "bazinis" in m:
+            continue
         fv, ft = float(v.loc[m, "fpr"]), float(t.loc[m, "fpr"])
         eil.append({"modelis": m, "tau": float(v.loc[m, "tau"]),
                     "fpr_val": fv, "fpr_test": ft,
@@ -290,8 +295,8 @@ def _lentele(p4: dict) -> str:
     sk += [r"\bottomrule", r"\end{tabularx}",
            r"\vspace{2pt}",
            r"\raggedright\scriptsize $\tau$ parinktas validacijos aibėje ir "
-           r"testavimo aibėje \emph{netaikomas iš naujo}. "
-           r"$^{*}$~viršija 1~\% biudžetą: taisyklė renka \emph{mažiausią} "
+           r"testavimo aibėje netaikomas iš naujo. "
+           r"$^{*}$~viršija 1~\% biudžetą: taisyklė renka mažiausią "
            r"$\tau$, tenkinantį biudžetą validacijos aibėje, todėl pagal "
            r"konstrukciją atsiduria prie pat ribos ir atsargos neturi.",
            r"\endgroup"]

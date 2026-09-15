@@ -1,163 +1,106 @@
 % =====================================================================
 %  2 UŽDUOTIS — DI ir mašininio mokymosi metodų taikymo galimybės
-%  Rugsėjo 2 d. | Tikslinė apimtis: 5–6 psl. (RIBA 6,5)
-%
-%  REIKALINGA PREAMBULĖJE: \usepackage{xltabular}
-%
-%  Būklė: tab:metodai užpildyta (T3). Poskyrių tekstas — T2 medžiaga
-%  faile rezultatai/darbiniai/metodu_apzvalga.md
 % =====================================================================
-
-\subsection{Vertinimo rėmas ir apžvalgos ašis}
-
-Pirmame skyriuje iš IoT aplinkos savybių išvesti reikalavimai aptikimo
-sprendimui (žr. \ref{tab:reikalavimai} lentelę). Šiame skyriuje jie
-nekuriami iš naujo --- tik pritaikomi konkretiems metodams. Toks
-paveldėjimas svarbus metodologiškai: kriterijai suformuluoti dar
-nežinant, kurie metodai bus svarstomi, todėl atranka negali būti
-pritempta prie iš anksto pageidaujamo atsakymo.
-
-Metodai grupuojami pagal mokymosi paradigmą, o ne pagal algoritmų
-šeimą. Tokį pasirinkimą lemia tai, kad metodo tinkamumą šiame darbe
-labiausiai apibrėžia ne jo matematinė prigimtis, o tai, ko jis
-reikalauja iš duomenų: pažymėtų pavyzdžių, sekos, tinklo topologijos ar
-paskirstytų klientų. Tolesniuose poskyriuose matyti, kad būtent šis
-reikalavimas dažniausiai ir nulemia, ar metodą apskritai galima
-taikyti turimam duomenų rinkiniui.
 
 \subsection{Prižiūrimas mokymasis}
 
-Prižiūrimi metodai reikalauja pažymėtų mokymo pavyzdžių. Naudojamame
-rinkinyje jų yra keliasdešimt milijonų, todėl paradigma taikytina be
-išlygų, o jos riba yra kita: modelis atpažįsta tik tas atakas, kurių
-pavyzdžių matė mokydamasis.
+Metodai grupuojami pagal tai, ko jie reikalauja iš duomenų, t.\,y.
+pažymėtų pavyzdžių, sekos, žinių apie tinklo sandarą ar padalijimo pagal
+įrenginius.
 
-Lentelinei srauto statistikai atskaitos klasė yra sprendimų medžių
-ansambliai. Jie skiriasi tuo, kaip derinami atskiri medžiai:
-atsitiktinis miškas juos moko lygiagrečiai iš skirtingų imties poaibių
-ir apjungia balsavimu, o gradientinio stiprinimo modeliai (XGBoost,
-LightGBM) mokomi nuosekliai, kiekvienam taisant ankstesniųjų liekamąją
-paklaidą. Abi kryptys tvarko klasių disbalansą svoriais, nedubliuodamos
-duomenų, ir abi inferuoja per mikrosekundes
-\cite{almahaqeri2026gradient}.
+Prižiūrimi metodai reikalauja pažymėtų mokymo pavyzdžių. Modelis
+atpažįsta tik tas atakas, kurių pavyzdžių matė mokydamasis.
 
-Kiti prižiūrimi metodai IoT kontekste susiduria su tuo pačiu
-sunkumu --- jų kaina atsiduria ten, kur jos leisti negalima. Atraminių
-vektorių mašinos mokymo sudėtingumas auga kvadratiškai ar kubiškai
-imties atžvilgiu, o artimiausių kaimynų metodas mokymo fazės neturi,
-tačiau kiekvienam sprendimui turi peržiūrėti visą mokymo aibę --- taigi
-lėčiausias yra būtent tada, kai reikia atsakyti realiu laiku. Naivųjį
-Bajeso klasifikatorių, pigiausią iš visų, atmeta jo paties prielaida:
-požymių sąlyginis nepriklausomumas šiame rinkinyje paneigiamas
-tiksliomis funkcinėmis priklausomybėmis tarp statistinių požymių.
+Tokiems duomenims, kur kiekviena eilutė yra skaičių rinkinys, geriausiai
+tinka sprendimų medžiais grįsti metodai. Random Forest augina daug
+medžių atskirai, kiekvieną iš savo duomenų dalies, o sprendimą priima
+balsavimu. Gradientinis stiprinimas (XGBoost, LightGBM) medžius augina
+vieną po kito, ir kiekvienas naujas taiso ankstesniųjų klaidas. Abu metodai
+klasių disbalansą sprendžia svoriais, nedubliuodami duomenų, ir vieną
+eilutę įvertina per mikrosekundes \cite{almahaqeri2026gradient}.
+
+Kiti prižiūrimi metodai šliuzui per brangūs. SVM nepakelia milijonų
+eilučių mokymo aibės. Artimiausių kaimynų metodas iš viso nesimoko, bet
+kiekvienam sprendimui peržiūri visą mokymo aibę, todėl lėčiausias tada,
+kai atsakyti reikia greitai. Naive Bayes pigiausias, bet jis laiko, kad
+požymiai tarpusavyje nesusiję, o šiame rinkinyje dalis jų išvedami
+vienas iš kito.
 
 \subsection{Neprižiūrimas mokymasis ir anomalijų aptikimas}
 
 Neprižiūrimi metodai mokosi tik iš gerybinio srauto ir atakos pavyzdžių
-nereikalauja. Tai vienintelė paradigma, iš principo galinti aptikti
-nematytas grėsmes, todėl darbe, kurio objektas yra prevencija, ji
-negali būti praleista. Naudojamame rinkinyje gerybinio srauto yra
-daugiau nei milijonas įrašų --- mokymui su kaupu pakanka.
+nereikalauja. Prižiūrimas modelis priskiria tik tas klases, kurias matė
+mokydamasis, tad nematytos atakos kaip atskiros klasės jis neįvardija.
+Ar iš to seka, kad tokioms atakoms aptikti būtinas neprižiūrimas
+metodas, tikrinama \ref{sec:zero_day} poskyryje, nes aptikti ataką ir
+ją teisingai suklasifikuoti nėra tas pats.
 
-Autokoderis suspaudžia įvestį per siaurą sluoksnį ir mokosi ją atkurti;
-neįprastas srautas atkuriamas prasčiau, todėl atkūrimo paklaida veikia
-kaip anomalijos matas. Toks sprendimas realiame IoT sraute jau
-demonstruotas visoje grandinėje nuo požymių išgavimo iki aptikimo
-\cite{meidan2018nbaiot}. Izoliacijos miškas tą pačią užduotį sprendžia
-kur kas pigiau: atsitiktiniai skaidymai anomalijas atskiria greičiau nei
-tankiai išsidėsčiusius įprastus taškus. Vienos klasės atraminių vektorių
-mašina koncepciškai artima, bet paveldi tą patį mokymo sudėtingumą kaip
-ir prižiūrima jos atmaina. Klasterizavimo metodai duoda grupes, o ne
-sprendimą, todėl tiesiogiai palyginti su kitais metodais jų nepavyktų.
-
-Šiai paradigmai klasių disbalansas nėra taikytinas kriterijus. Modelis
-mato tik gerybinį srautą, todėl santykiai tarp atakų klasių jo
-mokymo nepasiekia --- tai ne pranašumas, o kitaip suformuluotas
-uždavinys.
+Autokoderis mokosi atkurti gerybinį srautą. Neįprastą srautą jis atkuria
+prasčiau, ir ta klaida rodo anomaliją. Toks sprendimas jau išbandytas
+realiame IoT sraute \cite{meidan2018nbaiot}. Isolation Forest tą patį
+daro kur kas pigiau. Jis atsitiktinai skaido duomenis, ir išsiskiriantį
+tašką atskiria per kelis žingsnius, o įprastą tenka skaidyti ilgai.
+Vienos klasės SVM veikia panašiai, bet mokosi taip pat lėtai kaip ir
+įprastas. Klasterizavimo metodai duoda tik grupes, todėl su kitais
+nepalyginami.
 
 \subsection{Gilusis mokymasis}
 
-Gilaus mokymosi patrauklumas grindžiamas gebėjimu pačiam išmokti
-požymių reprezentaciją. Tačiau kiekviena architektūra tai daro
-remdamasi prielaida apie duomenų sandarą, ir būtent čia paaiškėja
-esminis šio darbo apribojimas: naudojamo rinkinio įrašas yra trisdešimt
-šešios agreguotos statistikos, be eilės, be krypties ir be topologijos.
+Gilieji modeliai patrauklūs tuo, kad požymius išsiveda patys. Bet
+kiekvienas jų remiasi prielaida apie duomenų sandarą, ir čia iškyla šio
+darbo apribojimas. Viena rinkinio eilutė yra
+trisdešimt šeši skaičiai, be eilės tarp jų, be krypties ir be
+informacijos, kas su kuo tinkle jungiasi.
 
-Konvoliuciniai tinklai remiasi prielaida, kad gretimos įvesties
-reikšmės susijusios, tačiau požymių eilė lentelėje yra sutartinė.
-Rekurentiniai tinklai ir dėmesio mechanizmu grįstos architektūros
-modeliuoja seką, o rinkinyje nėra nei laiko žymos, nei eilės tarp
-įrašų --- kiekvienas įrašas jau yra dešimties arba šimto paketų lango
-apibendrinimas, taigi laiko matmuo į požymius jau suvyniotas. Grafų
-neuroniniams tinklams reikia mazgų ir briaunų, o adresų ar krypties
-rinkinyje nėra. Vienintelė architektūra, nedaranti nė vienos iš šių
-prielaidų, yra daugiasluoksnis perceptronas; ribotų išteklių
-įrenginiuose jis kartu su laikine konvoliucija rodo geriausią tikslumo
-ir kainos santykį \cite{mazinani2026constrained}.
-
-Iš to seka klausimas, kurį šis darbas ir tikrina: ar didesnis modelio
-sudėtingumas duoda naudos, kai įvestis yra nedidelis skaičius
-nepriklausomų statistikų.
+Konvoliuciniai tinklai laiko, kad gretimos reikšmės susijusios, bet
+stulpelių tvarka lentelėje yra atsitiktinė. Rekurentiniai tinklai ir
+transformeriai modeliuoja seką, o sekos čia nėra. Kiekviena eilutė jau
+yra dešimties arba šimto paketų lango santrauka, tad laikas į požymius
+jau įskaičiuotas. Grafų tinklams reikia žinoti, kas su kuo jungiasi, o
+adresų ir krypties rinkinyje nėra. Lieka daugiasluoksnis perceptronas,
+nedarantis nė vienos iš šių prielaidų; ribotų išteklių įrenginiuose jis
+ir TCN duoda geriausią tikslumo ir kainos santykį
+\cite{mazinani2026constrained}.
 
 \subsection{Paskirstytas mokymasis ir paaiškinamumas}
 
-Federuotas mokymasis nėra atskiras algoritmas, o mokymo schema: modeliai
-mokomi lokaliai, o centralizuojami tik jų svoriai, todėl srautas
-nepalieka tinklo. IoT kontekste tai reikšminga privatumo požiūriu, o
-ryšio kaina gali būti optimizuota \cite{nassef2026tinyml}. Schemai
-reikia duomenų, padalytų į klientus pagal realų šaltinį; naudojamame
-rinkinyje įrenginio identifikatoriaus nėra, todėl atsitiktinis
-padalijimas imituotų vienodą pasiskirstymą ir tirtų ne tą reiškinį,
-dėl kurio schema ir taikoma.
+Federuoto mokymosi metu kiekvienas įrenginys modelį moko pats, o į
+centrą siunčiami tik apmokyto modelio parametrai, todėl srautas iš
+tinklo neišeina. IoT aplinkoje tai svarbu privatumui, o ryšio kaina
+lieka nedidelė \cite{nassef2026tinyml}. Tam reikia duomenų, padalytų
+pagal tikrą įrenginį, o rinkinyje įrenginio identifikatoriaus nėra.
 
-Paaiškinamumas nėra mokymosi paradigma, o skersinis sluoksnis. SHAP
-metodas pateikia nuoseklias globalias ir lokalias požymių atributikas,
-LIME --- greitesnius lokalius paaiškinimus pavieniams pranešimams
-audituoti; abu reikalauja pastebimų skaičiavimo išteklių ir todėl
-netinka realaus laiko grandinei \cite{mohale2025xai}. Dėl to šiame
-darbe paaiškinamumas naudojamas kaip rezultatų analizės priemonė, o ne
-kaip aptikimo sprendimo dalis. Ši skirtis atsispindi \ref{tab:metodai}
-lentelės stulpelyje: savaime interpretuojami metodai sprendimą leidžia
-parodyti be papildomos kainos, o ansambliams ir neuroniniams tinklams ta
-pati galimybė pasiekiama tik atskiru skaičiavimu.
-
-
-% =====================================================================
-%  tab:metodai — metodų vertinimo matrica (T3)
-% ---------------------------------------------------------------------
-%  Kaip ir tab:atakos: xltabular NEGALI būti table float'e,
-%  todėl \caption rašomas lentelės viduje.
-%
-%  Kiekvienas įvertinimas turi šaltinį arba žymą (aut.) — tuščių
-%  langelių stulpelyje „Šalt.“ būti negali. Žr. plano 4 skyrių.
-% =====================================================================
+Paaiškinamumas taikomas šalia bet kurio metodo. SHAP parodo, kiek
+kiekvienas požymis prisidėjo prie sprendimo, o LIME tą patį daro
+greičiau, tik pavieniams atvejams. Realiu laiku veikiančiam aptikimui
+abu per brangūs \cite{mohale2025xai}, tad šiame darbe paaiškinamumas
+lieka rezultatų analizės priemone.
 
 \begingroup
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \sloppy
 \begin{xltabular}{\textwidth}{@{}
-  >{\raggedright\arraybackslash}p{2.8cm}
-  >{\raggedright\arraybackslash}p{1.35cm}
+  >{\raggedright\arraybackslash}p{3.0cm}
   >{\centering\arraybackslash}p{1.0cm}
   >{\centering\arraybackslash}p{0.95cm}
   >{\centering\arraybackslash}p{1.05cm}
-  >{\raggedright\arraybackslash}p{1.55cm}
+  >{\raggedright\arraybackslash}p{2.0cm}
   >{\raggedright\arraybackslash}X
   >{\raggedright\arraybackslash}p{1.7cm}@{}}
 \caption{Dirbtinio intelekto metodų vertinimas pagal reikalavimus,
          kylančius iš IoT aplinkos savybių}
 \label{tab:metodai} \\
 \toprule
-\textbf{Metodas} & \textbf{Para\-digma} & \textbf{Nemat. atakos}
+\textbf{Metodas} & \textbf{Nemat. atakos}
   & \textbf{Moky\-mo kaina} & \textbf{Infe\-ren. kaina}
   & \textbf{Interpre\-tuojamumas} & \textbf{Atsparumas disbalansui}
   & \textbf{Šalt.} \\
 \midrule
 \endfirsthead
-\multicolumn{8}{@{}l}{\itshape \ref{tab:metodai} lentelės tęsinys} \\
+\multicolumn{7}{@{}l}{\itshape \ref{tab:metodai} lentelės tęsinys} \\
 \toprule
-\textbf{Metodas} & \textbf{Para\-digma} & \textbf{Nemat. atakos}
+\textbf{Metodas} & \textbf{Nemat. atakos}
   & \textbf{Moky\-mo kaina} & \textbf{Infe\-ren. kaina}
   & \textbf{Interpre\-tuojamumas} & \textbf{Atsparumas disbalansui}
   & \textbf{Šalt.} \\
@@ -166,75 +109,83 @@ pati galimybė pasiekiama tik atskiru skaičiavimu.
 \bottomrule
 \endlastfoot
 
-% --- Prižiūrimas mokymasis ---
-Sprendimų medis (CART) & Prižiūr. & Ne & maž. & maž. &
+\multicolumn{7}{@{}l}{\textit{Prižiūrimas mokymasis}} \\
+\addlinespace[2pt]
+Sprendimų medis (CART) & Ne & maž. & maž. &
   savaiminis & silpnas; taisomas svoriais & (aut.) \\
-Random Forest & Prižiūr. & Ne & vid. & maž. &
-  per XAI & geras su \texttt{class\_weight} & \cite{imani2025imbalance} \\
-XGBoost & Prižiūr. & Ne & vid. & maž. &
+Random Forest & Ne & vid. & maž. &
+  per XAI & prastėja esant stipriam disbalansui & \cite{imani2025imbalance} \\
+XGBoost & Ne & vid. & maž. &
   per XAI & geras; \SI{1.05}{\micro\second} inferencija &
   \cite{almahaqeri2026gradient} \\
-LightGBM & Prižiūr. & Ne & maž. & maž. &
+LightGBM & Ne & maž. & maž. &
   per XAI & geras; beveik lygu XGBoost & \cite{almahaqeri2026gradient} \\
-SVM (RBF) & Prižiūr. & Ne & l. did. & vid. &
+SVM (RBF) & Ne & l. did. & vid. &
   juod. dėžė & vid.; $O(n^2)$--$O(n^3)$ mokymas & (aut.) \\
-$k$ artimiausių kaimynų & Prižiūr. & Ne & --- & l. did. &
-  savaiminis & prastas; kaimynystėje dominuoja gausios klasės &
-  \cite{sallam2026gap} \\
-Naive Bayes & Prižiūr. & Ne & maž. & maž. &
+$k$ artimiausių kaimynų & Ne & nėra & l. did. &
+  savaiminis & prastas; kaimynystėje dominuoja gausios klasės & \\
+Naive Bayes & Ne & maž. & maž. &
   savaiminis & vid.; prielaida pažeista & (aut.) \\
 \addlinespace
-% --- Neprižiūrimas mokymasis ---
-Autokoderis & Neprižiūr. & \textbf{Taip} & vid. & maž. &
-  juod. dėžė & neaktualus --- mokoma tik iš gerybinio srauto &
+\multicolumn{7}{@{}l}{\textit{Neprižiūrimas mokymasis}} \\
+\addlinespace[2pt]
+Autokoderis & \textbf{Taip} & vid. & maž. &
+  juod. dėžė & neaktualus, nes mokoma tik iš gerybinio srauto &
   \cite{meidan2018nbaiot} \\
-Isolation Forest & Neprižiūr. & \textbf{Taip} & maž. & maž. &
-  per XAI & neaktualus --- kaip ir autokoderio & (aut.) \\
-One-Class SVM & Neprižiūr. & \textbf{Taip} & l. did. & vid. &
+Isolation Forest & \textbf{Taip} & maž. & maž. &
+  per XAI & neaktualus, kaip ir autokoderio & (aut.) \\
+One-Class SVM & \textbf{Taip} & l. did. & vid. &
   juod. dėžė & neaktualus, bet mokymas netelpa & (aut.) \\
-Klasterizavimas ($k$-vid., DBSCAN) & Neprižiūr. & Ribotai & vid. & vid. &
+Klasterizavimas ($k$-vid., DBSCAN) & Ribotai & vid. & vid. &
   per XAI & prastas; mažos grupės susilieja & (aut.) \\
 \addlinespace
-% --- Pusiau prižiūrimas ---
-Savimoka (pseudo-žymėjimas) & Pusiau prižiūr. & Ne & vid. & maž. &
-  kaip bazinio & \textbf{blogėja} --- pseudo-etiketės stiprina
+\multicolumn{7}{@{}l}{\textit{Pusiau prižiūrimas mokymasis}} \\
+\addlinespace[2pt]
+Savimoka (pseudo-žymėjimas) & Ne & vid. & maž. &
+  kaip bazinio & \textbf{blogėja}, nes pseudo-etiketės stiprina
   gausių klasių šališkumą & (aut.) \\
 \addlinespace
-% --- Gilusis mokymasis ---
-Daugiasluoksnis perceptronas & Gilusis & Ne & vid. & maž. &
+\multicolumn{7}{@{}l}{\textit{Gilusis mokymasis}} \\
+\addlinespace[2pt]
+Daugiasluoksnis perceptronas & Ne & vid. & maž. &
   juod. dėžė & vid.; svoriai nuostolio funkcijoje &
   \cite{mazinani2026constrained} \\
-1D-CNN & Gilusis & Ne & did. & vid. &
+1D-CNN & Ne & did. & vid. &
   juod. dėžė & vid.; požymių eilė savavališka &
   \cite{mazinani2026constrained} \\
-LSTM / GRU & Gilusis & Ne & did. & vid. &
+LSTM / GRU & Ne & did. & vid. &
   juod. dėžė & vid.; sekos duomenyse nėra &
   \cite{mazinani2026constrained} \\
-Transformer & Gilusis & Ne & l. did. & did. &
-  juod. dėžė & vid.; ta pati sekos problema & \cite{nassef2026tinyml} \\
-Grafų neuroninis tinklas & Gilusis & Ribotai & l. did. & did. &
+Transformer & Ne & l. did. & did. &
+  juod. dėžė & vid.; ta pati sekos problema & \\
+Grafų neuroninis tinklas & Ribotai & l. did. & did. &
   juod. dėžė & vid.; \SIrange{120}{180}{\milli\second} Raspberry Pi 4 &
   \cite{nassef2026tinyml} \\
 \addlinespace
-% --- Paskirstytas mokymasis ---
-Federuotas mokymasis (FedAvg)\textsuperscript{a} & Paskirst. & kaip bazinio &
+\multicolumn{7}{@{}l}{\textit{Paskirstytas mokymasis}} \\
+\addlinespace[2pt]
+Federuotas mokymasis (FedAvg)\textsuperscript{a} & kaip bazinio &
   paskirst. & kaip bazinio & kaip bazinio &
   \textbf{blogėja} esant ne-IID duomenims & \cite{nassef2026tinyml} \\
 \end{xltabular}
 
 \vspace{-0.5em}
 {\footnotesize
-\textbf{Žymėjimai.} Kaina: \emph{maž.} — mažas, \emph{vid.} — vidutinis,
-\emph{did.} — didelis, \emph{l.\ did.} — labai didelis;
-„---“ reiškia, kad fazės nėra.
-Interpretuojamumas: \emph{savaiminis} — sprendimą galima parodyti be
-papildomų įrankių; \emph{per XAI} — reikia SHAP ar LIME, o tai
-papildoma skaičiavimo kaina \cite{mohale2025xai};
-\emph{juod.\ dėžė} — savaiminio paaiškinimo nėra.
+Žymėjimai. Kaina: \emph{maž.} (mažas), \emph{vid.} (vidutinis),
+\emph{did.} (didelis), \emph{l.\ did.} (labai didelis); žyma
+nėra reiškia, kad fazės nėra.
+Interpretuojamumas: \emph{savaiminis} (sprendimą galima parodyti be
+papildomų įrankių), \emph{per XAI} (reikia SHAP ar LIME, o tai
+papildoma skaičiavimo kaina \cite{mohale2025xai}),
+\emph{juod.\ dėžė} (savaiminio paaiškinimo nėra).
+Nemat.\ atakos: ar metodas aptinka ataką, kurios pavyzdžių mokymo
+aibėje nebuvo. Prižiūrimiems modeliams tai reiškia, kad tokia ataka gali
+būti pažymėta tik kaip kuri nors žinoma klasė
+(\ref{sec:zero_day} poskyris).
 Žyma \emph{(aut.)} nurodo, kad įvertinimas yra šio darbo autoriaus, o ne
 perimtas iš šaltinio.
-\textsuperscript{a}\,Federuotas mokymasis yra mokymo schema, o ne atskiras
-algoritmas: jo savybės priklauso nuo bazinio modelio.
+\textsuperscript{a}\,Federuoto mokymosi savybės priklauso nuo bazinio
+modelio.
 \par}
 \endgroup
 
@@ -244,30 +195,20 @@ algoritmas: jo savybės priklauso nuo bazinio modelio.
 \subsection{Praktiniai apribojimai IoT aplinkoje}
 \label{sec:apribojimai}
 
-Ankstesniuose poskyriuose metodai vertinti pagal aptikimo galimybes.
-Šis poskyris prideda antrą matmenį --- ar metodas apskritai gali veikti
-ten, kur jį reikėtų įdiegti. Trys apribojimai yra kiekybiniai ir todėl
-tinka kaip atrankos kriterijai: inferencijos delsa, mokymo kaina ir
-klasių disbalansas.
+Be aptikimo galimybių, metodą riboja ir tai, ar jis gali veikti ten,
+kur jį reikėtų įdiegti. Trys apribojimai yra kiekybiniai ir todėl
+tinka kaip atrankos kriterijai, t.\,y. inferencijos delsa, mokymo kaina
+ir klasių disbalansas.
 
-\subsubsection{Inferencijos delsa ir diegimo vieta}
-
-Pirmame skyriuje diegimo vieta pasirinkta kraštiniame šliuze, o jam
-keliamas realaus laiko reikalavimas yra \SIrange{20}{50}{\milli\second}
-vienam sprendimui; įrenginio lygmeniui skiriama
-\SIrange{1}{10}{\milli\second}, debesiui ---
-ne mažiau kaip \SI{100}{\milli\second} \cite{sallam2026gap}. Šie skaičiai leidžia
-metodus vertinti ne abstrakčiai, o pagal tai, kiek biudžeto jie suvartoja.
-
-Skirtumas tarp lentelinių ansamblių ir giliųjų architektūrų yra ne
-laipsnio, o eilės. Gradientinio stiprinimo modelis tame pačiame
-CICIoT2023 rinkinyje 34 klasių užduotyje inferuoja per
-\SI{3.53}{\micro\second} vienam įrašui \cite{almahaqeri2026gradient} ---
-tai \num{0.018}~\% griežtesniojo (\SI{20}{\milli\second}) biudžeto.
+Inferencijos delsą lemia diegimo vieta. Gradientinio stiprinimo modelis
+tame pačiame CICIoT2023 rinkinyje 34 klasių užduotyje vieną įrašą
+įvertina per \SI{3.53}{\micro\second} \cite{almahaqeri2026gradient},
+t.\,y. \num{0.018}~\% griežtesniojo (\SI{20}{\milli\second}) biudžeto.
 Hibridinis grafų ir rekurentinis modelis tame pačiame rinkinyje
 reikalauja \SIrange{120}{180}{\milli\second} Raspberry~Pi~4 plokštėje
-\cite{nassef2026tinyml}, t.\,y. nuo 2,4 iki 9 kartų \emph{daugiau} nei
-leidžia biudžetas. Tarp šių dviejų verčių yra keturios eilės.
+\cite{nassef2026tinyml}, t.\,y. nuo 2,4 iki 9 kartų daugiau, nei leidžia
+\ref{sec:diegimas} poskyryje nurodytas šliuzo biudžetas. Tarp šių dviejų
+verčių yra keturios eilės.
 
 \begin{table}[htbp]
 \centering
@@ -287,10 +228,10 @@ leidžia biudžetas. Tarp šių dviejų verčių yra keturios eilės.
 Įrenginys (mikro\-valdiklis) & \SIrange{1}{10}{\milli\second} &
   Kvantuotas MLP arba TCN (INT8, modelis mažesnis
   \textgreater\,90~\%) \cite{mazinani2026constrained} &
-  Ansambliai --- ne dėl delsos, o dėl modelio dydžio atmintyje \\
+  Ansambliai (ne dėl delsos, o dėl modelio dydžio atmintyje) \\
 \addlinespace
 \textbf{Kraštinis šliuzas} & \SIrange{20}{50}{\milli\second} &
-  XGBoost, LightGBM, Random Forest, Isolation Forest, MLP ---
+  XGBoost, LightGBM, Random Forest, Isolation Forest, MLP
   su kelių eilių atsarga &
   Hibridiniai gilieji modeliai
   (\SIrange{120}{180}{\milli\second}) \cite{nassef2026tinyml} \\
@@ -301,107 +242,51 @@ Debesis & $\geq$~\SI{100}{\milli\second} & Visi apžvelgti metodai &
 \end{tabularx}
 \end{table}
 
-Skelbiamos vertės išmatuotos skirtinga aparatūra: mikrosekundinės ---
-serverio klasės procesoriumi, \SIrange{120}{180}{\milli\second} ---
-vienos plokštės kompiuteriu. Skirtumo eilė tai atlaiko:
-\SI{3.53}{\micro\second} į \SI{20}{\milli\second} biudžetą telpa
-\num{5669} kartus, todėl reikalavimą tenkintų ir tiek kartų lėtesnė
-aparatūra.
+Neprižiūrimų metodų darbuose skelbiamas aptikimo laikas su šiais
+skaičiais nepalyginamas, nes apima ir srauto lango sukaupimą
+\cite{meidan2018nbaiot}.
 
-Atskirai pažymėtina, kad neprižiūrimų metodų atveju skelbiamas dydis
-dažnai yra ne inferencijos delsa, o \emph{aptikimo laikas}. Gilusis
-autokoderis N-BaIoT rinkinyje ataką aptinka per
-$174 \pm \SI{212}{\milli\second}$ \cite{meidan2018nbaiot}: šis dydis
-apima ir srauto lango sukaupimą, ne vien modelio skaičiavimą.
-Standartinis nuokrypis čia didesnis už vidurkį, todėl vien vidurkiu
-remtis negalima. Todėl penktame skyriuje matuojama grynoji inferencijos delsa, o lango
-sukaupimo laikas nurodomas atskirai.
+Mokymo kainą lemia tai, kad modelį tenka permokyti periodiškai, o
+kraštinio šliuzo aplinkoje tam skiriama įprasta aparatūra be grafinio
+spartintuvo. Todėl atkrenta metodai, kurių mokymo laikas auga kvadratu
+arba kubu nuo eilučių skaičiaus, t.\,y. SVM ir jo vienos klasės atmaina.
+Milijonuose eilučių toks augimas mokymą paverčia nepraktišku su bet
+kokia aparatūra, o gilieji modeliai be spartintuvo mokosi ilgai ir be to.
 
-\subsubsection{Mokymo kaina}
-
-Mokymo kaina yra ne vienkartinis, o pasikartojantis dydis. Tinklo
-elgsena kinta, todėl aptikimo modelis turi būti periodiškai
-permokomas, o kraštinio šliuzo aplinkoje tam skiriama įprasta
-aparatūra be grafinio spartintuvo. Dėl to mokymo sudėtingumas yra
-atrankos kriterijus, o ne vien techninė aplinkybė.
-
-Pirmiausia jis pašalina metodus, kurių mokymo sudėtingumas imties
-atžvilgiu yra kvadratinis ar kubinis, --- atraminių vektorių mašiną ir
-jos vienos klasės atmainą. Milijonų eilučių eilės imtyse toks
-augimas mokymą paverčia nepraktišku nepriklausomai nuo turimos
-aparatūros. Giliosioms architektūroms mokymo trukmė be spartintuvo
-veikia kaip antras, nepriklausomas argumentas prie jau įvardyto
-delsos perviršio.
-
-\subsubsection{Klasių disbalansas}
-
-Naudojamame rinkinyje disbalansas reiškiasi dviem skirtingais
-santykiais, ir jie turi skirtingas pasekmes. Atakų ir gerybinio srauto
-santykis yra $41{,}8:1$ --- dėl jo bendras tikslumas dvejetainėje
+Klasių disbalansas rinkinyje reiškiasi dviem santykiais. Dėl atakų ir
+gerybinio srauto santykio $41{,}8:1$ bendras tikslumas dvejetainėje
 užduotyje tampa neinformatyvus, nes viską ataka žymintis modelis
 pasiektų apie $97{,}7$~\%. Kur kas didesnis yra santykis tarp pačių
-klasių: gausiausia klasė už rečiausią didesnė \num{5764} kartus.
-Būtent antrasis santykis paaiškina, kodėl daugiaklasėje užduotyje
-krinta makro vidurkiu skaičiuojamas F1 --- septynios klasės sudaro
-mažiau nei $0{,}03$~\% duomenų ir kiekviena jų į makro vidurkį įeina
-tokiu pat svoriu kaip milijoninės.
-
-Tai patvirtina ir literatūra. Tame pačiame CICIoT2023 rinkinyje
-gradientinio stiprinimo modelio tikslumas pereinant nuo dvejetainės
-prie aštuonių klasių užduoties beveik nekinta ($99{,}61 \rightarrow
-99{,}59$~\%), o makro-F1 krinta nuo $0{,}9952$ iki $0{,}8903$
-\cite{almahaqeri2026gradient}. Tas pats modelis ir tie patys duomenys ---
-skiriasi tik metrika ir užduoties detalumas.
-
-Balansavimo priemonių palyginimas prie skirtingų disbalanso lygių rodo,
-kad suderintas gradientinio stiprinimo modelis kartu su SMOTE metodu
-duoda nuosekliai geriausią F1, o atsitiktinio miško tikslumas esant
-stipriam disbalansui pastebimai krinta \cite{imani2025imbalance}. Tas
-pats šaltinis pateikia ir metodinę pastabą, svarbią penktam skyriui:
-didėjant disbalansui F1, Kappa ir Matthewso koreliacijos koeficientas
-svyruoja stipriai, o ROC-AUC ir PR-AUC išlieka palyginti stabilūs.
-Todėl šalia makro-F1 tikslinga pateikti ir PR-AUC.
+klasių, nes gausiausia klasė už rečiausią didesnė \num{5764} kartus.
+Septynios klasės sudaro mažiau nei $0{,}03$~\% duomenų ir kiekviena jų į
+makro vidurkį įeina tokiu pat svoriu kaip milijoninės, todėl
+daugiaklasėje užduotyje krinta macro-F1. Didėjant disbalansui F1 ir
+Matthewso koeficientas svyruoja stipriai, o ROC-AUC ir PR-AUC išlieka
+stabilesni \cite{imani2025imbalance}.
 
 \subsection{Susiję darbai ir skelbiami rezultatai}
 
-Skelbiamų rezultatų apžvalga reikalinga ne tam, kad būtų surinkti aukšti
-skaičiai, o tam, kad savo matavimams atsirastų atskaitos taškas.
-\ref{tab:susije} lentelėje kiekvienam darbui nurodoma ne tik metrika,
-bet ir užduoties detalumas bei tai, kas riboja rezultato aiškinimą.
+\ref{tab:susije} lentelėje kiekvienam darbui nurodyta metrika, užduoties
+detalumas ir tai, kas riboja rezultato aiškinimą.
 
-Užduoties detalumo stulpelis yra būtinas, nes be jo skaičiai
-nepalyginami. Tai geriausiai matyti to paties modelio eilutėse: tame
-pačiame duomenų rinkinyje gradientinio stiprinimo modelio tikslumas
-dvejetainėje ir aštuonių klasių užduotyse skiriasi vos šimtosiomis
-procento dalimis, o makro vidurkiu skaičiuojamas F1 krinta nuo
-$0{,}9952$ iki $0{,}8903$ \cite{almahaqeri2026gradient}. Darbas,
+Be užduoties detalumo skaičiai nepalyginami. Tame pačiame rinkinyje ir
+su tuo pačiu modeliu tikslumas dvejetainėje ir aštuonių klasių
+užduotyse skiriasi vos šimtosiomis procento dalimis, o macro-F1 krinta
+nuo $0{,}9952$ iki $0{,}8903$ \cite{almahaqeri2026gradient}. Darbas,
 pateikiantis tik tikslumą ir nenurodantis klasių skaičiaus, tokio
 skirtumo neatskleidžia.
 
-Antra pastebima savybė --- ne visos abejonės kyla dėl silpnų metrikų.
-Dalis darbų skelbia aukštus F1 įverčius, tačiau užduoties detalumo
-nenurodo \cite{nassef2026tinyml}, kitas pateikia suminį kompromiso
-įvertį vietoj metrikų kiekvienam modeliui \cite{mazinani2026constrained},
-o klasikiniame botnetų aptikimo darbe pasiektas šimtaprocentinis
-teisingai atpažintų atakų dažnis atitinka lengviausią įmanomą
-formuluotę --- atskiras modelis kiekvienam įrenginiui ir dvi botnetų
-šeimos \cite{meidan2018nbaiot}. Trūkstamas metodikos elementas riboja
-palyginimą lygiai taip pat, kaip ir prastas rezultatas.
+Skiriasi ir požymių aibė. Dauguma publikacijų naudoja pilną
+keturiasdešimt šešių požymių versiją, o šiame darbe naudojamame leidime
+jų trisdešimt devyni, nes pašalinti krypties požymiai ir iš jų išvestos
+statistikos. Dalies literatūroje aukštai reitinguojamų požymių čia nėra,
+todėl skelbiami įverčiai tinka kaip bendras atskaitos lygis, bet ne kaip
+tiesioginis palyginimo taškas.
 
-Sugretinant savo rezultatus su šiais darbais svarbu turėti omenyje
-požymių aibės skirtumą. Dauguma publikacijų remiasi pilna keturiasdešimt
-šešių požymių versija, o šiame darbe naudojamame leidime jų
-trisdešimt devyni: pašalinti krypties požymiai ir iš jų išvestos
-statistikos. Dalis literatūroje aukštai reitinguojamų požymių šiame
-leidime neegzistuoja, todėl skelbiami įverčiai laikytini bendru
-atskaitos lygiu, o ne tiesioginiu palyginimo tašku. Į tai atsižvelgiama
-šeštame skyriuje.
-
-Iš apžvalgos taip pat matyti, kokio dydžio rezultato realu tikėtis.
-Aštuonių kategorijų užduotyje geriausias literatūroje skelbiamas makro-F1
-yra apie $0{,}89$; tai ir yra vertė, prie kurios lyginami šio darbo
-matavimai --- ne artimi vienetui tikslumo įverčiai, gaunami dvejetainėje
-formuluotėje.
+Aštuonių kategorijų užduotyje geriausias literatūroje skelbiamas
+macro-F1 yra apie $0{,}89$. Prie šios vertės ir lyginami šio darbo
+matavimai. Dvejetainėje formuluotėje gaunami beveik vienetiniai tikslumo
+įverčiai palyginimui netinka.
 
 % =====================================================================
 %  tab:susije -- susije darbai ir skelbiami rezultatai (T4)
@@ -422,8 +307,8 @@ formuluotėje.
   >{\raggedright\arraybackslash}p{2.0cm}
   >{\raggedright\arraybackslash}p{2.0cm}
   >{\raggedright\arraybackslash}p{2.1cm}
-  >{\raggedright\arraybackslash}p{1.5cm}
-  >{\raggedright\arraybackslash}p{2.8cm}
+  >{\raggedright\arraybackslash}p{1.9cm}
+  >{\raggedright\arraybackslash}p{2.6cm}
   >{\raggedright\arraybackslash}X@{}}
 \caption{Skelbiami dirbtinio intelekto metodų rezultatai IoT įsibrovimų
          aptikimo darbuose}
@@ -451,8 +336,8 @@ formuluotėje.
 \cite{almahaqeri2026gradient} & CICIoT2023 (46 pož.) & XGBoost &
   8 klasės & tikslumas 99,59~\%; \textbf{macro-F1 0,8903};
   \SI{1.05}{\micro\second} &
-  Tikslumas beveik nepakito, o macro-F1 krito 0,10 --- tas pats modelis,
-  tie patys duomenys \\
+  Tikslumas beveik nepakito, o macro-F1 krito 0,10 esant tam pačiam modeliui
+  ir tiems patiems duomenims \\
 \cite{almahaqeri2026gradient} & CICIoT2023 (46 pož.) & XGBoost &
   34 klasės & tikslumas 99,48~\%; macro-F1 0,8876;
   \SI{3.53}{\micro\second} &
@@ -476,7 +361,7 @@ formuluotėje.
 \addlinespace
 \cite{mazinani2026constrained} & CICIoT2023 (46,7~mln. įrašų) &
   MLP, TCN, CNN, LSTM, GRU, SimpleRNN & dvejetainė, 8 ir 34 klasės &
-  MLP ir TCN --- geriausias tikslumo ir kainos kompromisas;
+  MLP ir TCN duoda geriausią tikslumo ir kainos kompromisą;
   INT8 kvantavimas mažina modelį \textgreater\,90~\% &
   Skelbiamas suminis kompromiso balas, o ne metrikos kiekvienam
   modeliui, todėl tiesiogiai palyginti neįmanoma \\
@@ -485,7 +370,7 @@ formuluotėje.
   autokoderis & dvejetainė, kiekvienam įrenginiui atskirai &
   TPR 100~\%; FPR $0{,}007 \pm 0{,}01$; aptikimo laikas
   $174 \pm \SI{212}{\milli\second}$ &
-  TPR 100~\% pasiektas lengviausioje įmanomoje formuluotėje ---
+  TPR 100~\% pasiektas lengviausioje įmanomoje formuluotėje:
   vienas įrenginys, dvi botnetų šeimos; aptikimo laiko standartinis
   nuokrypis didesnis už vidurkį \\
 \addlinespace
@@ -517,86 +402,3 @@ formuluotėje.
 %   metodikai (4 sk.) ir apribojimu aptarimui (6 sk.). Antriniu
 %   rinkiniu tiesiog nera - to konstatavimas nereikalauja poskyrio.
 %   Perkelta: viena pastraipa i 4 sk. metodika (skaidymo sprendimas).
-\subsection{Skyriaus apibendrinimas: kandidatų aibė}
-\label{sec:kandidatai}
-
-Apžvelgti aštuoniolika metodų (žr. \ref{tab:metodai} lentelę).
-Kandidatų aibę labiausiai siaurina naudojamų duomenų sandara. Galutinę
-atranką su kriterijų svoriais atlieka trečias skyrius; čia fiksuojama,
-iš ko renkamasi.
-
-\subsubsection{Keturi pasirinkti metodai}
-
-\textbf{Atsitiktinis miškas} imamas kaip atskaitos modelis. Jis
-nereikalauja kruopštaus derinimo, atsparus persimokymui, o klasių svoriai
-leidžia tvarkyti disbalansą nedubliuojant duomenų. Jis nustato
-atskaitos lygį, prie kurio matuojamas sudėtingesnių metodų duodamas
-prieaugis.
-
-\textbf{Gradientinio stiprinimo modelis} (XGBoost) yra laukiamas
-geriausias prižiūrimas metodas: tame pačiame duomenų rinkinyje jis
-pranoko dešimt kitų metodų, o inferencijos trukmė matuojama
-mikrosekundėmis \cite{almahaqeri2026gradient}. Kartu jis yra vienintelis
-tiesiogiai palyginamas atskaitos taškas literatūroje.
-
-\textbf{Daugiasluoksnis perceptronas} įtraukiamas kaip vienintelė gilaus
-mokymosi architektūra, prasminga lentelinei įvesčiai --- ji nedaro
-prielaidų nei apie požymių eilę, nei apie kaimynystę, nei apie seką.
-Ribotų išteklių įrenginiuose jis kartu su laikine konvoliucija rodo
-geriausią tikslumo ir kainos santykį \cite{mazinani2026constrained}.
-Jo paskirtis --- patikrinti, ar didesnis modelio sudėtingumas duoda
-naudos ten, kur įvestis yra trisdešimt šešios nepriklausomos
-statistikos.
-
-\textbf{Autokoderis} yra vienintelis pasirinktas neprižiūrimas metodas.
-Jis mokomas tik iš gerybinio srauto, todėl gali aptikti atakas, kurių
-pavyzdžių mokymo metu nebuvo --- tai vienintelis būdas patikrinti
-darbe keliamą prielaidą apie nematytų grėsmių aptikimą
-\cite{meidan2018nbaiot}.
-
-Pagrindiniu užduoties detalumu eksperimentams pasirenkamos
-\textbf{aštuonios atakų kategorijos}. Toks pasirinkimas atitinka darbe
-naudojamą kategorijų žodyną ir sutampa su literatūroje skelbiamu
-makro-F1 įverčiu $0{,}8903$ \cite{almahaqeri2026gradient}, todėl
-rezultatus bus su kuo palyginti. Dvejetainė ir trisdešimt keturių klasių
-formuluotės atliekamos tik geriausiam modeliui.
-
-\subsubsection{Kodėl atmesti likusieji}
-
-Rekurentiniai tinklai ir dėmesio mechanizmu grįstos
-architektūros modeliuoja sekas, tačiau naudojamame rinkinyje nėra nei
-laiko žymos, nei eilės tarp įrašų --- kiekvienas įrašas jau yra dešimties
-arba šimto paketų lango apibendrinimas, todėl sekos, kurią būtų galima
-modeliuoti, tiesiog nėra. Grafų neuroniniam tinklui reikia mazgų ir
-briaunų, o rinkinyje nėra nei adresų, nei krypties, todėl grafo
-sudaryti neįmanoma. Dėl tos pačios priežasties negalimas ir federuotas
-mokymasis: be įrenginio identifikatoriaus nėra pagal ką dalyti duomenų
-į klientus, o atsitiktinis padalijimas imituotų vienodą pasiskirstymą ir
-tirtų ne tai, kas svarbu. Naivųjį Bajeso klasifikatorių atmeta jo paties
-prielaida: požymių nepriklausomumas paneigiamas tiksliomis funkcinėmis
-priklausomybėmis, aptiktomis šiame rinkinyje.
-
-Atraminių vektorių mašina ir jos vienos klasės atmaina atmetamos dėl
-kvadratinio arba kubinio mokymo sudėtingumo, o artimiausių kaimynų
-metodas --- dėl inferencijos trukmės, kuri auga kartu su mokymo aibe ir
-netelpa į kraštinio šliuzo laiko biudžetą.
-
-Sprendimų medis, lengvasis gradientinio stiprinimo modelis, izoliacijos
-miškas ir vienmatis konvoliucinis tinklas neatrinkti dėl pertekliškumo:
-jie atkartotų paradigmas, kurioms jau atstovauja pasirinktieji.
-
-\subsubsection{Palyginimo asimetrija}
-
-Keturi pasirinkti metodai nėra vienarūšiai, ir į tai reikia atsižvelgti
-planuojant vertinimą. Trys prižiūrimi metodai klasifikuoja į aštuonias
-kategorijas, o autokoderis pateikia tik anomalijos įvertį, t.\,y.
-sprendimą „ataka arba ne ataka“. Todėl bendro makro-F1 stulpelio
-visiems keturiems sudaryti negalima: prižiūrimi metodai lyginami
-daugiaklasėje formuluotėje, o autokoderis --- dvejetainėje ir papildomai
-nematytų atakų klasių bandymu. Šeštojo skyriaus suvestinė lentelė dėl to
-turės dvi dalis.
-
-\medskip
-Trečiajame skyriuje šie keturi metodai vertinami pagal pirmame skyriuje
-išvestus reikalavimus, jiems priskiriami svoriai ir pagrindžiamas
-galutinis pasirinkimas.

@@ -127,6 +127,42 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+# --- Bibliografijos eiles patikra ------------------------------------
+# Tekste numeri [n] duoda ataskaita.bbl eile, o spausdinama sarasa eina
+# literatura.bbl eile. Jei jos issiskiria, nuorodos rodo i ne ta
+# saltini, o PDF atrodo visiskai tvarkingas - klaida tyli. Todel
+# tikrinama kiekvieno paleidimo metu.
+function BblEile($failas) {
+    if (-not (Test-Path $failas)) { return $null }
+    $t = Get-Content $failas -Raw
+    $m = [regex]::Matches($t, '\\entry\{([^}]+)\}')
+    return @($m | ForEach-Object { $_.Groups[1].Value })
+}
+
+Write-Host ""
+Write-Host "=== Bibliografijos eiles patikra ===" -ForegroundColor Cyan
+
+$eileA = BblEile "$Vardas.bbl"
+$eileL = BblEile "literatura.bbl"
+
+if ($null -eq $eileA -or $null -eq $eileL) {
+    Write-Host "  Praleista: nerastas .bbl failas." -ForegroundColor DarkGray
+}
+elseif (($eileA -join ",") -ne ($eileL -join ",")) {
+    Write-Host ""
+    Write-Host "KLAIDA: literaturos saraso eile nesutampa su citavimo eile." -ForegroundColor Red
+    Write-Host "  Nuorodos [n] tekste rodytu i ne ta saltini." -ForegroundColor Red
+    Write-Host "  Ataskaitoje cituojama: $($eileA.Count), sarase: $($eileL.Count)."
+    Write-Host ""
+    Write-Host "  Iraso i literatura.tex vietoj esamo nocite saraso:" -ForegroundColor Yellow
+    foreach ($k in $eileA) { Write-Host "\nocite{$k}" }
+    Write-Host ""
+    exit 1
+}
+else {
+    Write-Host "  Eile sutampa ($($eileA.Count) saltiniai)." -ForegroundColor Green
+}
+
 # --- 3/4, 4/4 --------------------------------------------------------
 Write-Host ""
 Write-Host "=== 3/4  pdflatex ===" -ForegroundColor Cyan

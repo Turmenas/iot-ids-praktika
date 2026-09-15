@@ -62,7 +62,7 @@ def main() -> None:
                _sk(g.pilnas.sum()), _sk(g.unikaliu.sum()), _sk(g.imtyje.sum())),
            r"\bottomrule", r"\end{tabularx}",
            r"\vspace{2pt}",
-           r"\raggedright\scriptsize Riba \num{100000} taikyta \emph{etiketei}, "
+           r"\raggedright\scriptsize Riba \num{100000} taikyta etiketei, "
            r"ne kategorijai, todėl DDoS su dvylika etikečių gauna daugiausia "
            r"vietų. Dublikatai šalinami prieš imties sudarymą.",
            r"\endgroup"]

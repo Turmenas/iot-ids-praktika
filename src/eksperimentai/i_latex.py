@@ -185,18 +185,24 @@ def agreguoti(df: pd.DataFrame) -> pd.DataFrame:
 
 def _lentele(a: pd.DataFrame, stulpeliai: list, antraste: str,
              isnasa: str = "") -> str:
-    plotis = "1.9cm" if len(stulpeliai) > 4 else "2.6cm"
+    # Formuluote nera atskiras stulpelis, o bloko antraste. Priezastis:
+    # su ja 6 skaitiniams stulpeliams likdavo po 1,9 cm, o "0,3087 $\pm$ 0,0227"
+    # yra nedalomas ir platesnis, todel isslysdavo ant gretimo stulpelio.
+    # Blokai vis tiek buvo - eilutes jau grupuotos pagal formuluote.
+    platus = len(stulpeliai) > 4
+    skaitinis = (r">{\centering\arraybackslash}c" if platus
+                 else r">{\centering\arraybackslash}p{2.6cm}")
     sk = [
         r"% GENERUOJAMA is rezultatai/rezultatai.csv",
         r"% Ranka NELIESTI - paleisti: python -m src.eksperimentai.i_latex",
-        r"\begingroup", r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
+        r"\begingroup", r"\footnotesize",
+        r"\setlength{\tabcolsep}{%s}" % ("3pt" if platus else "4pt"),
         r"\begin{tabularx}{\textwidth}{@{}"
         r">{\raggedright\arraybackslash}X"
-        r">{\raggedright\arraybackslash}p{2.1cm}"
-        + (r">{\centering\arraybackslash}p{%s}" % plotis) * len(stulpeliai)
+        + skaitinis * len(stulpeliai)
         + r"@{}}",
         r"\toprule",
-        r"\textbf{Modelis} & \textbf{Formuluotė} & "
+        r"\textbf{Modelis} & "
         + " & ".join(r"\textbf{%s}" % a_ for _, a_, *_ in stulpeliai) + r" \\",
         r"\midrule",
     ]
@@ -216,8 +222,13 @@ def _lentele(a: pd.DataFrame, stulpeliai: list, antraste: str,
 
     ankstesne = None
     for _, e in a.iterrows():
-        if ankstesne is not None and e["formuluote"] != ankstesne:
-            sk.append(r"\addlinespace")
+        if e["formuluote"] != ankstesne:
+            if ankstesne is not None:
+                sk.append(r"\addlinespace")
+            sk.append(r"\multicolumn{%d}{@{}l}{\textit{%s}} \\" % (
+                len(stulpeliai) + 1,
+                FORMULUOCIU_VARDAI.get(e["formuluote"],
+                                       _ekranuoti(e["formuluote"]))))
         ankstesne = e["formuluote"]
 
         langeliai = []
@@ -231,9 +242,8 @@ def _lentele(a: pd.DataFrame, stulpeliai: list, antraste: str,
                 t = r"\textbf{%s}" % t
             langeliai.append(t)
 
-        sk.append("%s & %s & %s \\\\" % (
+        sk.append("%s & %s \\\\" % (
             _ekranuoti(e["modelis"]),
-            FORMULUOCIU_VARDAI.get(e["formuluote"], _ekranuoti(e["formuluote"])),
             " & ".join(langeliai)))
 
     sk += [r"\bottomrule", r"\end{tabularx}"]
@@ -277,16 +287,16 @@ def main() -> None:
     (ISVESTIS / f"rezultatai{p}.tex").write_text(_lentele(
         a, KOKYBE, "Aptikimo kokybe",
         isnasa=kur +
-               r"\textsuperscript{a}~Bendras tikslumas pateikiamas \emph{tik} "
-               r"palyginimui su literatūra: prie 41,8:1 santykio jis nėra "
-               r"rodiklis. Reikšmės --- " + sklaida + "."), encoding="utf-8")
+               r"\textsuperscript{a}~Bendras tikslumas pateikiamas tik "
+               r"palyginimui su literatūra, nes prie 41,8:1 santykio jis nėra "
+               r"rodiklis. Reikšmės yra " + sklaida + "."), encoding="utf-8")
 
     (ISVESTIS / f"veikimas{p}.tex").write_text(_lentele(
         a, VEIKIMAS, "Veikimo rodikliai",
         isnasa=kur +
                r"Inferencijos delsa matuojama gryna, atskirai nuo srauto lango "
-               r"sukaupimo laiko; kraštinio šliuzo biudžetas --- 20--50~ms. "
-               r"Reikšmės --- " + sklaida + "."), encoding="utf-8")
+               r"sukaupimo laiko; kraštinio šliuzo biudžetas yra 20--50~ms. "
+               r"Reikšmės yra " + sklaida + "."), encoding="utf-8")
 
     print(f"[OK] aibe={n.aibe} · {len(df)} paleidimai -> {len(a)} eilutes")
     for f in (f"rezultatai{p}.tex", f"veikimas{p}.tex"):

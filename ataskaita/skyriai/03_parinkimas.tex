@@ -12,19 +12,13 @@
 %  Poskyrio 3.1 tekstas rašomas PASKUTINIS.
 % =====================================================================
 
-\subsection{Atrankos rėmas: du filtrai, ne vienas}
+\subsection{Atrankos rėmas}
 \label{sec:remas}
 
-Ankstesnis skyrius baigėsi kandidatų aibe; čia ji siaurinama iki galutinės.
-Atranka atliekama dviem pakopomis. Pirmoji ---
-kietieji apribojimai: metodas arba taikytinas šiems duomenims ir šiai
-diegimo vietai, arba ne. Kompromiso čia nėra, todėl nėra nei svorių, nei
-balų. Antroji --- svertiniai balai, taikomi \emph{tik} pirmąją pakopą
-įveikusiems metodams.
-
-Toks skaidymas turi konkrečią pasekmę: didžiąją atrankos dalį lemia duomenų
-savybės, o ne kriterijų svoriai. Svorių įtaka rezultatui atskirai vertinama
-\ref{sec:jautrumas} poskyryje.
+Kandidatų aibė siaurinama dviem pakopomis. Pirma pakopa yra kietieji
+apribojimai. Metodas arba taikytinas šiems duomenims ir šiai diegimo
+vietai, arba ne, todėl svorių ir balų čia nėra. Antra pakopa yra
+svertiniai balai, taikomi tik pirmąją įveikusiems metodams.
 
 \subsection{Kietieji apribojimai}
 \label{sec:filtras}
@@ -105,7 +99,7 @@ Daugiasluoksnis perceptronas & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
 1D-CNN & $\surd$ & $\surd$ & $\surd$ & $\surd$ &
   \textbf{Praeina} \\
 LSTM / GRU & $\times$ & $\surd$ & $\surd$ & $\surd$ &
-  Atmetama (K1): sekos duomenyse nėra --- kiekviena eilutė jau yra
+  Atmetama (K1): sekos duomenyse nėra, nes kiekviena eilutė jau yra
   lango agregatas \\
 Transformer & $\times$ & $\surd$ & $\times$ & $\times$ &
   Atmetama (K1): ta pati sekos problema; papildomai netelpa į mokymo
@@ -122,23 +116,25 @@ Federuotas mokymasis (FedAvg) & $\times$ & $\surd$ & $\surd$ & $\surd$ &
 
 \vspace{-0.5em}
 {\footnotesize
-\textbf{Vartai.}
-\textbf{K1} --- duomenų struktūra leidžia metodą taikyti;
-\textbf{K2} --- modelio prielaidos nepažeistos duomenimis;
-\textbf{K3} --- mokymas telpa į \SI{30}{\minute} be grafinio
+Vartai.
+\textbf{K1}: duomenų struktūra leidžia metodą taikyti;
+\textbf{K2}: modelio prielaidos nepažeistos duomenimis;
+\textbf{K3}: mokymas telpa į \SI{30}{\minute} be grafinio
 spartintuvo prie 2,43~mln. eilučių ir 36 požymių;
-\textbf{K4} --- inferencija telpa į \SIrange{20}{50}{\milli\second}
+\textbf{K4}: inferencija telpa į \SIrange{20}{50}{\milli\second}
 kraštinio šliuzo biudžetą \cite{sallam2026gap}.
-K1 ir K2 kyla iš rugsėjo 2 d. duomenų patikros, K3 ir K4 --- iš
-\ref{tab:reikalavimai} lentelės pirmosios eilutės.
-\textbf{Žymėjimai.} $\surd$ --- vartai įveikti, $\times$ --- ne.
-Vartai taikomi iš eilės, todėl sprendžiantys yra pirmieji, ties
-kuriais atsiranda $\times$; pažymimi visi neįveikti.
+$\surd$ žymi įveiktus vartus, $\times$ neįveiktus.
 \par}
 \endgroup
 
+\clearpage
 \subsection{Vertinimo kriterijai ir jų svoriai}
 \label{sec:kriterijai}
+
+Kiekvienas antrosios pakopos kriterijus nurodo
+\ref{tab:reikalavimai} lentelės eilutę, iš kurios kyla. Kartu su
+kriterijumi apibrėžiama ir balų skalė, todėl balai turi vienodą reikšmę
+visiems metodams.
 
 % ---------------------------------------------------------------------
 %  tab:kriterijai — kriterijai, svoriai, kilmė ir balų skalė (T3)
@@ -151,7 +147,7 @@ kuriais atsiranda $\times$; pažymimi visi neįveikti.
 %  (tab:matrica), o ne po jų.
 % ---------------------------------------------------------------------
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Metodų vertinimo kriterijai, jų svoriai ir kilmė}
 \label{tab:kriterijai}
@@ -171,48 +167,50 @@ Aptikimo kokybė (macro-F1 potencialas)
   & 30~\%
   & \ref{tab:reikalavimai} lentelės ketvirta eilutė: pažeidžiamumai
     lieka neištaisyti visą įrenginio tarnavimo laiką, todėl aptikimas
-    yra kompensacinė priemonė --- ir vienintelė likusi apsauga
-  & 5 --- ant CICIoT2023 skelbiama macro-F1 $\geq 0{,}89$
-    \cite{almahaqeri2026gradient}; 1 --- žemiau $0{,}70$ \\
+    yra kompensacinė priemonė ir vienintelė likusi apsauga
+  & 5: ant CICIoT2023 skelbiama macro-F1 $\geq 0{,}89$
+    \cite{almahaqeri2026gradient}; 1: žemiau $0{,}70$ \\
 \addlinespace
 
 Klaidingi teigiami ir atsparumas disbalansui
   & 30~\%
-  & \ref{tab:reikalavimai} lentelės penkta eilutė: 100 įrenginių tinkle
-    net 1~\% klaidingų teigiamų duoda apie 1000 signalų per parą ---
-    sistema praktiškai išjungiama
-  & 5 --- disbalansas sprendžiamas klasių svoriais, nedubliuojant
-    duomenų; 1 --- mokymo metu disbalansas blogėja \\
+  & \ref{tab:reikalavimai} lentelės penkta eilutė ir \ref{sec:atakos}
+    skyriuje priimta 1~\% klaidingų teigiamų riba
+  & 5: disbalansas sprendžiamas klasių svoriais, nedubliuojant
+    duomenų; 1: mokymo metu disbalansas blogėja \\
 \addlinespace
 
 Resursų poreikis (inferencijos delsa, modelio dydis)
   & 25~\%
-  & \ref{tab:reikalavimai} lentelės pirma eilutė, kuri pati nurodo, kad
-    tai „atrankos kriterijus, ne antraeilis rodiklis“
-  & 5 --- inferencija mikrosekundžių eilės, modelis $<$~10~MB;
-    1 --- delsa artėja prie \SI{20}{\milli\second} biudžeto \\
+  & \ref{tab:reikalavimai} lentelės pirma eilutė, kurioje resursai
+    įvardyti kaip atrankos kriterijus
+  & 5: inferencija mikrosekundžių eilės, modelis $<$~10~MB;
+    1: delsa artėja prie \SI{20}{\milli\second} biudžeto \\
 \addlinespace
 
 Interpretuojamumas
   & 15~\%
-  & Ta pati penkta eilutė, antroji jos pasekmė: ribotas analitikų
-    pajėgumas reiškia, kad signalą reikia mokėti pagrįsti, o ne tik
-    iškelti
-  & 5 --- savaiminis; 3 --- per XAI su papildoma kaina
-    \cite{mohale2025xai}; 1 --- juodoji dėžė \\
+  & Ta pati penkta eilutė. Ribotas analitikų pajėgumas reiškia, kad
+    signalą reikia mokėti pagrįsti
+  & 5: savaiminis; 3: per XAI su papildoma kaina
+    \cite{mohale2025xai}; 1: juodoji dėžė \\
 \bottomrule
 \end{tabularx}
 
 \vspace{2pt}
 \raggedright\footnotesize
-Svorių įtaka rezultatui vertinama \ref{sec:jautrumas} poskyryje.
-Likusios dvi \ref{tab:reikalavimai} lentelės eilutės kriterijaus neduoda:
-jas vienodai tenkina visi po filtro likę metodai.
+Likusios dvi \ref{tab:reikalavimai} lentelės eilutės kriterijaus
+neduoda, nes jas vienodai tenkina visi po filtro likę metodai.
 \normalsize
 \end{table}
 
+\clearpage
 \subsection{Sprendimų matrica}
 \label{sec:matrica}
+
+Kiekvienam po filtro likusiam metodui skiriamas balas pagal kiekvieną
+kriterijų, o svertinė suma juos surikiuoja. Prižiūrimi ir neprižiūrimi
+metodai rikiuojami atskirai.
 
 % ---------------------------------------------------------------------
 %  tab:matrica — svertiniai balai aštuoniems po filtro likusiems (T4)
@@ -226,7 +224,7 @@ jas vienodai tenkina visi po filtro likę metodai.
 %  Balų skalė apibrėžta tab:kriterijai — PRIEŠ balus, ne po jų.
 % ---------------------------------------------------------------------
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Sprendimų matrica: po filtro likę metodai pagal
          \ref{tab:kriterijai} lentelės kriterijus ir svorius}
@@ -235,13 +233,12 @@ jas vienodai tenkina visi po filtro likę metodai.
 
 \vspace{2pt}
 \raggedright\footnotesize
-Balai 1--5 pagal \ref{tab:kriterijai} lentelėje iš anksto apibrėžtą skalę;
-svertinė suma --- balų ir svorių sandaugų suma.
-\textbf{Abiejų blokų sumos tarpusavyje nepalyginamos:} prižiūrimi metodai
-vertinami aštuonių kategorijų klasifikavimo, o neprižiūrimi --- dvejetainėje
-anomalijų aptikimo formuluotėje, todėl jų balai matuoja skirtingus dalykus.
+Balai 1--5 pagal \ref{tab:kriterijai} lentelės skalę.
+Abiejų blokų sumos tarpusavyje nepalyginamos, nes prižiūrimi metodai
+vertinami aštuonių kategorijų klasifikavimo, o neprižiūrimi dvejetainėje
+anomalijų aptikimo formuluotėje.
 Neprižiūrimų metodų stulpelis „Disbalansas“ žymi, kad klasių disbalanso
-problema jiems \emph{nekyla} --- mokoma tik iš gerybinio srauto --- o ne kad
+problema jiems nekyla (mokoma tik iš gerybinio srauto), o ne kad
 ji išspręsta.
 \normalsize
 \end{table}
@@ -256,16 +253,12 @@ ji išspręsta.
 %  rezultatais — kad nekiltų pagundos derinti svorius prie atsakymo.
 % ---------------------------------------------------------------------
 
-Svorių įtaka rezultatui vertinama dviem būdais. Pirma, kiekvienam kriterijui
-atskirai pridėta ir atimta po 10~\% punktų, likusius
-svorius perskirstant proporcingai --- iš viso aštuoni alternatyvūs
-rinkiniai. \textbf{Visais aštuoniais atvejais pirmi trys prižiūrimi metodai išliko tie patys.}
+Kiekvienam kriterijui atskirai pridėta ir atimta po 10 procentinių
+punktų, likusius svorius perskirstant proporcingai. Visais aštuoniais
+atvejais pirmi trys prižiūrimi metodai išliko tie patys, tad papildomai
+nustatyta, kokio svorio reikėtų kiekvienai porai apversti.
 
-Antra, kadangi toks pokytis nė vienos rikiuotės ribos nepasiekia, kiekvienai
-porai atskirai nustatyta, ar ją apskritai galima apversti ir, jei taip, kokio
-svorio tam reikėtų.
-
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Jautrumo analizė: kada rikiuotė apsiverstų}
 \label{tab:jautrumas}
@@ -273,24 +266,19 @@ svorio tam reikėtų.
 
 \vspace{2pt}
 \raggedright\footnotesize
-Stulpelis „Skirtumas“ --- svertinių sumų skirtumas prie bazinių svorių.
-\textbf{Dominavimas} reiškia, kad pirmasis metodas nėra blogesnis nė pagal
-vieną kriterijų; tokios poros rezultatas nepriklauso nuo jokio svorių
-derinio, todėl jam jautrumo analizė apskritai nereikalinga.
+Stulpelis „Skirtumas“ rodo svertinių sumų skirtumą prie bazinių svorių.
+Dominavimas reiškia, kad pirmasis metodas nėra blogesnis nė pagal
+vieną kriterijų, tad tokios poros rezultato joks svorių derinys
+nekeičia.
 \normalsize
 \end{table}
 
-Iš lentelės matyti trys dalykai. Pirma, \textbf{XGBoost pranašumas prieš
-Random Forest ir Random Forest pranašumas prieš daugiasluoksnį perceptroną
-yra dominavimo, o ne svorių pasekmė} --- jų apversti neįmanoma. Antra,
-sprendimų medis aplenktų XGBoost tik tuomet, jei interpretuojamumui būtų
-skiriama daugiau kaip 42~\% svorio, t.\,y. beveik tris kartus
-daugiau nei dabar. Trečia, sprendimų medžio pranašumas prieš Random Forest
-išnyktų tik tada, jei aptikimo kokybei būtų skiriama 44~\% arba
-interpretuojamumas taptų praktiškai bevertis.
-
-Vadinasi, svorių parinkimas rezultatui turi mažiau įtakos, nei būtų galima
-tikėtis: atrankos rezultatą lemia balų struktūra, o ne jų sveriamoji dalis.
+Ketverto metodų tarpusavio rikiuotė nuo svorių nepriklauso, nes
+XGBoost prieš Random Forest ir Random Forest prieš daugiasluoksnį
+perceptroną yra dominavimo atvejai. Apsiverstų tik poros su sprendimų
+medžiu, kuris į ketvertą nepateko; XGBoost jis aplenktų tik tada, jei
+interpretuojamumui būtų skiriama beveik tris kartus daugiau svorio nei
+dabar.
 
 \subsection{Eksperimento protokolas}
 \label{sec:protokolas}
@@ -302,103 +290,69 @@ tikėtis: atrankos rezultatą lemia balų struktūra, o ne jų sveriamoji dalis.
 %  TEKSTU, ne ketvirta lentele — apimties biudžetas.
 % ---------------------------------------------------------------------
 
-Eksperimento sąlygos fiksuojamos \emph{prieš} pirmąjį mokymą.
+Eksperimento sąlygos fiksuojamos prieš pirmąjį mokymą.
 
-\textbf{Duomenys.} Naudojama stratifikuota imtis, ne daugiau kaip
-\num{100000} eilučių klasei; retos klasės imamos visos. Valymo tvarka
-fiksuota: pirma šalinamos nutrūkusios eilutės
-(\texttt{dropna} pagal \texttt{Label} --- devyniuose failuose paskutinė
-eilutė nepilna), tada begalinės \texttt{Rate} reikšmės. Iš 39 požymių
-sąrašu šalinami trys tiksliai išvestiniai (\texttt{Variance},
-\texttt{Tot sum} ir vienas iš poros \texttt{Tot size}\,/\,\texttt{AVG});
-lieka \textbf{36}. Automatinis koreliacijos filtras čia netinka: poros
-\texttt{Variance}--\texttt{Std} tiesinė koreliacija tėra \num{0.737},
-nors ryšys yra tikslus.
+Duomenys. Naudojama stratifikuota imtis, ne daugiau kaip
+\num{100000} eilučių klasei; retos klasės imamos visos. Pirma šalinamos
+nutrūkusios eilutės, tada begalinės \texttt{Rate} reikšmės. Iš 39
+požymių šalinami trys tiksliai išvestiniai, lieka 36.
 
-\textbf{Dublikatai.} Patikra visame rinkinyje parodė, kad
-\textbf{53,3~\% eilučių yra tikslūs dublikatai}. Jie susitelkę potvynio
-klasėse (\texttt{DDOS-ICMP\_FLOOD} --- 72,3~\%,
-\texttt{DDOS-RSTFINFLOOD} --- 67,6~\%), o gerybiniame sraute ir retose
-atakų klasėse jų beveik nėra (\texttt{BENIGN} --- 0,4~\%; šešiose
-klasėse nė vieno). Atsitiktinai skaidant tos pačios eilutės kopijos
-patektų ir į mokymo, ir į testavimo aibę, todėl modelis būtų tikrinamas
-tuo, ką matė mokydamasis --- \textbf{rezultatas būtų išpūstas be jokios
-matomos klaidos}. Todėl tikslūs dublikatai šalinami \emph{prieš} imties
-sudarymą ir skaidymą.
+Dublikatai. Tikslūs dublikatai šalinami pagal visą eilutę ir prieš
+imties sudarymą, nes atsitiktinai skaidant tos pačios eilutės kopijos
+patektų ir į mokymo, ir į testavimo aibę.
 
-Šalinama pagal \emph{visą} eilutę, o ne pagal požymius: dalis vienodų
-požymių vektorių yra pažymėti skirtingomis etiketėmis, ir tai yra tikras
-duomenų dviprasmiškumas, o ne dubliavimas. Darbinėje imtyje tokių
-vektorių yra \num{5114} (\num{10435} eilutės, 0,43~\%). Geriausias
-įmanomas klasifikatorius kiekvienoje tokioje grupėje priskiria dažniausią
-etiketę ir dėl to suklysta \num{5321} kartą, taigi \textbf{teorinė
-tikslumo riba šioje imtyje yra 99,78~\%}, o ne 100~\%.
+Vienodi požymių vektoriai, pažymėti skirtingomis etiketėmis, paliekami
+kaip tikras duomenų dviprasmiškumas. Iš jų kyla teorinė tikslumo riba,
+žemesnė už 100~\%, ir už ją aukštesnis rezultatas reikštų nutekėjimą.
+Riba galioja šiam 39 požymių leidimui ir dublikatų neturinčiai imčiai.
 
-Ši riba yra atskaitos taškas rezultatams vertinti: už ją aukštesnis
-rezultatas reikštų nutekėjimą, o ne sėkmę. Ji galioja \emph{šiam} 39
-požymių leidimui --- pašalintieji krypties ir trukmės požymiai skirtų
-dalį dabar sutampančių vektorių --- ir \emph{dublikatų neturinčiai}
-imčiai. Literatūroje skelbiami \numrange{99.5}{99.6}~\% tikslumai
-\cite{almahaqeri2026gradient} gauti nenurodant, ar dublikatai buvo
-šalinami; rinkinyje, kuriame kas antra eilutė yra kitos kopija, dalis
-testavimo aibės modeliui yra matyta, todėl vienodomis sąlygomis tie
-skaičiai ir čia gaunamieji nėra.
+Skaidymas. Stratifikuotas atsitiktinis \num{70}/\num{15}/\num{15} su
+fiksuotu pradiniu dydžiu; indeksai išsaugomi ir įkeliami. Chronologinis
+skaidymas negalimas, nes rinkinyje nėra laiko žymos, todėl rezultatai
+nieko nesako apie elgseną laikui bėgant. Normalizavimas ir klasių
+balansavimas taikomi tik mokymo aibei.
 
-\textbf{Skaidymas.} Stratifikuotas atsitiktinis \num{70}/\num{15}/\num{15}
-su fiksuotu pradiniu dydžiu; indeksai išsaugomi ir įkeliami, o ne
-perskaičiuojami kiekvieno paleidimo metu. Chronologinis skaidymas negalimas: rinkinyje nėra laiko žymos, todėl
-rezultatai negali pasakyti nieko apie modelio elgseną laikui bėgant. Normalizavimas ir klasių balansavimas taikomi \emph{tik} mokymo
-aibei.
+Formuluotė. Pagrindinis detalumas yra aštuonios atakų kategorijos;
+dvejetainė ir trisdešimt keturių klasių formuluotės atliekamos tik
+geriausiam modeliui.
 
-\textbf{Vertinimas.} Pagrindinė metrika --- macro-F1; šalia jos per-klasę
+Vertinimas. Pagrindinė metrika yra macro-F1; šalia jos per-klasę
 tikslumas ir atkūrimas, PR-AUC, MCC ir sumaišymo matrica. Bendras
-tikslumas pateikiamas \emph{tik} palyginimui su literatūra, nurodant, kad
-prie 41,8:1 santykio jis nėra rodiklis. Inferencijos delsa matuojama
-gryna, atskirai nuo srauto lango sukaupimo laiko. Klasių disbalansas pirmiausia sprendžiamas klasių svoriais, nes jie nedubliuoja duomenų; SMOTE \cite{chawla2002smote} tikrinamas kaip abliacija vienam modeliui ir taikomas \emph{tik} mokymo aibei. Kiekvienas modelis mokomas su trimis pradiniais dydžiais; pateikiamas vidurkis ir standartinis nuokrypis. Trijų paleidimų nepakanka patikimam statistiniam skirtumų vertinimui --- pakartotinio perskirstymo testai linkę pervertinti reikšmingumą \cite{dietterich1998tests}, --- todėl skirtumas tarp modelių laikomas reikšmingu tik tada, kai viršija paleidimų sklaidą. Hiperparametrai derinami atsitiktine paieška \emph{tik}
-validacijos aibėje, o testavimo aibė neliečiama iki vertinimo etapo.
+tikslumas pateikiamas tik palyginimui su literatūra. Inferencijos delsa
+matuojama gryna, atskirai nuo srauto lango sukaupimo laiko.
 
-\textbf{Nematytų atakų patikra} atliekama trimis scenarijais: iš mokymo
-aibės pašalinama po vieną klasę iš daugiaklasės kategorijos
-(\texttt{DDOS-SLOWLORIS} --- žemo intensyvumo ataka, kurios pagrindinio
-požymio šiame leidime nėra; \texttt{RECON-PORTSCAN}) ir viena ištisa
-kategorija (\texttt{DICTIONARYBRUTEFORCE} --- vienintelė savo
-kategorijos klasė). Pirmieji du tikrina, ar atpažįstamas naujas žinomos
-šeimos variantas; trečiasis yra tikroji autokoderio hipotezės patikra,
-nes prižiūrimas modelis tokios kategorijos etiketės neturi iš principo.
+Disbalansas sprendžiamas klasių svoriais, nes jie nedubliuoja duomenų;
+SMOTE \cite{chawla2002smote} tikrinamas kaip abliacija vienam modeliui.
+Kiekvienas modelis mokomas su trimis pradiniais dydžiais, pateikiamas
+vidurkis ir standartinis nuokrypis. Trijų paleidimų statistiniam testui
+nepakanka \cite{dietterich1998tests}, todėl skirtumas laikomas
+reikšmingu tik viršijęs paleidimų sklaidą. Hiperparametrai derinami
+atsitiktine paieška validacijos aibėje, o testavimo aibė neliečiama iki
+vertinimo etapo.
 
+Nematytų atakų patikra atliekama trimis scenarijais. Iš mokymo aibės
+pašalinama po vieną klasę iš daugiaklasės kategorijos
+(\texttt{DDOS-SLOWLORIS}, \texttt{RECON-PORTSCAN}) ir viena ištisa
+kategorija (\texttt{DICTIONARYBRUTEFORCE}, vienintelė savo kategorijos
+klasė). Pirmieji du tikrina, ar atpažįstamas naujas žinomos šeimos
+variantas; trečiasis yra autokoderio hipotezės patikra, nes prižiūrimas
+modelis tokios kategorijos etiketės neturi.
 
-\subsection{Galutinė aibė ir apibendrinimas}
+\subsection{Galutinė aibė}
 \label{sec:parinkimas_isvados}
 
-\ref{tab:matrica} lentelės rikiuotė galutinės aibės \emph{neduoda}: iš
-keturių pasirinktų metodų rikiuotės viršūnėje yra tik XGBoost. Aibė sudaroma pagal tris sudedamąsias --- rikiuotės viršūnę,
-mokymosi paradigmų padengimą ir sudėtingumo gradientą, --- iš kurių tik
-pirmoji remiasi balais.
+Rikiuotė (\ref{tab:matrica} lentelė) galutinės aibės neduoda, nes imami
+ne keturi geriausi balai.
+Aibė sudaroma pagal rikiuotės viršūnę, paradigmų padengimą ir
+sudėtingumo gradientą.
 
-Pasirenkami \textbf{keturi metodai}. \textbf{XGBoost} --- rikiuotės
-viršūnė ir vienintelis, kurio rezultatą galima tiesiogiai gretinti su
-literatūra. \textbf{Random Forest} --- ansamblio pakopa sudėtingumo
-gradiente tarp medžio ir stiprinimo; jis nustato atskaitos lygį, prie kurio
-matuojamas prieaugis. \textbf{Daugiasluoksnis perceptronas} --- gilaus
-mokymosi atstovas, be kurio liktų neatsakytas ankstesniame skyriuje
-iškeltas klausimas, ar sudėtingumas lentelinei įvesčiai apsimoka.
-\textbf{Autokoderis} --- vienintelis, aptinkantis atakas be jų pavyzdžių;
-jis įtraukiamas dėl funkcinio reikalavimo, ne dėl balo.
+Pasirenkamas XGBoost, kuris vienintelis turi tiesioginį atitikmenį
+literatūroje; Random Forest kaip ansamblio pakopa tarp medžio ir
+stiprinimo, nustatanti atskaitos lygį; daugiasluoksnis perceptronas,
+atsakantis, ar sudėtingumas tokiai įvesčiai apsimoka; ir autokoderis,
+įtraukiamas dėl funkcinio reikalavimo aptikti atakas be jų pavyzdžių.
 
-Dvi pastabos, kylančios iš pačios matricos. Pirma, \textbf{LightGBM balais
-lygus XGBoost}; jis neįtraukiamas ne dėl silpnesnio rezultato, o dėl to,
-kad du beveik tapatūs stiprinimo metodai palyginime nieko neprideda. Antra,
-\textbf{sprendimų medis lenkia Random Forest} --- dėl savaiminio
-interpretuojamumo ir mažiausio resursų poreikio. Ketverte jo vieta atitenka
-ansamblio pakopai, tačiau kaip pigus ir aiškiai paaiškinamas atskaitos
-modelis jis lieka vertas dėmesio; tas pats galioja Isolation Forest kaip
-pigiam autokoderio etalonui.
-
-Kartu su metodais užrakinama ir tai, kas lemia rezultatų palyginamumą:
-pagrindinis užduoties detalumas --- aštuonios kategorijos; dublikatų
-šalinimas prieš skaidymą; stratifikuotas skaidymas su išsaugotais
-indeksais; macro-F1 kaip pagrindinė metrika ir trys pradiniai dydžiai
-kiekvienam modeliui. Svarbiausia --- \textbf{atskaitos taškas rezultatams
-yra ne 100~\%, o šiuose duomenyse išmatuota maždaug
-95~\% riba}, žemiau kurios lieka ir dalis literatūroje
-skelbiamų skaičių.
+LightGBM balais lygus XGBoost, tad du beveik tapatūs stiprinimo metodai
+palyginime nieko neprideda. Sprendimų medis matricoje lenkia Random
+Forest, o Isolation Forest lenkia autokoderį, tačiau ketverte jų vietos
+atitenka ansamblio pakopai ir funkciniam reikalavimui.

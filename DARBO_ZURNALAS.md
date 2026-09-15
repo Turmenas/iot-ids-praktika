@@ -2428,3 +2428,1445 @@ Naujas lock failas — **UTF-8 su BOM**. Rugsėjo 7 d. taisyklė („`>` rašo U
 **Šįkart tai nekenkia — ir tai ne prielaida:** `pip install` iš to paties failo švarioje aplinkoje praėjo, vadinasi, pip BOM nurija. Bet taisyklė patikslinta: jei kada prireiktų failo be BOM, PowerShell 5.1 kelias yra `Set-Content -Encoding ascii`, ne `Out-File -Encoding utf8`.
 
 > Trečias kartas, kai ta pati komanda ta pačia kryptimi nustebina: `>` → UTF-16, `-Encoding utf8` → BOM. **Teksto failo koduotė Windows'e niekada nėra numatytoji — ji visada pasirinkimas, kurį kažkas padarė už tave.**
+
+
+---
+
+## Rugsėjo 13 d. — teksto valymas: brūkšniai ir paryškinimai
+
+### Ką padariau
+
+**Iš visų aštuonių skyrių pašalinti em brūkšniai (`---`) — 289 vietos.** Nė viena nebuvo ištrinta mechaniškai: kiekvienas sakinys perrašytas taip, kad brūkšnio nebereikėtų (kablelis, dvitaškis, kabliataškis, skliaustai arba sakinio perskėlimas į du). Diapazonų en brūkšniai (`20--50~ms`, `1--10~ms`, `\texttt{Variance}--\texttt{Std}`) palikti — jie ne skyrybos ženklas.
+
+**Nuimtas paryškinimas dviejų rūšių vietose:**
+
+| Rūšis | Pavyzdys | Kiek |
+|---|---|---|
+| Atsitiktinis akcentas sakinio viduryje | `\textbf{53,3~\% eilučių yra tikslūs dublikatai}`, `lieka \textbf{36}` | ~30 |
+| Pastraipų pseudo-antraštės | `\textbf{Duomenys.}`, `\textbf{Kokybė prieš resursus.}`, `\textbf{Suvokimo sluoksnis.}` | ~25 |
+
+**Palikta sąmoningai:** lentelių antraštės ir langeliai (`\textbf{Praeina}`, `\textbf{Taip}`), legendų raktai `\textbf{K1}`–`\textbf{K4}` (jie atitinka lentelės stulpelių vardus) ir sąrašo punktų pradžios išvadose (`\item \textbf{Metodų parinkimas}`).
+
+Dvi lentelių vietos pakeistos kartu su brūkšniais: `tab:metodai` langelis `---` (reiškęs „fazės nėra“) pakeistas į `nėra`, o legendos žymėjimai iš `\emph{maž.} — mažas` perrašyti į `\emph{maž.} (mažas)`.
+
+### Ką radau
+
+#### 101. Overfull sumažėjo, ne padidėjo
+
+Sukompiliavus prieš ir po (tas pats konteineris, ta pati preambulė be `biblatex`):
+
+| | Prieš | Po |
+|---|---:|---:|
+| Puslapių | 57 | **56** |
+| `Overfull \hbox` | 138 | 141 |
+| Didžiausias | **98,0 pt** | **83,1 pt** |
+
+Blogiausia eilutė visame darbe dingo. Priežastis paprasta: `--- ` yra nedalomas blokas su tarpais iš abiejų pusių, o kablelis ar dvitaškis eilutės laužymui netrukdo. Trys papildomi smulkūs overfull'ai atsirado lentelių langeliuose, kur tekstas kiek pailgėjo (`nes`, `todėl`).
+
+#### 102. Brūkšnys slėpė vietas, kur trūko veiksmažodžio
+
+Perrašant paaiškėjo, kad dalis brūkšnių dengė ne stilistinį pasirinkimą, o praleistą sakinio dalį: „Svarbiausia išvada --- ribojantis veiksnys yra…“, „Jo paskirtis --- patikrinti…“, „Priežastis --- pašalinti požymiai.“ Įrašius `yra` / `ta, kad` sakiniai tapo pilni. Vienoje vietoje tai atskleidė ir logikos spragą: „Ties argmax pirmauja Random~Forest, ties biudžetu --- XGBoost“ po perrašymo reikalavo `o`, kitaip skambėtų kaip sąrašas, ne priešprieša.
+
+
+---
+
+## Rugsėjo 14 d. — brūkšnių valymas lentelėse ir generatoriuose
+
+### Ką padariau
+
+**Rugsėjo 13 d. valymas apėmė tik `skyriai/*.tex` — `lenteles/*.tex` liko nepaliesti.** Patikra rado 12 eilučių su `---` devyniuose lentelių failuose. Visos jos yra lentelių išnašose ir blokų antraštėse, t. y. skaitytojui matomas tekstas.
+
+**Taisyta dviejose vietose vienu metu.** Aštuoni iš devynių lentelių failų pažymėti `GENERUOJAMA ... Ranka NELIESTI`, todėl kiekvienas sakinys perrašytas ir generatoriaus eilutėje, ir jau sugeneruotame `.tex`. Be to pirmas `python -m src.eksperimentai.*` paleidimas būtų grąžinęs brūkšnius atgal.
+
+| Failas | Generatorius | Kas perrašyta |
+|---|---|---|
+| `klaidu_tipai.tex` | `klaidos.py` | „Pirmasis stulpelis --- ... dalis; kiti trys --- ... pasiskirstymas“ → `rodo ... dalį, ... rodo ... pasiskirstymą` |
+| `perklase.tex` | `klaidos.py` | „$n$ --- tikrų pavyzdžių skaičius“ → `$n$ žymi tikrų pavyzdžių skaičių` |
+| `matrica.tex` | `matrica.py` | blokų antraštės „Prižiūrimi --- 8 kategorijų klasifikavimas“ → skliaustai |
+| `nematytos.tex` | `nematytos.py` | „nepermokomas --- jis mokomas“ → `nepermokomas, nes mokomas` |
+| `pozymiai.tex` | `pozymiu_svarba.py` | „iš paties modelio --- duomenų aibė“ → kablelis; „dešimt --- 86,2~\%“ → `dešimt surenka`; `KA_MATUOJA` įrašas apie TTL |
+| `rezultatai_test.tex` | `i_latex.py` | „Reikšmės --- vidurkis“ → `Reikšmės yra vidurkis`; dvitaškis prieš „prie 41,8:1“ → `nes` |
+| `veikimas.tex`, `veikimas_test.tex` | `i_latex.py` | „biudžetas --- 20--50~ms“ → `biudžetas yra`; „Reikšmės ---“ → `Reikšmės yra` |
+| `suvestine.tex` | `suvestine.py` | „autokoderis --- dvejetainį“ → `o autokoderis dvejetainį`; „PR-AUC --- 0,996 ... biudžetu --- ne“ → `PR-AUC yra ... biudžetu nepakankamas` |
+
+**Keturios retorinės vietos skyriuose.** Tai jau ne brūkšniai, o konstrukcijos, kurios skelbia, ką pastraipa darys, užuot tai padariusios:
+
+| Vieta | Buvo | Kodėl blogai |
+|---|---|---|
+| 1.6 | „Gautas rezultatas yra ne tik teorinė apžvalga, bet ir įvesties specifikacija“ | Savęs gyrimas; „ne tik ..., bet ir“ neprideda informacijos |
+| 1.6 | „Galiausiai svarbu iš anksto įvardyti vertinimo prielaidą.“ | Anonsas prieš teiginį; pašalintas, pastraipa prasideda pačiu šaltiniu |
+| 2.4 | „Šis poskyris prideda antrą matmenį: ...“ | Poskyris pasakoja, ką darys |
+| 2.6 | „tai ir yra vertė, prie kurios lyginami“ | Uždarymo figūra; perrašyta į `prie šios vertės ir lyginami` |
+
+### Ką radau
+
+#### 103. Generuojama lentelė turi du tekstus, ne vieną
+
+Rugsėjo 13 d. paieška ėjo per `.tex` failus ir `lenteles/` katalogą praleido dėl `skyriai/*.tex` šablono. Bet net ir radus šiuos failus, taisymas vien juose būtų buvęs laikinas: teksto šaltinis yra `.py` eilutė, o `.tex` tėra jos kopija. **Bet kuri teksto patikra šiame darbe turi eiti per abu — `ataskaita/**/*.tex` ir `src/eksperimentai/*.py`.**
+
+#### 104. `---` lentelės langelyje nėra skyrybos ženklas
+
+Du `---` palikti sąmoningai: `matrica.tex` svorių eilutėje (svertinė suma svorio neturi) ir `suvestine.tex` autokoderio eilutėje (didžiausios tikimybės taškas neapibrėžtas). Juos generuoja `_sk()` ir `i_latex.py` kaip trūkstamos reikšmės žymą. Tai lentelių konvencija, ne sakinio brūkšnys; pakeitus į brūkšnelį atrodytų kaip minuso ženklas. Ta pati riba galioja diapazonams (`20--50~ms`) — jų 45 ir jie lieka.
+
+#### 105. Dvi lentelės turėjo CRLF, likusios LF
+
+`klaidu_tipai.tex`, `nematytos.tex`, `rezultatai_test.tex`, `veikimas.tex` ir `veikimas_test.tex` diske yra su CRLF, nors dauguma repozitorijos failų — su LF. Perrašius juos Python'u eilučių pabaigos būtų tyliai pasikeitusios ir `git diff` būtų parodęs visą failą vietoj vienos eilutės. Eilučių pabaigos atkurtos prieš įrašant. **Taisyklė: prieš perrašant failą programiškai, pirma pažiūrėti, kokios jo eilučių pabaigos.**
+
+#### 106. Titulinis: dvi eilutės išimtos
+
+`{\Large Praktikos ataskaita}` ir `{\large Praktikos vieta: Ainera}` pašalintos iš `ataskaita.tex` titulinio. Kartu nuimti du tarpai, kurie tarnavo tik joms (`\vspace{1.2cm}` po antraštės ir `\vspace{0.6cm}` prieš datą), kad nesusidarytų tuščios properšos.
+
+Titulinį dabar sudaro: tema, autorius, studijų programa, data.
+
+Rugsėjo 13 d. titulinis buvo sutvarkytas pašalinant universitetines atributikas; dabar iš jo dingo ir dokumento rūšies bei praktikos vietos eilutės. `Praktikos ataskaita` lieka tik failo antraštės komentare (2 eil.) — jis skaitytojui nematomas, todėl neliestas.
+
+#### 107. Įvadas perrašytas ranka; dvi gramatikos klaidos ištaisytos
+
+Įvadas perrašytas savo ranka, palyginti su `3737878` commit'u. Ištaisyta: „vykdė **vienas** didžiausių ... **paskirstytojo** paslaugos trikdymo atakų“ → „vykdė **vieną** didžiausių ... **paskirstytųjų** ...“. `ataka` yra moteriškosios giminės, `vykdė` reikalauja galininko, o DDoS lietuviškas terminas yra *paskirstytoji paslaugos trikdymo ataka*, tad kilmininko daugiskaita — `paskirstytųjų`.
+
+**Klaida buvo ne naujoje redakcijoje** — abu žodžiai tokie patys ir commit'e. Perrašymas ją tik atidengė: kartu su įžangine eilute „Praktinė to kaina jau išmatuota.“ dingo sakinio pradžia, ir dabar pastraipa prasideda pačia `\citeauthor` komanda.
+
+**Ko įvade nebeliko po perrašymo:**
+
+| Kas | Kur buvo |
+|---|---|
+| Poskyris „Darbo struktūra“ — pastraipa, susiejanti kiekvieną skyrių su uždaviniu | prieš pagrindinius rezultatus |
+| Metodinis rezultatas (rikiuotė priklauso nuo sprendimo taško; dublikatai paaiškina dalį atotrūkio) | rezultatų pastraipos pabaiga |
+| Sakinys, kad klaidingų teigiamų biudžetas lemia palyginimo tašką | prielaidų pabaiga |
+| Nuoroda, kad prielaidos išvedamos `\ref{sec:atakos}` skyriuje | prielaidų pradžia |
+| Paryškinimai `\emph{aptikimas}`, `\emph{kraštiniame šliuze}` | 3 pastraipa, prielaidos |
+
+⚠️ **Atšaukta tą pačią dieną.** Buvau užrašęs, kad „Darbo struktūra“ esą vienintelė vieta, kur skyriai susieti su uždaviniais, ir kad be jos atitikimo nebesimato. Abu teiginiai neteisingi. Turinys rodo visus aštuonis skyrius, o atitikimą neša **antraštės**: „Metodų parinkimas ir pagrindimas“ prieš „Parinkti ir pagrįsti tinkamus DI metodus“ ir taip visose šešiose eilutėse. Būtent tai ir buvo rugsėjo 6 d. sprendimas palikti numeraciją kaip yra. Atidariau uždarytą klausimą, o pastraipa buvo trečias tos pačios medžiagos pavidalas po turinio ir skyrių santraukų.
+
+**Metodinis rezultatas į įvadą negrąžinamas.** Sakinys prasidėjo „Metodinis rezultatas svarbesnis:“ — tas pats šablonas, kurį vadovas pažymėjo rugsėjo 3 d. („aš sprendžiu, kas skaitytojui svarbiausia“), tad iškirsti reikėjo. Siūliau grąžinti turinį be reitingavimo; atmesta, nes tekstas ir taip ilgas. Radinys lieka 5, 6 skyriuose ir išvadose.
+
+Likusios keturios vietos yra stiliaus, ne gramatikos, todėl neliestos: `\citeauthor` prieš neveikiamąjį dalyvį (lietuviškai reikėtų kilmininko, o komanda išveda nelinksniuojamą „Antonakakis ir kt.“), „sistemos čia riboto naudingumo“ be jungties, „veda prie sistemos išjungimo“ (vertalas) ir antraštės žodžių tvarka „Darbo pagrindiniai rezultatai“.
+
+#### 108. `\emph` nuimtas visame darbe (69 vietos)
+
+1 skyrius perrašytas ranka, ir kartu iš jo dingo beveik visi `\emph`. Kituose skyriuose jų buvo likę 9, 8 ir 13, todėl `angl.` terminai viename skyriuje ėjo paprastu šriftu, kituose kursyvu. Suvienodinta pagal 1 skyrių: kursyvo nebelieka.
+
+Nuimta **69**, palikta **10**. Taisyta ir generatoriuose (`i_latex`, `klaidos`, `lenteles`, `nematytos`, `patikimumas`, `pozymiu_svarba`, `slenkstis`, `suvestine`), kad pirmas `.bat` paleidimas jų negrąžintų.
+
+**Kas palikta ir kodėl:** `tab:metodai` legendos raktai (`maž.`, `vid.`, `did.`, `l. did.`, `savaiminis`, `per XAI`, `juod. dėžė`, `(aut.)`) ir `suvestine` blokų antraštės. Ten kursyvas nėra akcentas, o skiria raktą nuo aprašo ir antraštės eilutę nuo duomenų eilučių.
+
+**Sprendimas dėl `angl.` terminų:** angliški terminai šalia lietuviškų lieka, nes lietuviški atitikmenys srityje vartojami retai.
+
+#### 109. Trys klaidos 1 skyriaus redakcijoje
+
+Perrašant trumpinta 3 860 → 2 785 žodžių (−28 %). Pataisyta:
+
+| Kur | Kas | Kodėl |
+|---|---|---|
+| 93 eil. | `serveriu.` + naujoje eilutėje `\cite{...}.` | Nukirpus sakinio pabaigą liko taškas prieš citavimą, PDF'e būtų „serveriu. [8].“ |
+| 416 eil. | „Su statistiniu anomalijų **aptikimų**“ | Įnagininkas: `aptikimu` |
+| 71, 326, 409, 439 eil. | Tarpai eilučių galuose | — |
+
+**Neliesta, nes prasmės klausimas:** „metodų **priežastis**“ vietoj `pagrindas` (419 eil.); „be **įrenginio** konfigūravimo“ vietoj `per-įrenginio` (585 eil.), dėl ko dingsta skirtumas tarp „nekonfigūruoti kiekvieno atskirai“ ir „nekonfigūruoti nieko“; „Programų sluoksnis. Mirai tipo botnetai:“ — vardininkas be tarinio, dingus įžanginiam sakiniui.
+
+**Patikrinta:** `\ref` taikinių netrūksta, pašalinta `sec:atakos_isvados` niekur nebuvo cituojama, skliaustai subalansuoti visuose failuose, generatoriai kompiliuojasi.
+
+#### 110. 2--7 skyriai apkirpti pagal 1 skyriaus redakciją
+
+Tie patys principai, kuriuos pritaikei 1 skyriui, pritaikyti likusiems. Iš viso **1 133 žodžiai**.
+
+| Skyrius | Buvo | Liko | Δ |
+|---|---:|---:|---:|
+| 2 DI metodai | 3 028 | 2 544 | −484 |
+| 3 Parinkimas | 1 792 | 1 683 | −109 |
+| 4 Sprendimas | 1 405 | 1 239 | −166 |
+| 5 Vertinimas | 1 980 | 1 816 | −164 |
+| 6 Palyginimas | 1 665 | 1 479 | −186 |
+| 7 Išvados | 784 | 761 | −23 |
+
+**Pašalintos kategorijos, tos pačios kaip 1 skyriuje:**
+
+- **Skyrių apibendrinimai** (2.8 dalis, 4.7, 5.7 visi). 4 ir 5 skyriuose jie perpasakojo skyrių, o skaičiai kartojosi 6 skyriuje ir išvadose po keturis kartus.
+- **Savęs reitingavimas:** „Architektūroje svarbiausia yra…“, „Du dalykai lentelėje svarbesni už rikiuotę“, „Svarbesnis už rikiuotę yra…“, „Antra, ir tai svarbiau…“, „davė svarbiausią metodinį darbo rezultatą“, „Svarbiausia išvada ta, kad…“.
+- **Gynyba nuo nepareikštų priekaištų:** „kriterijai suformuluoti dar nežinant, kurie metodai bus svarstomi, todėl atranka negali būti pritempta“, „Tai prognozė, pateikta prieš eksperimentą ir pasitvirtinusi, o ne paaiškinimas po fakto“, „atkartojamumas patvirtintas matavimu, o ne prielaida“.
+- **Proceso pasakojimas:** 6.6 pastraipa apie tai, kaip `Protocol Type` buvo kandidatas šalinti ir kaip patikra sustabdė; 2.6.1 skaičiavimas, kad 3,53 µs į biudžetą telpa 5 669 kartus.
+- **Nuorodos, kur dalykas bus tikrinamas:** „Į tai atsižvelgiama šeštame skyriuje“, „Todėl penktame skyriuje matuojama…“, „Todėl šalia makro-F1 tikslinga pateikti ir PR-AUC“.
+- **Anonsai:** „Tolesniuose poskyriuose matyti…“, „Antra pastebima savybė ta, kad…“, „Palyginimui tai reiškia dvi išvadas“, „Toliau pateikiamos išvados pagal kiekvieną uždavinį“.
+
+**Pažodiniai kartojimai:**
+
+| Kas | Kur buvo | Palikta |
+|---|---|---|
+| 2.8 poskyris „Kodėl atmesti likusieji“ (160 žodžių) | kartojo 2.2--2.5 ir `tab:metodai` | 2.2--2.5 |
+| MLP pagrindimas 2.8 | 15 žodžių pažodžiui iš 2.4 | 2.4 |
+| „Chronologinis skaidymas negalimas…“ | 3.6 ir 4.2 | 3.6 |
+| Teorinės ribos išvedimas | 3.6 ir 4.2 | 3.6, 4.2 liko skaičiai |
+| „Teiginio ribos… tikrintos trys klasės“ | 5.5 ir 6.4 | 5.5 |
+
+#### 111. 3 skyriuje rastas prieštaravimas pačiam sau ⚠️
+
+Poskyryje 3.6 parašyta, kad teorinė tikslumo riba yra **99,78 %**, o 3.7 pabaigoje --- kad **maždaug 95 %**, „žemiau kurios lieka ir dalis literatūroje skelbiamų skaičių“.
+
+Tai rugsėjo 6 d. taisymo likutis. Tada riba buvo perskaičiuota iš ~95 % į 99,78 %, o kartu atšauktas ir teiginys apie literatūrą: prie 99,78 % skelbiami 99,5--99,6 % yra **žemiau** ribos, ne virš jos. 3.6 buvo perrašytas, 3.7 --- ne.
+
+Pastraipa pašalinta kaip 3.6 kartojimas, tad prieštaravimas dingo kartu. **Bet pastebėta tik kerpant, o ne tikrinant skaičius** --- vienas dokumentas devynias dienas turėjo du skirtingus atsakymus tam pačiam klausimui.
+
+**Patikrinta po kirpimo:** `\ref` taikinių netrūksta, pašalintos etiketės (`sec:sprendimas_isvados`, `sec:vertinimo_apibendrinimas`) niekur nebuvo cituojamos, skliaustai subalansuoti visuose aštuoniuose failuose, kirilicos nėra, lentelės nepaliestos.
+
+#### 112. Tušti 4.3 ir 4.4 poskyriai: priežastis ne kirpimas, o float'ai
+
+PDF'e poskyriai „Vertinimo kriterijai ir jų svoriai“ ir „Sprendimų matrica“ atrodė tušti. Nė vienas jų neturėjo **jokio prozos sakinio**: viskas tarp antraštės ir kitos antraštės buvo `\begin{table}[htbp]` viduje. Neturėdamas teksto, kuris prilaikytų antraštę, LaTeX abi lenteles perkelia ten, kur telpa, ir trys antraštės susirikiuoja viena po kitos.
+
+Poskyris 4.2 atrodė gerai todėl, kad jame `xltabular`, kuris nėra float'as ir lieka savo vietoje.
+
+**Taisyta prieš kiekvieną lentelę įrašant po du sakinius**, o ne keičiant float'o elgseną. Alternatyvos reikalautų naujo paketo preambulėje (`float` dėl `[H]` arba `placeins` dėl `\FloatBarrier`), o taisyklė nuo rugsėjo 2 d. yra nekelti į preambulę to, kas darbe dar neišbandyta.
+
+⚠️ **Problema egzistavo nuo pat 3 užduoties.** Kirpimas jos nesukėlė, tik pakeitė puslapių lūžius, ir ji tapo matoma. **Iš to seka patikra, kurios sąraše nebuvo: poskyris, kurio visas turinys yra float'as, PDF'e gali likti tuščias.** Darbe tokių daugiau nėra.
+
+Kartu pataisytas kabantis „Antra,“ 3.7 poskyryje — likutis po to, kai buvo nuimta „Dvi pastabos… Pirma,“.
+
+#### 113. Tušti poskyriai: `[H]` neužteko, reikėjo dar `\clearpage`
+
+Pirmas taisymas (įvadinės pastraipos) į diską nepateko: redaktorius failą perrašė savo sena buferio kopija, ir buvo sukompiliuota versija be taisymo. **Failas, atidarytas redaktoriuje, yra trečias to failo variantas šalia disko ir Git'o**, ir jis laimi tylomis.
+
+Antras taisymas buvo `\usepackage{float}` plius `[htbp]` → `[H]` visoms trims 3 skyriaus lentelėms. Patikrinta kompiliuojant: lentelės nustojo klajoti, bet `tab:matrica` vis tiek atsidūrė kitame puslapyje nei jos antraštė. Taip veikia pati `[H]`: netilpusi į likusią puslapio vietą lentelė pradedama naujame puslapyje, o antraštė lieka ankstesniame.
+
+Galutinis sprendimas: `\clearpage` prieš abu poskyrius. Kiekvienas prasideda nauju puslapiu, tad antraštė, įvadinė pastraipa ir lentelė yra kartu. Ištestuota konteineryje: 4.3 lentelė 23 psl., 4.4 lentelė 24 psl., abi po savo antraštėmis; iš viso 53 psl. vietoj 52.
+
+**Taisyklė:** poskyris, kurio visas turinys yra lentelė, reikalauja trijų dalykų vienu metu — `[H]`, bent vieno prozos sakinio ir `\clearpage` prieš antraštę. Vien `[H]` problemos nesprendžia.
+
+**Patikros tvarka, kurios trūko:** taisymas tikrintas skaitant failą, o ne kompiliuojant. Nuo šiol puslapių išdėstymo taisymai tikrinami `pdftotext` išvestyje, o ne prielaida, kad `.tex` pakeitimas duos norimą rezultatą.
+
+#### 114. 4 skyrius sutrumpintas nuo 1239 iki 964 žodžių (22 %)
+
+Tikslas buvo trečdalis, pasiekta 22 %. Skirtumo priežastis ta, kad 4 skyrius yra matavimų skyrius: didelę teksto dalį sudaro skaičiai ir jų šaltiniai, o ne pagrindimai, kuriuos buvo galima išmesti 2 ir 3 skyriuose.
+
+**Kas pašalinta:**
+
+| Vieta | Kas | Kodėl |
+|---|---|---|
+| 4.1 | keturių eilučių nuoroda į 1 skyrių dėl diegimo vietos | pakanka vieno sakinio |
+| 4.1 | „o ne paimant didžiausią tikimybę“ | tas pats teiginys yra 4.5 |
+| 4.2 | „Indeksai išsaugomi ir įkeliami…“ | kartojo 3 skyriaus protokolą |
+| 4.2 | paaiškinimai, kodėl stratifikuojama pagal etiketes | palikta išvada, nuimtas išvedimas |
+| 4.3 | IRC kaip botneto kanalo istorija | fone, ne rezultate |
+| 4.3 | „Nė vienas iš 36 požymių neįgyja tik reikšmių 0 ir 1“ | teiginys be pasekmės |
+| 4.4 | `predict_proba` apibrėžimas per „ne kaip X, o kaip Y“ | uždrausta konstrukcija, perrašyta tiesiogiai |
+| 4.4 | SMOTE kaip abliacija | kartojo 3 skyriaus protokolą |
+| 4.4 | „be jos išsaugotas neuroninis modelis yra neveikiantis artefaktas“ | savaime aišku |
+| 4.5 | „yra netiesioginis ir, kaip rodo matavimai, netinkamas“ | skaičiai patys tai rodo |
+| 4.6 | „lentelės generuojamos iš to failo, o ne perrašomos ranka“ | proceso detalė |
+| 4.6 | pagrindimas, kodėl delsa matuojama procesoriumi (trys eilutės) | palikta priežastis, nuimtas išvedimas |
+| 4.6 | prototipo 21--32 % klaidingų teigiamų prie didžiausios tikimybės | tas pats skaičius yra 4.5 |
+
+Poskyrio antraštė „Modelių realizacija ir bendra sąsaja“ sutrumpinta iki „Modelių realizacija“.
+
+**Nepaliesta:** visos lentelės, visi skaičiai, `\ref` taikiniai. Patikrinta po įrašymo: failas diske sutampa su konteinerio versija baitas į baitą.
+
+#### 115. 5 skyrius sutrumpintas nuo 1874 iki 1538 žodžių (18 %)
+
+Mažiausias kirpimas iki šiol, ir priežastis struktūrinė: 5 skyrius yra matavimo skyrius. Jame beveik nėra pagrindimų, kuriuos buvo galima išmesti 2 ir 3 skyriuose, o skaičių išmesti negalima.
+
+**Kas pašalinta:**
+
+| Vieta | Kas | Kodėl |
+|---|---|---|
+| 5.1 | „perrinkimas toje pačioje aibėje, kurioje matuojama, būtų nutekėjimas“ | savaime aišku |
+| 5.2 | Random Forest tikimybių skiriamosios gebos išvedimas | pažodžiui kartojo 4.5, palikta nuoroda |
+| 5.2 | „įkeliamas į atmintį užima kelis kartus daugiau“ | išvada ta pati ir be to |
+| 5.3 | trijų klaidų rūšių apibrėžimai | juos jau pateikia lentelės antraštė |
+| 5.3 | sumaišymo matricos paveikslo antraštės antras sakinys | kartojo gretimą tekstą |
+| 5.4 | „Modelis nepermokamas; keičiasi tik sprendimo taisyklė“ | savaime aišku |
+| 5.5 | „Klausiama vieno dalyko“, autokoderio nepermokymo pagrindimas | perteklinis |
+| 5.5 | SLOWLORIS aptikimo interpretacija per „ne todėl, kad…, o todėl, kad…“ | uždrausta konstrukcija, perrašyta |
+| 5.6 | „Toks skirtumas yra tai, ko tikėtumeisi, jei…“ | perrašyta tiesiogiai |
+| 5.7 | „kiekviena testavimo aibės eilutė turi atitinkamą validacijos aibės eilutę“ | patikros detalė, ne rezultatas |
+
+**Rasta, bet nepataisyta čia:** 6 skyrius kartoja 5 skyriaus matavimus, ne atvirkščiai. Tie patys skaičiai abiejuose: 21--31 % klaidingų teigiamų ties argmax, rikiuotė 0,663 / 0,646 / 0,595, Random Forest 1,02 % biudžeto peržengimas, nematytų klasių verdiktas. Kirpti reikia 6 skyriuje, nes 5 yra matavimas, o 6 tik apibendrinimas.
+
+**Patikrinta po įrašymo:** skliaustai subalansuoti, visos 18 `\label` etikečių vietoje, lentelės ir paveikslai nepaliesti, failas diske sutampa su konteinerio versija.
+
+#### 116. Data pašalinta iš ataskaitos teksto
+
+3.3 poskyrio lentelės paaiškinime buvo „K1 ir K2 kyla iš rugsėjo 2 d. duomenų patikros". Skaitytojui svarbu, iš ko kyla kriterijus, o ne kurią dieną tai buvo daroma, tad data nuimta.
+
+Perkratyta visa ataskaita: tai buvo vienintelė data matomame tekste. Liko tik titulinio lapo „2026 m. rugsėjis" ir kelios datos `.tex` komentaruose, kurios į PDF nepatenka.
+
+Į `rasymo_principai.md` įrašyta taisyklė „Datos" ir `grep` patikra prieš commit'ą.
+
+#### 117. 6 skyrius sutrumpintas nuo 1530 iki 1130 žodžių (26 %)
+
+Didžioji dalis kirpimo yra tai, ką rado 5 skyriaus peržiūra: 6 skyrius kartojo 5 skyriaus matavimus, nors jo darbas yra tik apibendrinti.
+
+**Pašalinti kartojimai iš 5 skyriaus:**
+
+| Kas | Buvo | Palikta |
+|---|---|---|
+| 21--31 % klaidingų teigiamų ties argmax su išvedimu | 6.1 ir 5.4 | 5.4, čia liko viena išvada |
+| Random Forest tikimybių skiriamosios gebos aiškinimas | 6.3, 5.2 ir 4.5 | 4.5, kitur nuoroda |
+| Random Forest 1,02 % biudžeto peržengimas | 6.2 ir 5.7 | 5.7 ir 6.7 rekomendacijoje |
+| „Delsa nė vieno modelio neriboja“ su skaičiais | 6.3 ir 5.2 | 5.2, čia liko išvada |
+| Detalumo kaina su absoliučiais dydžiais | 6.3 ir 5.6 | 5.6, čia liko santykiai |
+| „Suvestinė turi dvi dalis“ (autokoderio stulpelis) | 6.1, 5.1 ir 4.4 | 4.4 |
+
+**Pašalinti kartojimai 6 skyriaus viduje:** autokoderio 18,6 % ir PR-AUC 0,996 buvo 6.2 ir 6.3, dabar skaičiai 6.2, o interpretacija 6.3.
+
+**Kita:** „Iš to seka bendresnis dalykas“ (anonsas), „tai reali alternatyva, o ne nusileidimas“ (uždrausta konstrukcija), „kiekvienas pranašumas kuria nors ašimi perkamas nuolaida kita“ (6.3 anonsas).
+
+**Patikrinta:** skliaustai subalansuoti, visos 10 `\label` etikečių vietoje, datų tekste nėra, failas diske sutampa su konteinerio versija.
+
+#### 118. Išvados sutrumpintos nuo 803 iki 542 žodžių (33 %)
+
+Kiekvienas iš šešių uždavinių dabar yra viena pastraipa, ne mini rašinys.
+
+**Pašalintas visas poskyris „Tolesnių tyrimų kryptys"** (5 punktai, apie 180 žodžių). Tai buvo spėliojimai apie tai, ko darbas nedarė. Trys iš penkių punktų vis tiek kartojo tai, kas jau pasakyta: slenksčio atsarga yra 5.7 ir 6.7, pigūs atskaitos metodai 6.4, paaiškinamumas 6.6.
+
+**Kita pašalinta:**
+
+| Kas | Kodėl |
+|---|---|
+| „Mokymas atskirtas nuo diegimo: į šliuzą keliauja tik apmokytas modelis" | savaime aišku, tai pati taisyklė, kurią nustatėme anksčiau |
+| „o ne dėl aparatūros", „ne tik dėl klasių disbalanso" | gynyba nuo nepareikštų priekaištų |
+| DoS ir DDoS ribos paaiškinimas 5 punkte | pilnas jo variantas yra 5.3 |
+| Apribojimų skaidymas į „Pirma / Antra / Trečia" | trys pastraipos sujungtos į vieną |
+| Autokoderio „lieka svarstytinas kaip papildoma rikiavimo pakopa" | tai rekomendacija 6.7, išvadose užtenka verdikto |
+
+**Patikrinta:** skliaustai subalansuoti, `enumerate` aplinkos suporuotos, nė vienas dingęs `\cite` netapo našlaičiu bibliografijoje (`mohale2025xai`, `mazinani2026constrained` lieka 2, 3 ir 6 skyriuose), failas diske sutampa su konteinerio versija.
+
+**Viso kirpimo suvestinė:** 2 skyrius 3028 → 2021, 3 skyrius 1792 → 1371, 4 skyrius 1239 → 964, 5 skyrius 1874 → 1538, 6 skyrius 1530 → 1130, išvados 803 → 542.
+
+#### 119. Sukompiliuoto PDF peržiūra: 46 psl., trys išdėstymo klaidos
+
+Po viso kirpimo ataskaita yra 46 puslapiai (buvo 53). Patikrinta: nė viena antraštė nebelieka viena puslapio apačioje, 4.3 ir 4.4 (PDF numeracijoje 4.3 ir 4.4) turi ir tekstą, ir savo lenteles tame pačiame puslapyje.
+
+**Rastos trys klaidos, nesusijusios su kirpimu. Visos buvo nuo pat pradžių.**
+
+**1. `\SIrange` spausdino „to (numerical range)".** Vietoj „20–50 ms" PDF'e buvo „20 ms to (numerical range) 50 ms". Priežastis: siunitx frazę tarp rėžio galų ima iš `translations` paketo pagal babel kalbą, o lietuviškos nėra, tad išspausdinamas raktas. Matėsi šešiose vietose, o 7 lentelėje tekstas dar ir užlipo ant gretimo stulpelio.
+
+Taisyta preambulėje:
+
+```
+\sisetup{output-decimal-marker={,}, group-separator={\,},
+         range-phrase={--}, range-units=single}
+```
+
+`range-units=single` duoda „20--50 ms", ne „20 ms--50 ms", kaip ir ranka rašomose vietose.
+
+**2. 11 lentelė: antraštė „Interpretuojamumas" netilpo į 1,45 cm** ir persidengė su „Svertinė suma". Stulpelis praplėstas iki 1,9 cm, „Svertinė suma" iki 1,4 cm, „Šalt." susiaurintas iki 1,4 cm. Pataisyta ir lentelėje, ir generatoriuje `src/eksperimentai/matrica.py`.
+
+**3. 8 lentelė: stulpelis „Užduotis" 1,5 cm buvo per siauras** („dvejetainė", „nenurodyta" lipo ant gretimo). Praplėstas iki 1,9 cm, „Skelbiama metrika" susiaurinta iki 2,6 cm.
+
+**Liko kosmetika:** 42 puslapyje yra tik „Darbo apribojimai" pastraipa, nes išvadų sąrašas su rekomendacija užpildo ankstesnį puslapį.
+
+#### 120. `wording` praėjimas per visus skyrius: dvitaškis kaip brūkšnys
+
+Paleista savo parašyta patikra pagal `wording` skiltis (skripto sinchronizuotoje skiltyje nėra). Rezultatas:
+
+| Radinys | Kiek | Verdiktas |
+|---|---|---|
+| Em arba en brūkšnys matomame tekste | 0 | švaru |
+| Dvitaškis vietoj brūkšnio | 95 | 66 perrašyta, 29 palikta kaip tikri sąrašai ir lentelių žymenys |
+| „ne X, o Y" | 7 | 2 perrašyta kaip retorika, 5 palikta kaip informatyvus gretinimas |
+| „ne tik X, bet ir Y" | 3 | palikta, informatyvu |
+| Anonsai („Iš to seka", „Vadinasi") | 9 | 5 nuimta |
+| „Būtent" kaip pabrėžimas | 10 | 6 nuimta |
+
+**Dvitaškis yra dažniausia šio darbo yda.** Beveik kas trečia pastraipa buvo teiginys, pauzė ir paaiškinimas. Taisyta trimis būdais: tašku („Rikiuotė apsiverčia. XGBoost pasiekia…"), jungtuku „nes" („Metodas netinka, nes aptinka mažiau nei penktadalį") arba „t.\,y." ten, kur toliau ėjo tikslinimas.
+
+Palikta ten, kur po dvitaškio eina tikras sąrašas („skiriami trys lygmenys: pats įrenginys, …", „sąsaja: `fit`, `predict`, …"), lentelių antraštėse ir balų skalėse („5: …; 1: …").
+
+Apimtis beveik nepakito (perrašymas, ne kirpimas): 00 nuo 420 iki 419, 01 nuo 2785 iki 2779, 02 nuo 2271 iki 2279, 03 nuo 1763 iki 1766, 04 nuo 962 iki 964, 05 nuo 1535 iki 1532, 06 nuo 1124 iki 1125, 07 nuo 542 iki 554.
+
+Į `rasymo_principai.md` išplėsta dvitaškio taisyklė su pavyzdžiais ir pridėtos dvi `grep` eilutės į patikrą prieš commit'ą.
+---
+
+## Rugsėjo 14 d. — ataskaitos peržiūra ir citavimo numeracijos taisymas
+
+### Ką padariau
+
+**Peržiūrėtas sukompiliuotas `ataskaita.pdf`** (47 psl., 2026-09-14 15:46 UTC) ir surašytas defektų sąrašas `claude/ataskaitos_defektai.md`: trys būtini taisymai, keturiolika vertų taisyti ir dvidešimt dvi kalbos vietos.
+
+**Pataisyta citavimo numeracija.** `literatura.tex` nocite su žvaigždute pakeistas į devyniolikos raktų sąrašą, surašytą `ataskaita.bbl` `\entry` eile. `build.ps1` papildytas patikra, kuri po `biber` sutikrina abiejų `.bbl` failų eiles, sustabdo kompiliavimą, jei jos išsiskyrė, ir pati atspausdina teisingą sąrašą.
+
+**Patikrinta paleidimu, ne prielaida.** Konteineryje (`pdflatex` + `biber`, `lmodern` laikinai užkomentuotas, nes jo ten nėra) naujas `literatura.bbl` gavo lygiai tą pačią devyniolikos raktų eilę kaip `ataskaita.bbl`. Sugeneruotame PDF'e [1] yra Sasi, [5] Komal, [6] Fei, [8] Krishna, [15] Mohale, [18] Chawla, [19] Dietterich, t. y. visi sutampa su tuo, ką tekste prie to paties numerio spausdina `\citeauthor`.
+
+### Ką radau
+
+#### 121. Penkiolika nuorodų iš devyniolikos rodė į ne tą šaltinį ⚠️⚠️⚠️
+
+`ataskaita.tex` ir `literatura.tex` abu naudoja `sorting=none`, bet ta pati nuostata jiems reiškia skirtingą dalyką. Ataskaitoje numeris skiriamas pagal **pirmą citavimą tekste**, o `literatura.tex` su nocite žvaigždute paima **`.bib` failo eilę**. Eilės nesutapo nė karto nuo tos dienos, kai bibliografija buvo atskirta.
+
+| Tekste | Kas cituojama | Sąraše tuo numeriu buvo |
+|---|---|---|
+| [1] | Sasi et al. | Krishna et al. |
+| [5] | Komal and Li | Antonakakis et al. |
+| [8] | Krishna et al. | Sallam et al. |
+| [15] | Mohale (SHAP/LIME) | Mazinani et al. |
+| [19] | Dietterich (statistiniai testai) | Chawla (SMOTE) |
+
+Sutapo tik [12], [14], [16] ir [17], ir tai atsitiktinai.
+
+⚠️ **Klaida buvo tyli.** PDF kompiliuojasi be klaidų, neišspręstų nuorodų nulis, literatūros sąrašas atrodo tvarkingas, o numeriai tekste eina iš eilės. Vienintelis būdas ją pamatyti yra sugretinti `\citeauthor` spausdinamą pavardę su tuo pačiu numeriu sąraše. Būtent todėl klaida ir išlindo: tekste yra „Sasi et al. [1]“ ir „Krishna et al. [8]“, o sąraše po tais numeriais buvo kiti autoriai.
+
+**Pamoka: apėjimas, kuris veikia, gali turėti kainą, kurios jis pats nepraneša.** Rugsėjo 1 d. atskira bibliografija buvo teisingas sprendimas, ji atblokavo darbą per dvidešimt minučių. Jos veikimas tada buvo patikrintas tuo, kad `literatura.pdf` susigeneruoja ir kad citavimai tekste nelieka neišspręsti. Nepatikrinta liko, ar numeriai abiejuose failuose reiškia tą patį. **Du dokumentai, kurie kompiliuojasi atskirai, nėra vienas dokumentas**, ir bendra jų dalis, šiuo atveju numeracija, turi turėti savo patikrą. Dabar ji yra `build.ps1`.
+
+Tai ta pati klasė kaip rugsėjo 9 d. `metrikos.py` raktas be vertinimo aibės: teisingas mechanizmas, kurio raktas per siauras. Ten raktas neapėmė aibės, čia numeraciją lemia eilė, o eilė nebuvo niekieno prižiūrima.
+
+#### 122. `houichi2025smartcity` iš literatūros sąrašo dingo
+
+Jis yra `saltiniai.bib`, bet tekste necituojamas nė karto. Rugsėjo 2 d. jo metrikų gauti nepavyko (Wiley 403), ir eilutė iš `tab:susije` iškrito. Su nocite žvaigždute jis vis tiek buvo spausdinamas kaip [13]. Dabar į sąrašą įrašomi tik cituojami raktai, tad sąrašas sutrumpėjo nuo dvidešimties įrašų iki devyniolikos.
+
+Taip ir turi būti, nes necituojamas šaltinis literatūros sąraše neturi ką veikti. Jei jis vis dėlto reikalingas, jį reikia **pacituoti tekste**, o ne grąžinti į sąrašą.
+
+### Kas nepavyko
+
+`device_bash` vėl neprisijungė (`no Plan9 drive shares mounted`), trečias kartas po rugsėjo 9 ir 13 d. Failai perkelti per staging ir commit. Kartu paaiškėjo, kad tuo keliu `ataskaita.aux` nepasiekiamas, nes plėtinys neleistinas. Citavimo eilė imta iš `ataskaita.bbl`, ir tai net geriau: tai jau `biber` išvestis, o ne LaTeX tarpinis failas.
+
+### Ką darysiu toliau
+
+1. `.\build.ps1` Windows pusėje. Laukiama, kad nauja patikra praneštų „Eile sutampa (19 saltiniai)“, o ataskaita sutrumpėtų vienu puslapiu.
+2. Likę du būtini defektai: 16 lentelės persidengiantys stulpeliai (29 psl.) ir 5.5 poskyrio skaičiai, neatitinkantys 14 lentelės.
+3. Teksto trumpinimas.
+---
+
+## Rugsėjo 14 d., vėliau — citavimų tinkamumo patikra
+
+### Ką padariau
+
+Sutvarkius numeraciją liko klausimas, kurio ji neatsako: ar kiekvienas `\cite` raktas apskritai tinka toje vietoje, kur stovi. Patikrintos **visos 96 citavimo vietos** (19 raktų, 8 skyrių ir 14 lentelių failuose), gretinant kiekvieną teiginį su šaltinio antrašte ir su `literatura/anotacijos.md` įrašu apie tą šaltinį.
+
+**Pašalinti trys netinkami citavimai:**
+
+| Kur | Kas buvo | Kodėl pašalinta |
+|---|---|---|
+| `00_ivadas.tex` teiginys apie ribotus išteklius, gamyklinius slaptažodžius ir neatnaujinamą programinę įrangą | `alwhbi2024encrypted` | Alwhbi yra šifruoto srauto klasifikavimas mašininiu mokymusi, ne IoT saugumo apžvalga. Apie slaptažodžius ar atnaujinimų ciklą jame nieko nėra |
+| `tab:metodai` k artimiausių kaimynų eilutė „prastas; kaimynystėje dominuoja gausios klasės“ | `sallam2026gap` | Sallam yra 32 pasiūlymų apžvalga su delsos slenksčiais. Nei k-NN, nei disbalanso jame nėra, ir anotacija jo taip nemini |
+| `tab:metodai` Transformer eilutė „vid.; ta pati sekos problema“ | `nassef2026tinyml` | Nassef naudoja GAT ir BiGRU, ne transformerį. Gretima grafų tinklo eilutė tą patį šaltinį cituoja pagrįstai (120–180 ms Raspberry Pi 4 yra tikras jo skaičius), o transformerio eilutėje jokio Nassef skaičiaus nėra |
+
+`literatura.tex` sąrašas perkurtas pagal naują citavimo eilę, patikrintas paleidimu.
+
+### Ką radau
+
+#### 123. Netinkamą citavimą pagavo ne skaitymas, o anotacijų sugretinimas ⭐⭐
+
+Visi trys pašalinti citavimai skaitant tekstą atrodo normaliai. Sakinys tvarkingas, šaltinis egzistuoja, DOI patikrintas, nuoroda išsisprendžia. Nieko neįtartino.
+
+Jie išlindo tik sugretinus **teiginį su `literatura/anotacijos.md` įrašu**, kuriame savo žodžiais užrašyta, kam tas šaltinis skirtas. Anotacija apie Alwhbi sako „1.5 poskyris ir 1.2 lentelės metodologinis pagrindimas“, o jis buvo įvade prie visai kito teiginio. Anotacija apie Sallam sako „delsos slenksčiai 1.6 poskyriui“, o jis buvo `tab:metodai` prie k-NN.
+
+**Vadinasi, anotacijos yra ne tik medžiaga rašymui, bet ir patikros etalonas.** Rugsėjo 2 d. jas rašiau tam, kad nepamirščiau, ką šaltinis duoda. Dabar paaiškėjo antras panaudojimas: turint užrašytą kiekvieno šaltinio paskirtį, citavimą, stovintį ne savo vietoje, galima rasti mechaniškai, o ne intuicija.
+
+⚠️ **Šalutinis radinys: Alwhbi trūko ten, kur jis vienintelis tinka.** Įvade yra sakinys „srauto šifravimas turinio analizę daro neįmanomą“, cituojamas `komal2026idsreview,fei2023systematic`. Anotacija apie Alwhbi sako tiksliai tą patį: „Šifravimas panaikina gilios paketų analizės galimybę.“ Šaltinis, kurio visa paskirtis yra šis teiginys, prie jo necituojamas. Palikta kaip yra, nes užduotis buvo šalinti, ne pridėti, bet verta grąžinti.
+
+#### 124. Vienas teiginys prieštarauja savo paties šaltiniui ⚠️⚠️ ATVIRA
+
+`tab:metodai` Random Forest eilutėje parašyta **„geras su `class_weight`“** ir cituojamas `imani2025imbalance`. Anotacija apie tą patį šaltinį sako priešingai: „⚠️ Random Forest esant stipriam disbalansui veikia prastai.“
+
+Tai ne numeracijos ir ne nuorodos, o turinio klaida, ir ji nesutampa su trimis kitomis darbo vietomis: `tab:matrica` RF disbalanso balas yra 3 („vidutinis“), 6.7 poskyris RF nerekomenduoja, o 7.2 rodo, kad RF vienintelis peržengia klaidingų teigiamų biudžetą. Vienintelė vieta, kur RF pavadintas „geru“, yra ta, kuri remiasi šaltiniu, sakančiu „prastas“.
+
+**Nepataisyta sąmoningai: čia taisytinas teiginys, ne nuoroda.** Nuorodos pašalinimas paliktų neteisingą teiginį be šaltinio, t. y. pablogintų. Reikia sprendimo dėl formuluotės.
+
+#### 125. Numeracija po šalinimo persitvarkė, ir tai patvirtino, kad patikra veikia
+
+Pašalinus `alwhbi2024encrypted` iš įvado, jo pirmas citavimas persikėlė į `tab:atakos`, todėl jis nukrito nuo [2] iki [10], o visi tarp jų esantys šaltiniai pakilo vienu. Rankomis to sekti neįmanoma.
+
+Prieš keisdamas parašiau skriptą, kuris citavimo eilę atkuria tiesiai iš `.tex` failų, ir **pirmiausia patikrinau jį prieš esamą `ataskaita.bbl`**: 19 raktų iš 19 sutapo. Tik tada juo perskaičiavau naują eilę. Po to `literatura.tex` sukompiliuotas su `biber` ir gautas `literatura.bbl` vėl sutapo su ta pačia eile, o PDF'e [1] yra Sasi, [2] Antonakakis, [11] Sallam, [14] Nassef.
+
+**Patikros įrankis, patikrintas prieš žinomą atsakymą, yra įrankis. Nepatikrintas yra dar viena prielaida.**
+
+### Ką darysiu toliau
+
+1. Sprendimas dėl `tab:metodai` Random Forest eilutės formuluotės (124 radinys).
+2. `.\build.ps1` Windows pusėje. Laukiama „Eile sutampa (19 saltiniai)“.
+3. Likę du būtini defektai: 16 lentelės persidengiantys stulpeliai ir 5.5 poskyrio skaičiai.
+4. Teksto trumpinimas.
+---
+
+## Rugsėjo 14 d., vakare — 16 lentelė
+
+### Ką padariau
+
+`src/eksperimentai/i_latex.py` perrašytas: **Formuluotė nebėra stulpelis, o bloko antraštė**, skaitiniai stulpeliai gauna natūralų plotį, `\tabcolsep` plačiojoje lentelėje sumažintas iki 3 pt. Pergeneruotos visos keturios jo išvestys (`rezultatai.tex`, `rezultatai_test.tex`, `veikimas.tex`, `veikimas_test.tex`).
+
+Rezultatas: **0 perpildytų eilučių** vietoj 25. Skaičiai nepakito nė vienas, patikrinta sugretinus visas reikšmes prieš ir po.
+
+### Ką radau
+
+#### 126. Stulpelis, kurį norėjau pašalinti, nebuvo problemos priežastis ⭐⭐
+
+Pirma mintis buvo tiesiog išmesti Formuluotės stulpelį. Prieš darant pasidariau bandomąjį dokumentą su ta pačia geometrija ir išmatavau, kas iš tikrųjų netelpa.
+
+`\textwidth` yra 455,24 pt (16,0 cm). Lentelė turėjo `X` + `p{2.1cm}` + 6 × `p{1.9cm}` plius tarpai, t. y. **15,5 cm fiksuoto pločio**, todėl `X` stulpeliui liko **apie 0,5 cm** ir „Modelis“ virto kratiniu.
+
+Bet net ir tai nebuvo tikroji priežastis. Reikšmė `0,3087\,$\pm$\,0,0227` yra **nedalomas blokas** (`\,` yra nekeliamas tarpas), platesnis nei 1,9 cm. `p{}` stulpelis jo neturi kur laužyti, todėl jis paprasčiausiai išsikiša ant gretimo stulpelio. **Pašalinus Formuluotę ir tolygiai išdalijus 2,1 cm, kiekvienas skaitinis stulpelis gautų po 2,25 cm, o tai vis tiek per mažai.**
+
+Išbandyti keturi variantai, kiekvienas sukompiliuotas ir suskaičiuotos perpildytos eilutės:
+
+| Variantas | Perpildyta |
+|---|---:|
+| Kaip buvo | 25 |
+| Formuluotė sulieta į modelio stulpelį, `p{2.1cm}` skaitiniams | 7 |
+| `l` modeliui, natūralus plotis skaitiniams | 1 (71 pt) |
+| **Formuluotė kaip bloko antraštė, natūralus plotis skaitiniams, `tabcolsep` 3 pt** | **0** |
+
+Trečiasis variantas telpa į plotį, bet „Random Forest, 8 kategorijos“ modelio stulpelyje laužosi į tris eilutes, tad eilutės tampa trigubo aukščio. Bloko antraštė to išvengia, nes modelio varde formuluotės nebelieka.
+
+⭐ **Bloko antraštės nebuvo naujas sprendimas, jos darbe jau buvo.** `tab:matrica` ir `tab:suvestine` lygiai taip pat skiria prižiūrimų ir neprižiūrimų metodų blokus. Be to pačios eilutės jau buvo grupuotos pagal formuluotę, tik grupę žymėjo `\addlinespace`, ne antraštė. Vadinasi, stulpelis kartojo tai, ką eilučių tvarka jau sakė.
+
+**Pamoka: „tiesiog išmesti tą stulpelį“ būtų pataisę tris ketvirčius perpildymų ir palikę likusius nepaaiškintus.** Matavimas prieš taisymą kainavo apie dešimt minučių ir parodė, kad stulpelių yra dvi skirtingos problemos: vienas per siauras dėl aritmetikos, o šeši per siauri dėl nedalomo turinio.
+
+#### 127. Ta pati pataisa suvienodino 15 ir 17 lenteles
+
+`_lentele` yra bendra kokybės ir veikimo lentelėms, tad bloko antraštės atsirado ir ten, kur perpildymo nebuvo. Anksčiau būčiau tai laikęs šalutiniu poveikiu; dabar tai pliusas, nes gretimos 16 ir 17 lentelės nebeturi skirtingos sandaros tiems patiems duomenims.
+
+Generatorius taisytas kartu su išvestimi, ne po jos. Rugsėjo 9 d. 87 radinys buvo priešingas atvejis: pataisytas generatorius, nepergeneruota išvestis, ir į PDF pateko senoji.
+
+### Ką darysiu toliau
+
+1. Sprendimas dėl `tab:metodai` Random Forest eilutės formuluotės (124 radinys).
+2. `.\build.ps1` Windows pusėje.
+3. 5.5 poskyrio skaičiai, neatitinkantys 14 lentelės.
+4. Teksto trumpinimas.
+### Vėliau — 5.5 poskyrio skaičiai suderinti su 14 lentele
+
+Trys reikšmės perskaičiuotos iš `rezultatai/darbiniai/slenkscio_taskai.csv`, ne nurašytos nuo apvalintų lentelės langelių:
+
+| Kur | Buvo | Yra | Iš ko |
+|---|---|---|---|
+| Kritimo rėžis | 6--16 % | **7--11 %** | 6,93 % (MLP suderintas) iki 11,27 % (Random Forest) |
+| Random Forest kaina | 16,3 % | **11,3 %** | 0,7239 → 0,6423 |
+| Klaidingi teigiami ties argmax | 21--32 % ir 21--32 kartus | **21--31 %** ir 21--31 kartus | 21,35 % (XGBoost) iki 31,03 % (MLP suderintas) |
+
+XGBoost 8,5 % ir aptikimo rėžis 84--88 % buvo teisingi, nekeisti.
+
+⚠️ **16,3 % buvo bazinio Random Forest skaičius**, likęs iš laikotarpio prieš derinimą (žr. rugsėjo 8 d. 45 radinį). Tas pats dydis 7.3 poskyryje jau buvo nurodytas teisingai, tad darbe jis egzistavo dviem skirtingomis reikšmėmis, o abi atrodė vienodai įtikinamai. **Skaičius, nurašytas nuo ankstesnės savo paties versijos, yra tokia pat prielaida kaip skaičius iš atminties.**
+
+---
+
+## Rugsėjo 14--15 d. — teksto trumpinimas ir 1 % biudžeto pagrindimas
+
+### Ką padariau
+
+| Kas | Kur |
+|---|---|
+| Iš titulinio pašalinta studijų programos eilutė | `ataskaita/ataskaita.tex` |
+| Pašalinti poskyriai „Praktinė rekomendacija" ir „Darbo apribojimai"; likęs tekstas sutrumpintas 554 → 385 žodžių | `ataskaita/skyriai/07_isvados.tex` |
+| 1 % klaidingų teigiamų riba perrašyta kaip prielaida su šaltiniu | `skyriai/01_atakos.tex`, `00_ivadas.tex`, `03_parinkimas.tex`, `04_sprendimas.tex` |
+| Pridėtas `sommer2010closed`; `literatura.tex` eilė perskaičiuota (20 įrašų) | `saltiniai.bib`, `literatura.tex` |
+
+### Ką radau
+
+#### 128. 1 % klaidingų teigiamų riba neturėjo šaltinio, o jos argumentas prieštaravo pats sau ⚠️⚠️
+
+Riba buvo išvesta pavyzdiniu skaičiavimu 1 skyriuje: 100 įrenginių × ~1000 srautų per parą, tad 1 % duoda ~1000 signalų per parą, „kurių nė vienas analitikas neperžiūrės". **Bet 1 % kaip tik ir duoda tuos 1000 signalų.** Iš to argumento logiškai sektų griežtesnė riba (0,1 %), o ne 1 %. Formuluotė „net 1 %" tai užmaskuodavo.
+
+Antra, trumpinant rugsėjo 14 d. pats skaičiavimas iš 1 skyriaus dingo, o `04_sprendimas.tex` toliau rodė į „\ref{sec:atakos} skyriuje **apskaičiuotą** biudžetą" — nuoroda į skaičiavimą, kurio nebėra.
+
+**Literatūroje 1 % kaip standarto nėra.** Patikrinti trys kandidatai:
+
+| Šaltinis | Ką duoda | Verdiktas |
+|---|---|---|
+| Sommer ir Paxson, IEEE S&P 2010 | *„Even a very small rate of false positives can quickly render an NIDS unusable"* — kokybinis | **Pridėtas** |
+| Axelsson, ACM TISSEC 2000 | Bazinio dažnio klaida: reikia ~1×10⁻⁵, t. y. 1000× griežčiau | Atmestas: padarytų 1 % dosnia riba, reikėtų atskiro paaiškinimo, kodėl neperkeliama |
+| Yang ir kt., USENIX Security 2024 | 115 mln. signalų, 24--134 tūkst. per parą, 0,01 % tikrų atakų | Atmestas: rodo, kad 1000 signalų dideliam SOC nedaug — argumentas laikosi tik todėl, kad 100 įrenginių tinkle SOC nėra |
+
+**Sprendimas: 1 % lieka, bet įvardytas kaip prielaida.** Naujas 1 skyriaus sakinys pasako tiesiai, kad konkrečios ribos literatūra nenurodo, todėl ji priimama kaip vienodas atskaitos taškas metodams lyginti, o ne kaip išmatuotas analitikų pajėgumo dydis. Nė vienas skaičius darbe nepasikeitė — visi matavimai ir taip daryti ties tuo pačiu tašku.
+
+> **Pamoka, ta pati kaip rugsėjo 13 d. su įvado skaičiais:** teiginys, kuris skamba kaip išvedimas, bet neturi nei šaltinio, nei matavimo, yra prielaida. Skirtumas tik tas, kad prielaidą, pavadintą prielaida, galima ginti; išvedimą, kuris veda ne ten, kur teigiama — ne.
+
+#### 129. `re.sub` replacement eilutėje `\nocite` virto naujos eilutės simboliu
+
+Perrašant `literatura.tex` \nocite sąrašą Python `re.sub` pakaitalo eilutėje `\n` buvo interpretuotas kaip naujos eilutės simbolis, tad visos 20 eilučių virto `ocite{...}`. Pagauta iš karto, nes `grep -c nocite` grąžino 1 vietoj 21. Pataisyta be `re.sub`, per `str.index` ir pjūvį.
+
+**Eilės tikrinimas pasiteisino:** skriptas, atkuriantis \nocite eilę iš pirmo citavimo skyriuose, davė lygiai tą pačią 19 raktų seką, kuri faile jau buvo, plius `sommer2010closed` 11-oje pozicijoje. Tai patvirtina ir eilę, ir patį atkūrimo būdą.
+
+### Kas liko
+
+1. `.\build.ps1` Windows pusėje — po naujo šaltinio `biber` turi pergeneruoti abu `.bbl`, o skriptas sutikrina raktų eiles.
+2. Teksto trumpinimas kituose skyriuose.
+
+### Vėliau — 4.5 poskyris apkarpytas iki apibrėžimo
+
+Klausimas buvo, ar 4.5 („Sprendimo slenkstis") apskritai reikalingas. **Reikalingas, ir labiau nei dauguma** — jis apibrėžia $\tau$, o į `\ref{sec:slenkstis}` rodo ir 5, ir 6 skyrius. Bet pusė jo turinio buvo trečias tos pačios medžiagos pavidalas.
+
+**Išimta:** `tab:slenkstis` (validacijos aibės operaciniai taškai) ir kainos skaičiai. **Palikta:** kodėl slenkstis reikalingas, kaip renkamas $\tau$, tikimybių skiriamosios gebos paaiškinimas, autokoderio procentilis. Pridėta nuoroda į `\ref{sec:slenkscio_kompromisas}`, kur tie patys taškai pateikti ant testavimo aibės.
+
+#### 130. Tas pats dydis darbe buvo dviem reikšmėmis — trečią kartą ⚠️
+
+4.5 teigė, kad XGBoost už biudžeto laikymąsi sumoka **8,5 %** makro-F1, o 6.2 — **8,1 %**. Random Forest abiejose vietose 11,3 %. Skirtumas iš to, kad 4.5 skaičiai iš validacijos, o 6.2 iš testavimo aibės, **bet tekste tai nebuvo pasakyta nė vienoje vietoje.** Prieštaravimas dingo kartu su iškirpta pastraipa.
+
+Tai trečias toks atvejis po 111 radinio (99,78 % prieš ~95 %) ir 5.5 poskyrio (16,3 % prieš 11,3 %). Visuose trijuose skaičius buvo teisingas savo kontekste, o defektas atsirado iš to, kad kontekstas neįvardytas. **Jei tas pats dydis rašomas dviejuose skyriuose, prie kiekvieno turi būti pasakyta, ant kurios aibės jis matuotas — arba jis rašomas tik vienoje vietoje.**
+
+⚠️ **`lenteles/slenkstis.tex` nuo šiol nenaudojama nė viename skyriuje** (`slenkstis_test.tex` lieka, ją naudoja 5.4). Generatorius `src/eksperimentai/slenkstis.py` ją vis tiek kuria. Tas pats atvejis kaip rugsėjo 13 d. su `rezultatai.tex` — spręsti, ar šalinti.
+
+### Vėliau — 2.2 proza sutraukta, nes ją visą nešė lentelė
+
+Poskyrio „Atakų klasifikacija" trys pastraipos (suvokimo, tinklo, programų sluoksnis) išvardijo tas pačias atakas, kurias eilutė po eilutės išvardija `tab:atakos`. **Lentelė turtingesnė už prozą:** be atakos pavadinimo ji duoda dar ir matomus tinklo požymius, CICIoT2023 atstovavimą ir šaltinį. Proza turėjo tik du dalykus, kurių lentelėje nėra: pažeidžiamą saugumo tikslą ir kelis „kodėl" sakinius.
+
+**319 → 102 žodžiai.** Palikta: viena C/I/A santrauka ir dvi toliau nešančios aplinkybės (suvokimo sluoksnis sraute nematomas; žvalgyba žalos nedaro, bet eina prieš beveik kiekvieną ataką ir jos požymių leidimas nefiksuoja).
+
+**Patikrinta prieš kerpant:** `konfidencialum|vientisum|prieinamum` už 2 skyriaus ribų nepasitaiko nė karto, tad C/I/A skirstymas toliau darbe nenaudojamas. Visi trys prozoje cituoti raktai (`prajapati2025rpl`, `antonakakis2017mirai`, `krishna2021taxonomy`) lieka lentelės eilutėse ir kituose poskyriuose, o \nocite eilė po kirpimo nepakito.
+
+#### 131. Skyrių numeracija pokalbyje ir failuose nesutampa ⚠️
+
+`\section{Įvadas}` yra pirmas, tad PDF numeruoja **failo numeris + 1**: `01_atakos.tex` yra 2 skyrius, `04_sprendimas.tex` yra 5-as. Žurnale ir plano failuose visur vartojama failų numeracija (`06_palyginimas` = „6 užd."), o `ataskaitos_defektai.md` jau rašo PDF numeraciją („7.3 poskyris" apie `06_palyginimas.tex`). **Tas pats poskyris darbo dokumentuose vadinamas dviem skirtingais numeriais.**
+
+Dėl to šioje sesijoje „4.5" buvo suprastas kaip `04_sprendimas.tex` penktas poskyris, nors PDF 4.5 yra `03_parinkimas.tex` „Jautrumo analizė". Apkarpytas buvo PDF **5.5** „Sprendimo slenkstis" — pats kirpimas geras ir suderintas atskirai, bet klausta buvo apie kitą poskyrį. PDF 4.5 dar neperžiūrėtas.
+
+### Vėliau — PDF 4.5 „Jautrumo analizė" peržiūrėta
+
+**Poskyris paliekamas.** Jis trumpas (~37 eil., viena generuojama lentelė) ir yra vienintelė vieta, kur ginama svertinė matrica nuo akivaizdžiausio priekaišto, kad svoriai parinkti prie norimo atsakymo. Svarbiausia, jis duoda ne tvirtinimą, o matavimą: dvi poras lemia **dominavimas**, tad jų neapverčia jokie svoriai. Tai stipriau už „tikrinome ±10 p. p.".
+
+#### 132. 4.5 ir 4.7 apie tą pačią porą sakė priešingus dalykus ⚠️
+
+4.5: *„…o Random Forest aplenktų tik skiriant aptikimo kokybei 44 %"* — subjektas sprendimų medis, t. y. teigiama, kad jis **atsilieka** nuo Random Forest.
+
+`tab:jautrumas`: eilutė *„Sprendimų medis prieš Random Forest, **+0,25**"*. `tab:matrica`: **3,80 prieš 3,55**. 4.7: *„Sprendimų medis **lenkia** Random Forest dėl savaiminio interpretuojamumo"*.
+
+Taigi 4.5 apvertė kryptį: sprendimų medis jau pirmauja, o 44 % aptikimo kokybės svoris yra riba, ties kuria jį **aplenktų Random Forest**, ne atvirkščiai. Pataisyta į „Random Forest jis lenkia jau prie bazinių svorių, ir tas pranašumas išnyktų tik aptikimo kokybei skiriant 44 % svorio".
+
+**Kaip praslydo:** lentelės stulpelis „Kada apsiverstų" aprašo *apvertimo sąlygą*, o sakinys buvo rašomas kaip *pranašumo sąlyga*. Tas pats stulpelis skaitomas dviem kryptimis, ir tekste buvo pasirinkta ne ta. Tai 18 radinio giminaitis: rodiklis, kurį skaitytojas turi mintyse apversti, anksčiau ar vėliau apverčiamas neteisingai.
+
+**Patikrinti ir teisingi likę 4.5 teiginiai:** XGBoost (5,5,5,3) dominuoja Random Forest (4,3,4,3) ir Random Forest dominuoja MLP (4,3,4,1) — abu pagal visus keturis kriterijus; 0,42 prieš dabartinį 0,15 iš tiesų yra „beveik tris kartus".
+
+Matricos teiginys, kad sprendimų medis ir Isolation Forest į eksperimentą nepateko, lieka atvirai pasakytas 7 skyriuje (`06_palyginimas.tex`, 119--136 eil.), tad po išvadų trumpinimo jis darbe neprapuolė.
+
+### Vėliau — uždarytos šešios prieštaros prieš imantis trumpinimo
+
+| Nr. | Kas | Kur |
+|---|---|---|
+| B6 | „Pirmame skyriuje diegimo vieta pasirinkta" — pasirinkta antrame; įrašyta `\ref{sec:diegimas}` | `02_di_metodai.tex` |
+| B7 | Taikinys „macro-F1 0,85--0,90", kurio 3 skyriuje nėra; suderinta su ten esančiu „apie 0,89" | `05_vertinimas.tex` |
+| B8 | Tekste 25,4 %, lentelėje 25,3 %; „jie lygūs", nors 24,4 < 25,3 | `05_vertinimas.tex` |
+| — | „5114 vektorių (0,43 % eilučių)"; 0,43 % yra 10 435 eilutės | `03_parinkimas.tex` |
+| B10 | `makro-F1` → `macro-F1`, 19 vietų; lentelėse visur buvo `macro-F1` | 4 skyriai |
+| A5 | `tab:metodai` Random Forest langelis | `02_di_metodai.tex` |
+
+#### 133. A5 buvo ne sprendimas, o nepataisytas likutis ⭐
+
+Langelyje stovėjo „geras su `class_weight`". Patikrinus `literatura/anotacijos.md`, cituojamas `imani2025imbalance` sako priešingai: **„Random Forest esant stipriam disbalansui veikia prastai"**, o nuosekliai geriausias ten yra suderintas XGBoost. Tą patį sako ir `tab:matrica` (RF disbalanso balas 3), ir rekomendacija, ir eksperimentas, kuriame RF vienintelis peržengia biudžetą.
+
+Vadinasi, atsakymas darbe jau buvo keturiose vietose, ir tik lentelės langelis liko iš ankstesnės redakcijos. Pakeista į „prastėja esant stipriam disbalansui". Nuoroda nekeista, nes dabar teiginys šaltinį atitinka.
+
+> **Pamoka:** prieštara tarp lentelės ir teksto pirmiausia tikrinama anotacijoje, o ne sprendžiama iš naujo. Trys iš šešių šios dienos taisymų buvo ne apsisprendimai, o senos redakcijos likučiai.
+
+#### 134. B8 pakeitė teiginį, bet ne išvadą
+
+Buvo parašyta, kad trečiuoju atveju prižiūrimas ir neprižiūrimas modeliai „lygūs". Iš tikro prižiūrimas **atsilieka 0,9 procentinio punkto** (24,4 % prieš 25,3 %). Pataisyta į tikslų skirtumą. Išvada nekinta: prižiūrimas laimi du atvejus iš trijų, tad teiginys apie nematytas atakas lieka toks pat.
+
+### Kas liko
+
+1. **B9 — `patikimumas.tex` lentelėje yra „MLP (bazinis)"**, nors 6.1 sako, kad vertinami tik suderinti modeliai. Sprendimas neprimtas: išnaša arba eilutė lauk. Lentelė generuojama, tad taisyti reikia `i_latex.py` ir pergeneruoti.
+2. `.\build.ps1` Windows pusėje — nepaleistas nuo `sommer2010closed` pridėjimo.
+3. Skyrių trumpinimas.
+
+### Vėliau — B9 uždaryta: „MLP (bazinis)" eilutė pašalinta iš patikimumo lentelės
+
+Taisytas **generatorius**, ne išvestis: `src/eksperimentai/patikimumas.py` ketvirtoji patikra dabar praleidžia modelius, kurių pavadinime yra „bazinis". Eilutė ten patekdavo ne pagal planą, o todėl, kad guli tame pačiame `slenkscio_taskai.csv` faile. Lentelė pergeneruota, liko trys suderintos konfigūracijos.
+
+**Kartu pasikeitė ir tekstas, nes jis rėmėsi pašalinta eilute:**
+
+| Kur | Buvo | Yra |
+|---|---|---|
+| FPR santykio rėžis | 0,95--**1,13** karto | 0,95--**1,09** karto |
+| Slenksčio sutapimo patikra | „visiems **keturiems** modeliams" | „visiems **tikrintiems** modeliams" |
+
+1,13 buvo būtent bazinio MLP reikšmė, tad palikta ji būtų rodžiusi į eilutę, kurios lentelėje nebėra. Antrasis sakinys aprašo pirmąją patikrą, kuri tikrina **visus** paleistus modelius, įskaitant bazinius, todėl ten filtro nedėjau; pakeistas tik žodis, kad skaičius nesikirstų su trijų eilučių lentele.
+
+⚠️ **Tas pats klausimas lieka atviras `slenkstis_test.tex` lentelėje** (6.4 poskyris): joje „MLP (bazinis)" taip pat yra. Jos nelieciau, nes 6.4 tekstas remiasi tos lentelės rėžiais, o rėžius (21--31 %) nustato ne bazinis MLP, tad pašalinimas jų nekeistų. Spręsti atskirai. (`slenkstis.tex` nebenaudojama nuo 4.5 apkarpymo.)
+
+### Vėliau — 2.4 proza sutraukta, ta pati priežastis kaip 2.2
+
+`tab:aptikimas` kiekvienam iš šešių metodų duoda veikimo principą ir vertinimus pagal keturis kriterijus. Po lentele ėjo keturios pastraipos, kurių kiekviena tuos pačius vertinimus perpasakojo sakiniais.
+
+**336 → 219 žodžiai.** Keturios pastraipos sutrauktos į vieną, palikant tik tai, ko lentelėje nėra: Mirai variantų dauginimasis ir parašų bazės ryšio bei atminties poreikis, temperatūros jutiklio ir vaizdo kameros pavyzdys prie fiksuotų slenksčių, prielaida apie „normalų" mokymo laikotarpį, ir protokolų įvairovė, dėl kurios specifikacijos nesikeičia masteliu.
+
+**Požymis, kad pastraipos buvo struktūriškai nereikalingos:** jų buvo keturios, o lentelėje šešios eilutės. Hibridinis ir mašininiu mokymusi grįstas metodai prozos neturėjo nė vienos, ir niekam tai nekliuvo.
+
+Kartu ištaisyta `ataskaitos_defektai.md` C dalyje pažymėta formuluotė „Su statistiniu anomalijų aptikimu vietoj to, kad būtų aprašoma ataka…" — dabar „Statistinis anomalijų aptikimas aprašo ne ataką, o normalų elgesį", kaip ten ir siūlyta.
+
+**Santrumpa IDS išimta.** Ji buvo apibrėžta skliaustuose ir panaudota lygiai vieną kartą tame pačiame poskyryje; po kirpimo tas vienintelis vartojimas dingo, tad liko tik apibrėžimas be vartojimo.
+
+Citavimai `komal2026idsreview`, `antonakakis2017mirai` ir `prajapati2025rpl` perkelti į sutrauktą pastraipą, \nocite eilė nepakito.
+
+**Atviras klausimas:** 2.3 poskyryje `tab:aprepis` ketvirtas stulpelis („Atitikmuo tab:atakos lentelėje") perpasakoja 2.2 lentelės eilutes. Pasiūlyta nuimti, sprendimo dar nėra.
+
+### Vėliau — 2.6 peržiūra: skaičiai tvarkoje, du kiti dalykai ne
+
+**Skaičiai sutikrinti ir sutampa.** 1--10 / 20--50 / $\geq$100 ms yra tie patys kaip `tab:apribojimai` 3 skyriuje, o `literatura/anotacijos.md` patvirtina ir slenksčius, ir „32 sprendimų" skaičių prie `sallam2026gap`.
+
+#### 135. „Vienintelė vieta" nebuvo pagrįsta dviem nurodytais reikalavimais ⚠️
+
+Buvo parašyta, kad šliuzas yra vienintelė vieta, kurioje tenkinami reikalavimai remtis tinklo srautu ir veikti be įrenginio konfigūravimo. **Bet abu juos tenkina ir debesis** — tai matyti toje pačioje `tab:diegimas` lentelėje, kurios debesies eilutėje trūkumai yra delsa, ryšys ir privatumas, o ne konfigūravimas. Argumentas rėmėsi ne tais dviem kriterijais, kuriuos pats įvardijo.
+
+Perrašyta taip, kad būtų pasakyta, kas ką atmeta: įrenginys neturi išteklių, debesis neišlaiko realaus laiko biudžeto ir reikalauja srautą išleisti iš tinklo. Ta pati prielaida buvo pakartota išvadų pirmame punkte, tad pataisyta ir ten.
+
+#### 136. Tas pats žodis dviejose lentelėse, viena perpildo, kita ne
+
+`tab:diegimas` pirmas stulpelis yra `p{2.4cm}`, o jame stovi `(mikrovaldiklis)` — 16 simbolių, $\approx$2,56 cm prie `\footnotesize`, be kėlimo vietos. Tai vienintelis 2 skyriaus fiksuoto pločio stulpelis, kurio ilgiausias nedalomas žodis platesnis už patį stulpelį.
+
+⭐ **Tas pats žodis yra ir `tab:apribojimai` 3 skyriuje, ir ten jis užrašytas `mikro\-valdiklis`, o stulpelis yra 2,6 cm.** Vadinasi, problema jau buvo sutikta ir išspręsta kitoje lentelėje, tik sprendimas neperkeltas. Įrašyta ta pati kėlimo vieta.
+
+**Kompiliavimu nepatikrinta:** konteineryje nėra `biblatex`, o mašinos Linux pusėje `texlive` neturi `babel` lietuvių kalbos, tad perpildymas nustatytas skaičiuojant simbolių plotį, ne matuojant. Tikrinti reikia `.\build.ps1` išvestyje.
+
+### Vėliau — 3.1 peržiūra
+
+Poskyris paliekamas beveik kaip buvo: 157 žodžiai, lentelių nėra, kiekvienas sakinys neša atskirą faktą. Du taisymai.
+
+#### 137. Tas pats metodas darbe turėjo du vardus ⚠️
+
+`Atsitiktinis miškas` buvo parašytas dviejose vietose (3.1 ir 3.7), o visur kitur, įskaitant to paties skyriaus `tab:metodai` ir `tab:filtras`, jis yra `Random Forest` — iš viso 22 vietose. 3.1 tekste skaitytojas mato „Atsitiktinis miškas", o už kelių puslapių toje pačioje lentelėje „Random Forest".
+
+Suvienodinta į `Random Forest`. Tas pats defektų šablonas kaip `macro-F1` prieš `makro-F1`: abi formos teisingos, bet viename dokumente jos turi būti viena.
+
+#### 138. Mokymo sudėtingumas buvo paaiškintas du kartus tame pačiame skyriuje
+
+3.1: *„Atraminių vektorių mašinos mokymo laikas auga kvadratu arba kubu nuo eilučių skaičiaus, o čia jų milijonai."*
+3.5.3 („Mokymo kaina"): *„atkrenta metodai, kurių mokymo laikas auga kvadratu arba kubu nuo eilučių skaičiaus, t. y. atraminių vektorių mašina ir jos vienos klasės atmaina."*
+
+Paaiškinimas paliktas 3.5.3, kur mokymo kaina yra poskyrio tema ir kur jis susietas su K3 vartais. 3.1 liko trumpas teiginys, kad metodas nepakelia milijonų eilučių.
+
+### Vėliau — metodų pavadinimai suvienodinti su lentelėmis
+
+Taisyklė: jei lentelėse metodas vadinamas angliškai, taip jis vadinamas ir tekste. Prozoje buvo likę keturi lietuviški vertimai, kurių lentelėse nėra nė vieno.
+
+| Buvo tekste | Yra | Kaip lentelėse |
+|---|---|---|
+| Atsitiktinis miškas | Random Forest | `tab:metodai`, `tab:filtras`, `tab:matrica` |
+| Izoliacijos miškas | Isolation Forest | `tab:filtras`, `tab:matrica` |
+| Atraminių vektorių mašina | SVM | `tab:filtras` (SVM (RBF), One-Class SVM) |
+| Naivusis Bajeso klasifikatorius | Naive Bayes | `tab:filtras` |
+
+`Artimiausių kaimynų metodas`, `Sprendimų medis`, `Autokoderis` ir `Daugiasluoksnis perceptronas` nekeisti — šios formos vartojamos ir lentelėse, tad neatitikimo nėra.
+
+**Kartu ištaisyta giminės klaida, kurią pats pakeitimas atidengė:** sakinys baigėsi „…mokosi taip pat lėtai kaip ir įprastinė", kur moteriškoji giminė derinosi prie dingusio žodžio „mašina". Dabar „kaip ir įprastas".
+
+> Tas pats kaip rugsėjo 13 d. su „paskirstytųjų": pakeitimas gramatikos klaidos nesukūrė, tik atidengė derinimą su žodžiu, kurio nebeliko.
+
+### Vėliau — 3.2 ir 3.3 peržiūra
+
+Abu poskyriai trumpi (91 ir 123 žodžiai), lentelių neturi, kirpti nėra ko. Keturi taisymai.
+
+#### 139. 3.2 teigė tai, ką darbas vėliau paneigia ⚠️⚠️
+
+Buvo parašyta: *„Tai vienintelė paradigma, iš principo galinti aptikti nematytas grėsmes."* Tvirtinimas, be išlygų.
+
+Tačiau 7.5 poskyris vadinasi „Nematytos atakos: **hipotezės** verdiktas" ir pasako, kad rezultatas neigiamas, o išvadose rašoma, kad apibendrinimo geba priklauso ne nuo paradigmos. Skaitytojui, einančiam iš eilės, tai atrodo kaip prieštaravimas, o ne kaip patikrinta ir paneigta prielaida.
+
+Perrašyta į „Iš to kyla darbo prielaida, kad… ji tikrinama `\ref{sec:zero_day}` poskyryje". Turinys tas pats, bet dabar 3.2 ir 7.5 sudaro porą: iškelta prielaida ir jos verdiktas.
+
+> **Pamoka:** darbo prielaida, užrašyta kaip faktas, vėliau atrodo ne kaip paneigta hipotezė, o kaip klaida skyriuje, kuriame ji stovi. Paneigimas yra rezultatas tik tada, kai prieš tai buvo pasakyta, kad tai prielaida.
+
+#### 140. B8 buvo dviejose vietose, ne vienoje ⚠️
+
+Rugsėjo 15 d. pataisiau 6.5 sakinį apie tai, kad trečiuoju atveju modeliai „lygūs". **Lygiai tas pats teiginys buvo ir 7.5 poskyryje** („o trečiuoju abu lygūs"), o defektų sąraše nurodyta tik viena vieta. Pataisyta ir ten: atsilieka 0,9 procentinio punkto.
+
+Radau ne ieškodamas, o tikrindamas `sec:zero_day` etiketę 3.2 nuorodai. **Taisant defektą pagal sąrašą verta patikrinti, ar tas pats sakinys nepakartotas kitur** — abu kartus jis buvo perrašytas iš to paties šaltinio.
+
+#### Smulkūs 3.3 taisymai
+
+- Dvi formuluotės iš `ataskaitos_defektai.md` C dalies: „kiekvienas jų tai **daro darydamas** prielaidą" → „remiasi prielaida"; „čia **atsiremiama į** šio darbo apribojimą" → „čia iškyla šio darbo apribojimas".
+- „laikiniai konvoliuciniai tinklai" → **TCN**, kaip `tab:apribojimai` ir `tab:susije` lentelėse.
+
+**Patikrinta ir teisinga:** „dešimties arba šimto paketų lango santrauka" sutampa su 5.1 poskyriu (10 arba 100 paketų agregatas), o 36 požymiai sutampa su 4.6 ir 5.3.
+
+### Vėliau — 139 radinys perdarytas: tai ne hipotezė, o du skirtingi teiginiai
+
+Pirmas taisymas 3.2 sakinį pavertė darbo prielaida. **Tai buvo neteisingas sprendimas**, ir vadovo pastaba tiksli: prielaidą galima paneigti, o literatūra pagrįstą faktą paneigus, problema lieka darbe.
+
+**Teiginys buvo ne vienas, o du, suplakti į vieną sakinį:**
+
+| | Teiginys | Statusas |
+|---|---|---|
+| **a** | Prižiūrimas modelis priskiria tik tas klases, kurias matė mokydamasis | **Faktas.** Apibrėžties dalykas, darbo eksperimentas jo neliečia |
+| **b** | Todėl nematytoms atakoms aptikti būtinas neprižiūrimas metodas | **Lūkestis**, kurį 7.5 paneigia |
+
+Senas sakinys („vienintelė paradigma, iš principo galinti aptikti nematytas grėsmes") skambėjo kaip **a**, o paneigtas buvo **b**. Todėl ir atrodė, kad darbas prieštarauja pats sau.
+
+**Skirtumas, kuris viską išsprendžia:** 7.5 eksperimente klausiama tik to, ar eilutė pažymima kaip **bet kuri** ataka. Prižiūrimas modelis nematytą klasę pažymėjo kaip kitą ataką — **a** liko galioti, o **b** nepasitvirtino. Aptikti ataką ir ją teisingai suklasifikuoti nėra tas pats, ir to skirtumo darbe nebuvo pasakyta nė vienoje vietoje.
+
+**Pataisyta trijose vietose, visur tuo pačiu skirtumu:**
+
+- **3.2** dabar pasako **a** kaip faktą, o **b** kelia kaip klausimą su nuoroda į `\ref{sec:zero_day}`, pridedant, kad aptikimas ir klasifikavimas nėra tas pats.
+- **`tab:aptikimas` išnaša** (2.4) sakė „nematytas atakas aptinka neprižiūrimi modeliai"; dabar priduria, kad prižiūrimi nematytą ataką gali pažymėti tik kaip kurią nors žinomą. Tai ne tik tikslu, bet ir iš anksto paaiškina 7.5 rezultatą.
+- **`tab:metodai` žymėjimai** (3.4) neturėjo „Nemat. atakos" stulpelio apibrėžimo. Pridėtas, su ta pačia išlyga.
+
+Grandinė dabar nuosekli: 3.2 kelia klausimą, 6.5 sako, kad šiuose duomenyse nepasitvirtina, 7.5 duoda verdiktą, išvados įvardija kaip paneigtą prielaidą.
+
+#### 141. Pats trumpinimas įnešė svetimą skyrybą
+
+Perrašytose išvadose buvo likę du ilgieji brūkšniai (`—`). Visame darbo tekste jų nėra nė vieno; jie pasitaiko tik failų antraščių komentaruose. Abu pakeisti sakinio perskyrimu.
+
+> Kirpimas nėra vien šalinimas: kiekvienas perrašytas sakinys yra naujas tekstas, ir jam galioja tos pačios taisyklės kaip senam.
+
+### Vėliau — 3.4: dubliavimo nebuvo, bet buvo per plati lentelė (B1 uždaryta)
+
+**Patikslinimas:** 3.4 nuosava proza yra 115 žodžių apie federuotą mokymąsi ir paaiškinamumą, ir ji lentelės nekartoja. Po 3.4 antrašte stovi `tab:metodai` (18 eilučių), o prozos, kuri su ja persikloja, yra 3.1--3.3 poskyriuose. Tie jau peržiūrėti: jie duoda veikimo principus ir atmetimo priežastis, lentelė duoda vertinimus.
+
+#### 142. „Paradigmos" stulpelis buvo nereikalingas, ir jis buvo B1 priežastis ⭐
+
+`tab:metodai` turėjo 8 stulpelius, o `Interpretuojamumas` gavo 1,55 cm. Skiemuo `tuojamumas` yra $\approx$1,6 cm prie `\footnotesize`, tad jis lipo ant gretimo stulpelio ir antraštėje išeidavo `tuojamumadisbalansui` (B1, 13 psl.).
+
+Antra stulpelio eilutė kartojo tą patį žodį po septynis kartus iš eilės (`Prižiūr.` × 7, `Neprižiūr.` × 4, `Gilusis` × 5), nors eilutės ir taip surikiuotos paradigmomis. Grupavimas faile buvo, bet tik `%` komentaruose, t. y. skaitytojui nematomas.
+
+**Stulpelis pakeistas spausdinamomis grupių eilutėmis**, kaip jau daroma `tab:matrica` lentelėje. Rezultatas: 8 stulpeliai virto 7, `Interpretuojamumas` gavo 2,0 cm vietoj 1,55, o `Metodas` 3,0 cm vietoj 2,8. Informacijos neprarasta nė vienos, o skaitytojas grupavimą dabar mato.
+
+Tas pats sprendimas kaip A2 taisyme rugsėjo 14 d.: per siauras stulpelis paverčiamas bloko antrašte.
+
+**Patikrinta po perdarymo:** visos 18 duomenų eilučių turi po 7 langelius, penkios grupių eilutės, paradigmos žymų neliko nė vienos, skliaustai subalansuoti. ⚠️ Vizualiai nepatikrinta, nes kompiliuoti nėra kur; tikrinti `.\build.ps1` išvestyje.
+
+#### Smulkus 3.4 kirpimas
+
+Paaiškinamumo pastraipa sakė, kad SHAP ir LIME reikalauja daug skaičiavimo, o tą patį sako `tab:metodai` žymėjimų išnaša prie `per XAI`. Sutrumpinta 55 → 44 žodžiai.
+
+### Vėliau — 3.5 subsubsection'ai panaikinti, poskyris sutrauktas
+
+Trys `\subsubsection` antraštės („Inferencijos delsa ir diegimo vieta", „Mokymo kaina", „Klasių disbalansas") pakeistos ištisiniu tekstu, kuriame kiekvieną pastraipą atidaro tas pats žodis, kuris buvo antraštėje. Turinys tas pats, bet turinyje nebelieka ketvirtojo lygmens.
+
+**297 → 259 žodžiai.** Iškirsta tai, kas jau pasakyta kitur:
+
+| Kas | Kur tas pats buvo |
+|---|---|
+| Trijų delsos biudžetų (1--10 / 20--50 / $\geq$100 ms) perskaičiavimas | 2.6 poskyris ir gretimo `tab:apribojimai` stulpelis; dabar `\ref{sec:diegimas}` |
+| Atskira pastraipa, kad modelį tenka permokyti | sujungta su ta, kuri sako, kas dėl to atkrenta |
+
+**Šalutinis rezultatas:** `\subsubsection` darbe nebeliko nė vieno. Jie buvo tik šiame poskyryje, tad turinys dabar visur dviejų lygmenų.
+
+**Palikta sąmoningai:** 41,8:1 santykis kartojasi ir 2.3 poskyryje, bet ten jis apibūdina rinkinį, o čia iš jo išvedama konkreti pasekmė (97,7 % tikslumas nieko nedarant), tad tai ne perpasakojimas.
+
+### Vėliau — 3.6 proza sutrumpinta: ją visą nešė „Kas kelia abejonių" stulpelis
+
+**195 → 139 žodžiai.** Iškirsta viena visa pastraipa ir dalis kitos.
+
+`tab:susije` turi stulpelį „Kas kelia abejonių", ir jame kiekvienam darbui jau surašyta tai, ką po lentele kartojo tekstas:
+
+| Prozos teiginys | Lentelės langelis |
+|---|---|
+| „Dalis darbų skelbia aukštus F1, tačiau užduoties detalumo nenurodo" `\cite{nassef2026tinyml}` | „Užduoties granuliarumas nenurodytas…" toje pačioje eilutėje |
+| „kitas pateikia suminį kompromiso įvertį vietoj metrikų kiekvienam modeliui" `\cite{mazinani2026constrained}` | „Skelbiamas suminis kompromiso balas, o ne metrikos kiekvienam modeliui…" |
+| „šimtaprocentinis dažnis atitinka lengviausią įmanomą formuluotę" `\cite{meidan2018nbaiot}` | „TPR 100 % pasiektas lengviausioje įmanomoje formuluotėje: vienas įrenginys, dvi botnetų šeimos" |
+| „Naudota pilna 46 požymių aibė" | pirmos eilutės abejonių langelis |
+
+Visa pastraipa apie metodikos spragas buvo trijų lentelės langelių perpasakojimas su tais pačiais trimis šaltiniais. Pašalinta.
+
+**Palikta:** macro-F1 kritimas nuo 0,9952 iki 0,8903 (lentelėje tai trys eilutės, tekste — viena išvada, kodėl be užduoties detalumo skaičiai nepalyginami), požymių aibės skirtumas su priežastimi, kurios lentelėje nėra, ir 0,89 atskaitos vertė, į kurią remiasi 6.6 poskyris.
+
+⚠️ **Nepadaryta, verta apsvarstyti:** `tab:susije` turi tris `nassef2026tinyml` eilutes, kurių dviejų abejonių langeliai yra „Ta pati problema" ir „Ta pati problema; pramoninis rinkinys, kitas įrenginių profilis". Trys eilutės neša vieną teiginį.
+
+### Vėliau — 3.7 „Kandidatų aibė" pašalintas
+
+#### 143. Poskyris skelbė 4 skyriaus atsakymą prieš 4 skyrių ⭐
+
+3.7 pasakydavo, kad pasirenkami Random Forest, XGBoost, MLP ir autokoderis, ir kiekvienam pateikdavo po pagrindimo sakinį. Bet **4 skyrius tam ir skirtas**: jis pradeda nuo 18 metodų `tab:filtras` lentelėje, pritaiko kietuosius apribojimus, tada svertinę matricą, o 4.7 „Galutinė aibė" paskelbia tuos pačius keturis.
+
+Pagrindimai kartojosi beveik pažodžiui:
+
+| 3.7 | 4.7 |
+|---|---|
+| „XGBoost … vienintelis turi tiesioginį atitikmenį literatūroje" | „XGBoost vienintelis turi tiesioginį atitikmenį literatūroje" |
+| „Daugiasluoksnis perceptronas patikrina, ar didesnis sudėtingumas tokiai įvesčiai duoda naudos" | „Daugiasluoksnis perceptronas atsako, ar sudėtingumas tokiai įvesčiai apsimoka" |
+| „Autokoderis vienintelis gali aptikti atakas, kurių pavyzdžių mokymo metu nebuvo" | „Autokoderis vienintelis aptinka atakas be jų pavyzdžių, tad įtraukiamas dėl funkcinio reikalavimo" |
+| „Random Forest yra atskaitos modelis…" | „Random Forest yra ansamblio pakopa…, nustatanti atskaitos lygį" |
+
+**Kilmė:** žurnale rugsėjo 2 d. įrašyta „T7 atlikta: 2.8 poskyris + fiksuotas ketvertas". Poskyris parašytas atliekant 2 užduotį, kai 3 užduoties dar nebuvo. Kai atsirado 4 skyrius su visa atrankos procedūra, 3.7 liko kaip jos anonsas.
+
+**Pasekmė buvo blogesnė už pasikartojimą:** perskaitęs atsakymą 3 skyriaus pabaigoje, skaitytojas visą 4 skyrių skaito kaip jau priimto sprendimo pateisinimą, o ne kaip atranką. Jautrumo analizė, kietieji apribojimai ir matrica dėl to atrodo kaip dekoracija.
+
+**Patikrinta prieš šalinant:** `sec:kandidatai` etiketė necituojama niekur; 4.1 neremia savęs 3.7 turiniu; abu šaltiniai (`almahaqeri2026gradient`, `meidan2018nbaiot`) cituojami anksčiau, tad `\nocite` eilė nepakito.
+
+**Šalutinis rezultatas:** dingo ir pavadinimų susidūrimas. 3.7 vadinosi „Kandidatų aibė" ir reiškė galutinį ketvertą, o 4.1 pirmas sakinys „Kandidatų aibė siaurinama dviem pakopomis" tuo pačiu vardu vadina 18 metodų aibę.
+
+3 skyrius: 2126 žodžiai (buvo 2028 + lentelės pokyčiai; nuo sesijos pradžios prozos sumažėjo ~190 žodžių).
+
+### Vėliau — `tab:filtras` išnaša sutrumpinta iki vartų apibrėžimų
+
+**37 → 6 žodžiai** po keturių K apibrėžimų. Išimti du sakiniai.
+
+**„K1 ir K2 kyla iš duomenų patikros, K3 ir K4 iš `tab:reikalavimai` lentelės pirmosios eilutės."** Tą patį, tik tiksliau, sako gretimas 4.3 poskyris: `tab:kriterijai` turi stulpelį „Iš ko kyla", o jo resursų eilutėje parašyta „`\ref{tab:reikalavimai}` lentelės pirma eilutė". Kilmė yra kito poskyrio tema, ne šios lentelės išnašos.
+
+**„Vartai taikomi iš eilės, todėl sprendžiantys yra pirmieji, ties kuriais atsiranda ×; pažymimi visi neįveikti."** Paaiškinimas, kurio skaitytojui nereikia, nes **lentelės „Rezultatas" stulpelis sprendžiantį vartą įvardija atvirai**: „Atmetama (K3): …", „Atmetama (K1): …". Sakinys mokė skaityti tai, kas ir taip parašyta.
+
+Palikti keturi K apibrėžimai ir simbolių paaiškinimas, be kurių lentelės perskaityti neįmanoma.
+
+**Pastaba dėl numeracijos:** klausta apie „4.1, kuris yra vien lentelė". 4.1 („Atrankos rėmas") yra 38 žodžiai be lentelės; `tab:filtras` priklauso 4.2. PDF'e jie greičiausiai atsiduria tame pačiame puslapyje, todėl ir atrodo kaip vienas.
+
+### Vėliau — 4.3: keturios formuluotės ir vienas anonsas
+
+Prozos ten 57 žodžiai, tad kirpti iš tiesų beveik nėra ko. Rasta kitko.
+
+| Kas | Buvo | Yra |
+|---|---|---|
+| Pastraipa pradedama neigimu | „Antrosios pakopos kriterijai **neišvedami iš naujo**. Kiekvienas jų nurodo…" | „Kiekvienas antrosios pakopos kriterijus nurodo…" |
+| Lentelės sureikšminimas | „pirma eilutė, **kuri pati nurodo**, kad tai „atrankos kriterijus, ne antraeilis rodiklis“" | „pirma eilutė, kurioje resursai įvardyti kaip atrankos kriterijus" |
+| Dvitaškis vietoj brūkšnio + „o ne tik" | „Ta pati penkta eilutė, antroji jos pasekmė**:** … pagrįsti, **o ne tik iškelti**" | „Ta pati penkta eilutė. Ribotas analitikų pajėgumas reiškia, kad signalą reikia mokėti pagrįsti" |
+| Anonsas | „Svorių įtaka rezultatui vertinama `\ref{sec:jautrumas}` poskyryje." | pašalinta |
+
+**Anonsas pašalintas pagal jau priimtą sprendimą.** Rugsėjo 14 d. trumpinant buvo išbraukta visa kategorija „nuorodos, kur dalykas bus tikrinamas" („Į tai atsižvelgiama šeštame skyriuje", „Todėl penktame skyriuje matuojama…"). Ši buvo tos pačios rūšies ir dar ir bereikalinga, nes jautrumo analizė prasideda po dviejų poskyrių.
+
+**Patikrintas visas darbas dėl tų pačių šablonų.** `ne X, o Y` konstrukcijų rasta keturiolika, bet visos jos informacinės, ne retorinės: „Slenkstis nustatomas iš validacijos aibės, ne iš diegimo srauto" pasako skaitytojui, kuri aibė, o ne kuria kryptimi žavėtis. `Svarbiausia`, `verta pažymėti`, `reikia pabrėžti` tipo savęs reitingavimo neliko nė vieno (išvalyta rugsėjo 14 d.). Naujo taisyti nerasta.
+
+**Svoriai sutikrinti:** 30 + 30 + 25 + 15 = 100. Kokybės kriterijaus skalės viršus (macro-F1 $\geq 0{,}89$) sutampa su 3.6 atskaitos verte.
+
+### Vėliau — formuluočių patikra visame darbe (ko anksčiau nedaryta)
+
+**Sąžiningas atsakymas į klausimą: ne, ankstesnių skyrių dėl formuluočių netikrinau.** Iki 4.3 buvo žiūrima, ar nėra faktinių neatitikimų ir dubliavimo; formuluotės pastebėtos tik pakeliui. Dabar per visus aštuonis skyrius paleista patikra pagal šešis šablonus: savęs reitingavimas, temos anonsavimas, klijuojantys jungimai, atmestinė pabaiga, uodeginė išlyga ir dvitaškis vietoj brūkšnio.
+
+**31 kandidatas, iš jų taisytini 10.** Likę 20 yra teisėti: lentelių ir paveikslų antraštės (`Sprendimų matrica: po filtro likę metodai…`), langelių etiketės (`Žvalgyba: prievadų ir OS skenavimas…`) ir tikri sąrašai (`skiriami trys lygmenys: pats įrenginys, kraštinis šliuzas ir debesis`).
+
+#### 144. Devynios iš dešimties taisytinų vietų buvo šioje sesijoje mano paties įrašytos ⚠️
+
+| Kur | Kas |
+|---|---|
+| Išvados (5 vietos) | `Tikslas pasiektas:`, `duomenų struktūra:`, `šalinimu:`, `netinka:`, `nugalėtojas skiriasi:` |
+| 2.4 (2 vietos) | `nei bazė papildoma:`, `fiksuotos ribos:` |
+| 2.5 (1 vieta) | `priimama kaip prielaida:` |
+| 3.2 (1 vieta) | `tikrinama … poskyryje:` |
+
+Visos jos atsirado kerpant ilgesnį tekstą: du sakiniai sujungiami, o jungtis pakeičiama dvitaškiu. **Trumpinimas savaime linksta į šitą šabloną**, nes dvitaškis atrodo kaip pigiausias būdas sujungti teiginį su jo paaiškinimu.
+
+Visur pakeista tašku arba jungtimi (`nes`, `kad`). Nė vienoje vietoje turinys nepasikeitė.
+
+#### 145. Vienintelė sena vieta — savęs reitingavimas 7.6 poskyryje
+
+*„**Dvi svarbiausios** klaidų rūšys, gerybinio srauto painiava su žvalgyba bei DoS ir DDoS riba, yra duomenų savybė."*
+
+Tai ta pati kategorija, kurią pats valei rugsėjo 14 d. („Svarbiausia išvada ta, kad…", „Du dalykai lentelėje svarbesni už rikiuotę"). Reitingavimas pašalintas visai, klaidų rūšys tiesiog įvardytos. Sakinys nuo to nieko neprarado, nes jos ir taip yra vienintelės dvi, apie kurias kalbama.
+
+**Patikra nėra visiška:** ji gaudo šešis šablonus, ne visą stilių.
+
+### Vėliau — 4.4 išnaša apkarpyta
+
+Poskyris ir taip mažas (104 žodžiai, iš jų 82 lentelės bloke), tad liesta tik išnaša: **62 → 45 žodžiai**.
+
+**Išimta „svertinė suma yra balų ir svorių sandaugų suma."** Svertinės sumos apibrėžimas skaitytojui, kuris ką tik perskaitė stulpelį „Svertinė suma".
+
+**Išimta „iš anksto" iš „pagal `tab:kriterijai` lentelėje iš anksto apibrėžtą skalę".** Skalė ir taip apibrėžta ankstesniame poskyryje, tad eiliškumas matomas iš pačios ataskaitos sandaros. Užrašytas žodžiais jis virsta gynyba nuo nepareikšto priekaišto, kad skalė buvo pritaikyta po balų. Tai ta pati kategorija, kuri valyta rugsėjo 14 d. Metodinis principas lieka kodo komentare, kur jam ir vieta.
+
+**Išimta „todėl jų balai matuoja skirtingus dalykus"** — sakinys prasidėjo teiginiu „sumos tarpusavyje nepalyginamos" ir tuo pačiu baigėsi.
+
+**Palikta:** paaiškinimas, kad neprižiūrimų metodų „Disbalansas" žymi, jog problema jiems nekyla, o ne kad ji išspręsta. Be jo balas 4 toje eilutėje skaitomas kaip pranašumas.
+
+**Patikrinta:** `tab:filtras` praleidžia 8 metodus, `tab:matrica` turi 8 eilutes. Formuluočių patikra 4 skyriuje po taisymo neranda nė vieno kandidato.
+
+### Vėliau — 4.5 proza sutraukta iki išvados
+
+Vakar 4.5 buvo taisyta dėl apverstos krypties (132 radinys), bet apimtis neliesta. Dabar: **proza 55 → 43 žodžiai, išnaša 25 → 19.**
+
+**Pastraipa po lentele buvo lentelės perskaitymas balsu.** Stulpelis „Kada apsiverstų" jau sako „Niekada. Pirmasis ne blogesnis pagal visus keturis kriterijus", „interpretuojamumo svoris turėtų pasiekti 0,42 (dabar 0,15)" ir „aptikimo kokybės svoris turėtų pasiekti 0,44 (dabar 0,30)". Pastraipa tuos pačius tris dalykus perpasakojo sakiniais.
+
+Vietoj jų liko **išvada, kurios lentelėje nėra**: ketverto metodų tarpusavio rikiuotė nuo svorių nepriklauso, o apsiverstų tik poros su sprendimų medžiu, kuris į ketvertą nepateko. Konkrečios ribos paliktos lentelėje, kur jos tikslios.
+
+⭐ **Tai kartu ir 132 radinio profilaktika.** Vakarykštė klaida atsirado būtent todėl, kad proza perpasakojo „Kada apsiverstų" stulpelį ir apvertė kryptį. Kuo mažiau to stulpelio perrašoma sakiniais, tuo mažiau vietų, kur kryptį galima sukeisti.
+
+**Ir tą pačią klaidą vos nepadariau iš naujo.** Pirmoji naujos pastraipos redakcija skambėjo „apsiverstų tik poros su sprendimų medžiu, ir tam interpretuojamumui reikėtų skirti beveik tris kartus daugiau svorio" — bet tai galioja tik vienai iš dviejų sprendimų medžio porų; antroji apsiverčia keliant aptikimo kokybės svorį. Pataisyta prieš įrašant, priskiriant sąlygą konkrečiai porai.
+
+**Išnašoje** išimta „todėl jam jautrumo analizė apskritai nereikalinga" — sakinys ir taip baigėsi teiginiu, kad rezultato joks svorių derinys nekeičia.
+
+### Vėliau — 4.6: išmatuoti skaičiai perleisti 5 skyriui
+
+**134 → 94 žodžiai** trijose pastraipose (visas poskyris buvo 329 žodžiai grynos prozos, didžiausias toks blokas darbe).
+
+**Principas, pagal kurį kirpta:** 4.6 yra protokolas, fiksuojamas **prieš pirmąjį mokymą**, tad jame vieta sprendimams ir taisyklėms, o ne matavimams. Visi iš jo išimti skaičiai yra matavimai, atlikti jau sudarius imtį, ir visi jie yra 5.2 poskyryje kartu su `tab:imtis` lentele.
+
+| Išimta iš 4.6 | Kur lieka |
+|---|---|
+| 53,3 % dublikatų, `DDOS-ICMP_FLOOD` 72,3 %, `BENIGN` 0,4 % | 5.2 ir `tab:imtis` |
+| 5114 vektorių, 10 435 eilutės, 0,43 % | 5.2 |
+| Teorinė riba 99,78 % | 5.2, 6.7 |
+| Trijų šalinamų požymių vardai | 5.3, kartu su tapatybių patikra |
+
+Liko taisyklės: imties riba 100 000 eilučių klasei, valymo tvarka, šalinimas pagal visą eilutę prieš imties sudarymą, dviprasmiškų vektorių palikimas ir teiginys, kad rezultatas virš teorinės ribos reikštų nutekėjimą.
+
+#### 146. Kirpimas atidengė dar vieną dviejų reikšmių vietą ⚠️
+
+4.6 sakė, kad dublikatai susitelkę potvynio klasėse ir `DDOS-ICMP_FLOOD` jų yra **72,3 %**. 5.2 apie tas pačias klases sako **62 %**. Abu gali būti teisingi (vienas apie konkrečią klasę, kitas apie potvynio klases apskritai), bet skaitytojui tai du skaičiai tam pačiam teiginiui gretimuose skyriuose. Su išimta pastraipa klausimas dingo savaime.
+
+Tai ketvirtas tos pačios rūšies atvejis (111, 130, 134 radiniai). Visi keturi atsirado ten, kur tas pats dydis užrašytas dviejuose skyriuose. **Kirpimas čia veikia ir kaip prevencija:** kuo mažiau vietų, kur skaičius pakartotas, tuo mažiau vietų, kur jis gali išsiskirti.
+
+### Vėliau — 4.7 sutrumpintas, 4 skyrius baigtas
+
+**112 → 96 žodžiai.**
+
+- Pirmas sakinys buvo apskritas: *„Rikiuotė galutinės aibės neduoda, nes iš **keturių pasirinktų** metodų lentelės viršūnėje yra tik XGBoost"* — pasirinkimu remiamasi dar prieš jį paskelbiant. Dabar „imami ne keturi geriausi balai".
+- Keturi atskiri sakiniai po vieną metodui sujungti į vieną kabliataškiais skiriamą sakinį.
+- Išimta *„kaip pigus atskaitos modelis jis lieka vertas dėmesio, kaip ir Isolation Forest šalia autokoderio"* — vertinimas be pasekmės. Tą patį klausimą 7.4 ir 7.5 poskyriai kelia konkrečiai: „Sprendimų medis surinko 3,80 balo… šis darbas atsakymo neturi" ir „matricoje jis pralaimėjo Isolation Forest, 2,95 prieš 3,50".
+
+**Abu nepatogūs faktai palikti**, tik trumpiau: sprendimų medis matricoje lenkia Random Forest, o Isolation Forest lenkia autokoderį. Tai vienintelė vieta 4 skyriuje, kur tai pasakyta, tad nešalinta.
+
+**4 skyrius baigtas.** Buvo 1443 žodžiai, dabar 1667 su lentelėmis; grynos prozos sumažėjo apie 120 žodžių (4.3, 4.4, 4.5, 4.6, 4.7), o 4.2 išnaša sutrumpėjo 31 žodžiu.
+
+### Vėliau — 5.1 peržiūra: apimtis gera, bet skaičius neteisingas
+
+Poskyris 69 žodžiai, kirsti nėra ko. Rasti du dalykai.
+
+#### 147. „Šeši žingsniai" nesutapo nei su paveikslu, nei su savo paties sąrašu ⚠️
+
+Tekste buvo *„Aptikimo grandinė sudaryta iš **šešių** žingsnių"*, o toliau einantis sąrašas vardija **penkis** etapus (langas, požymiai, normalizavimas, modelis su įverčiu, sprendimas). `paveikslai.py` diegimo eilutėje piešiamos **septynios** dėžės: `Srauto langas`, `36 požymiai`, `Normalizavimas*`, `Modelis`, `Atakos įvertis`, `Slenkstis τ`, `Pavojaus signalas`.
+
+Trys skirtingi skaičiai tam pačiam dalykui: 6 antraštėje, 5 sakinyje, 7 paveiksle. Skaičius pašalintas visai, nes jis nieko neneša, o kiekvienas jo pakeitimas turėtų būti derinamas su generatoriumi.
+
+#### 148. Paveiksle yra dvi eilutės, o tekstas aprašė tik vieną ⭐
+
+`architektura.pdf` sudarytas iš dviejų juostų: **DIEGIMAS — kraštinis šliuzas** (7 dėžės) ir **MOKYMAS — atskirai, ne šliuze** (6 dėžės: CICIoT2023 45,0 mln., valymas ir dublikatai, imtis 2,43 mln., skaidymas 70/15/15, mokymas, kalibravimas). Iš mokymo juostos į diegimo juostą eina dvi brūkšninės rodyklės — modelis ir slenkstis.
+
+Tekstas aprašė tik viršutinę juostą, tad pusė paveikslo likdavo be paaiškinimo, nors būtent **mokymo ir diegimo atskyrimas yra paveikslo esmė** (taip parašyta ir generatoriaus docstring'e).
+
+Pridėti du sakiniai: grandinė ir jos paruošimas atskirti, o modelis su slenksčiu paruošiami ne šliuze. Poskyris paaugo 8 žodžiais, bet paveikslas dabar padengtas visas, o tolesnė pastraipa apie slenkstį iš validacijos aibės tampa antrosios brūkšninės rodyklės paaiškinimu.
+
+### Vėliau — 5.2: iš teksto išimti skaičiai, kuriuos duoda `tab:imtis`
+
+**Dvi pastraipos 65 → 49 žodžiai.** Lentelė yra generuojama, tad ji ir yra tų skaičių šaltinis; tekste jie buvo perrašyti ranka.
+
+| Buvo tekste | Lentelės langelis |
+|---|---|
+| dublikatų dalis 53,3 % | eilutė „Iš viso" |
+| „potvynio klasėse siekia 62 %" | DDoS 62,2 % (ir DoS 46,1 %) |
+| „nesiekia 1 %" | Gerybinis 0,4 %, Žvalgyba 0,9 %, Žiniatinklio 0,4 %, Grubi jėga 0,0 % |
+| „DDoS gauna 1 049 996, `BruteForce` tik 12 520" | stulpelis „Imtyje" |
+| „Riba taikoma etiketei, o ne kategorijai, todėl…" | lentelės išnaša, pažodžiui ta pati mintis |
+
+**Palikta viskas, ko lentelėje nėra:** valymo skaičiai (45 019 243 ir 1000), 5,4 % valyto rinkinio, „trylikai klasių iš 34 riba neįsijungia", mažiausia klasė 1196 eilutės, disbalansas 84:1 prieš 5764:1, prieštaringos etiketės ir skaidymo skaičiai.
+
+**Palikta ir interpretacija**, kurios lentelė neduoda: dublikatų šalinimas pats savaime mažina disbalansą, nes traukiasi gausiausios klasės. Būtent dėl jos ta pastraipa apskritai reikalinga.
+
+**Šalutinis rezultatas:** vakar iš 4.6 išimtas 72,3 % ir šiandien iš 5.2 išimtas 62 % buvo tie patys „dublikatai potvynio klasėse" dviem skirtingomis reikšmėmis. Dabar tas dydis darbe yra tik vienoje vietoje — generuojamoje lentelėje.
+
+### Vėliau — 5.3: „kodėl ne kitaip" sutrauktas, „kaip" paliktas
+
+**82 → 51 žodis** dviejose pastraipose (visas poskyris 156 → 125).
+
+Dvi pastraipos buvo sudarytos pagal tą pačią schemą: *„Filtras X nepadarytų to, ko reikia"* plius pilnas įrodymas. Tai atsakymas į nepareikštą priekaištą, kodėl nenaudotas įprastas automatinis požymių atrankos būdas.
+
+**Palikti abu lemiantys skaičiai**, nes jie ir yra atsakymas:
+
+- Pearson koreliacija tarp `Variance` ir `Std` tėra 0,737, nors ryšys tikslus, tad koreliacijos slenkstis šios poros nepagautų;
+- šeši beveik pastovūs požymiai rečiausiose klasėse įgyja 7--22 kartus didesnes vidutines reikšmes, o tos klasės ir lemia macro-F1.
+
+**Išimta:** įprasto 0,95 slenksčio minėjimas, šešių požymių vardų sąrašas, du atskiri pavyzdžiai (`IRC` 21,8 karto ties `BACKDOOR_MALWARE`, `cwr_flag_number` 15,6 karto ties `UPLOADING_ATTACK`) ir apibendrinantis sakinys „Požymiai silpni, bet jie skiria klases, kurios ir lemia macro-F1", kuris dabar įaugo į patį teiginį.
+
+**Nepaliestas „kaip":** trys šalinami požymiai su tapatybėmis ir jų patikra, `Protocol Type` sprendimas su 69,8--94,4 % sutapimu, vėliavėlių stulpelių prigimtis.
+
+> Vadovo taisyklė (rugs. 3): į ataskaitą eina kas išmatuota, kas pasirinkta ir kokia to pasekmė; kaip prie to prieita — į žurnalą. Abi iškirstos pastraipos buvo trečioji kategorija.
+
+### Vėliau — 5.4 palikti tik faktai
+
+**130 → 96 žodžių.**
+
+| Išimta | Kodėl |
+|---|---|
+| „Autokoderis klasių neturi, tad bendro macro-F1 stulpelio visiems keturiems sudaryti neįmanoma, o medžių ansambliams skalės nereikia" | `ataskaitos_defektai.md` C dalyje jau pažymėta kaip du nesusiję teiginiai viename sakinyje. Abu yra pagrindimas, kodėl sąsaja turi tuos du laukus, o patys laukai įvardyti sakiniu anksčiau |
+| „nes `scale_pos_weight` veikia tik dvejetainėje užduotyje ir **daugiaklasėje ignoruojamas be įspėjimo**" | likusi trumpesnė forma pasako tą patį; „be įspėjimo" yra pasakojimas apie derinimo eigą |
+| „o autokoderio prielaida yra švarus jo profilis" | antras tos pačios išvados pagrindimas |
+
+**Patikrinta, kad iškirstas paaiškinimas neprapuolė.** Kodėl `tab:suvestine` turi du blokus, pasakyta pačios lentelės išnašoje: „Dviejų blokų reikšmės tarpusavyje nepalyginamos, nes prižiūrimi modeliai sprendžia aštuonių kategorijų uždavinį, o autokoderis dvejetainį." Ta išnaša generuojama kartu su lentele, tad stovi ten, kur ir reikia.
+
+**Palikti faktai:** vienoda sąsaja su keturiais metodais, du sąsajos laukai, ką grąžina `predict_proba` kiekvienai paradigmai, `StandardScaler` tik mokymo aibei su išsaugoma skale, klasių svoriai ir jų santykis 83,9, eilučių svorių masyvas XGBoost'ui, gerybinio srauto nesintetinimas.
+
+⚠️ **Pastebėta 7.2 poskyriui:** jo pastraipa „Jo PR-AUC yra 0,996, tad rikiuoja jis gerai, o sprendimo ties reikalaujamu biudžetu nepriima" pažodžiui atkartoja `suvestine.tex` išnašos paskutinį sakinį.
+
+### Vėliau — 5.6: iš teksto išimta tai, ką sako lentelė ir kiti skyriai
+
+**Dvi pastraipos 49 → 23 žodžiai.** 5 skyrius dabar 841 žodis.
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| „Kiekvienas modelis mokomas su trimis pradiniais dydžiais." | 4.6 protokole ir `veikimas.tex` išnašoje („vidurkis ± standartinis nuokrypis iš 3 paleidimų") |
+| „Testavimo aibė vertinimo etape lieka nepaliesta." | 4.6 protokole ir 6.7 poskyryje („Testavimo aibė neįtakojo nė vieno sprendimo") |
+| „Visi keturi metodai telpa į 20--50 ms biudžetą su trijų eilių atsarga" | **6.2 poskyryje, tik tiksliau ir ant testavimo aibės:** „Inferencijos delsa visiems keturiems modeliams yra 3--30 mikrosekundžių vienam įrašui, t. y. tris eiles mažesnė už 20--50 ms biudžetą" |
+
+Trečiasis atvejis yra tas pats šablonas kaip 5.5: **ta pati išvada du kartus, vieną kartą ant validacijos, kitą ant testavimo aibės.** Palikta ten, kur ji daroma iš testavimo aibės.
+
+Liko grynas „kaip": eksperimentų aprašymas konfigūracijos failais, dviejų nepriklausomų perleidimų sutapimas iki $1\cdot10^{-5}$, delsos matavimas procesoriumi su priežastimi, prototipo aprašymas ir paaiškinimas, kodėl prototipo delsa didesnė (langai apdorojami po 250).
+
+⚠️ **Verta apsvarstyti atskirai:** `veikimas.tex` (validacija) ir `veikimas_test.tex` (testavimas) turi tuos pačius stulpelius, o mokymo laiko stulpelis abiejose lentelėse yra tas pats dydis, nes mokymas nuo vertinimo aibės nepriklauso. Tai tokia pati pora kaip `slenkstis.tex` / `slenkstis_test.tex`, kurios validacijos variantas po 5.5 apkarpymo liko nenaudojamas. Čia `tab:veikimas` dar naudojama: į ją rodo prototipo delsos palyginimas, ir tai teisinga, nes prototipas dirba su validacijos aibe.
+
+### Vėliau — 6.1: protokolas buvo perrašytas trečią kartą
+
+**100 → 73 žodžiai.** Lentelės 6.1 neturi; ji prasideda 6.2 poskyryje, tad PDF'e jos atsiduria greta.
+
+#### 149. Tas pats protokolas darbe surašytas trijose vietose ⚠️
+
+| Teiginys | 4.6 | 6.1 | 7.1 |
+|---|---|---|---|
+| Testavimo aibė neliečiama iki vertinimo | ✔ | ✔ | |
+| Trys paleidimai, vidurkis ir standartinis nuokrypis | ✔ | ✔ | |
+| Pagrindinė formuluotė aštuonios kategorijos | ✔ | ✔ | |
+| Skirtumas tikras tik viršijęs paleidimų sklaidą `\cite{dietterich1998tests}` | ✔ | ✔ | ✔ |
+| Palyginimas ties klaidingų teigiamų biudžetu | | ✔ | ✔ |
+
+4.6 yra protokolas, **užrakintas prieš eksperimentus** — tai jo paskirtis ir jo vertė. 6.1 ir 7.1 tą patį perpasakoja skaitytojui, kuris jį jau skaitė prieš vieną skyrių.
+
+**6.1 palikta tik tai, ko reikia būtent čia:** kad testavimo aibė atidaryta vienu prėjimu, kokia formuluotė ir kiek paleidimų stovi už skaičių lentelėse, kad lyginama ties biudžetu, o argmax rodomas šalia, ir kodėl nėra statistinio testo. Likusi dalis pakeista nuoroda į `\ref{sec:protokolas}`.
+
+Paliktas ir tikslesnis paaiškinimas, kurio 4.6 neturi: trijų paleidimų $t$ testas turi **pervertintą pirmos rūšies klaidos tikimybę**, o 4.6 tik sako, kad paleidimų „nepakanka".
+
+⚠️ **7.1 lieka trečia kopija** — jį peržiūrint reikės spręsti, ar palikti vien nuorodą.
+
+**Smulkmena:** `sec:formuluotes` etiketė (6.6) po kirpimo nebeturi nuorodų. LaTeX dėl to nesiskundžia, tad palikta.
+
+### Vėliau — 15 lentelė 6.1 puslapyje: plaukiojantis objektas, ne 6.1 turinys
+
+6.1 nedeklaruoja nė vienos lentelės. 15 lentelė PDF'e yra `tab:veikimas` iš **5.6 poskyrio**, nuplaukusi į kitą puslapį, nes ji paskelbta su `[htbp]`.
+
+**Numeracija atkurta ir sutikrinta.** Paskutinis surinktas PDF dar turi `tab:slenkstis`, kurią pašalinau po to, tad tame PDF'e numeriai nuo 14-os yra vienetu didesni nei dabar faile. Patikra pagal `ataskaitos_defektai.md`: B9 sako „20 lentelėje yra MLP (bazinis)" (dabartinė 19 = `tab:slenkstis_test`, joje MLP bazinis yra) ir „24 lentelėje (7.2)" (dabartinė 23 = `tab:suvestine`, 7.2 poskyris). Abu sutampa, tad 15 = `tab:veikimas`.
+
+⚠️ **Ir tai iš dalies mano ką tik padaryto kirpimo pasekmė.** Sakinys „Visi keturi metodai telpa į 20--50 ms biudžetą…", stovėjęs iškart po lentele, buvo vienintelė `\ref{tab:veikimas}` nuoroda šalia jos. Jį iškirtus liko tik nuoroda pačioje poskyrio pabaigoje, prie prototipo, o toli nuo nuorodos stovinti lentelė plaukia dar laisviau.
+
+Nuoroda grąžinta į delsos matavimo sakinį („Inferencijos delsa (`\ref{tab:veikimas}` lentelė) matuojama procesoriumi…"), nekartojant iškirstos išvados.
+
+**Ką daryti toliau:** po `.\build.ps1` pažiūrėti, kur lentelė atsiduria. Jei vis tiek nuplaukia, keisti `[htbp]` į `[H]`; darbe tai jau daroma trijose 4 skyriaus lentelėse (`tab:kriterijai`, `tab:matrica`, `tab:jautrumas`).
+
+### Vėliau — ATŠAUKIAMA: 15 lentelė yra `tab:rezultatai_test`, ne `tab:veikimas`
+
+Ankstesnis įrašas klaidingas. Numeraciją atkūriau darydamas prielaidą, kad PDF dar skaičiuoja pašalintą `tab:slenkstis`, ir pagal ją gavau poslinkį per vienetą. Prielaida neteisinga: **15 lentelė yra „Aptikimo kokybė testavimo aibėje", t. y. `tab:rezultatai_test`**, ir failų eilė sutampa su PDF be jokio poslinkio.
+
+#### 150. 14 iš 24 lentelių darbe niekur necituojamos ⚠️⚠️
+
+Tikroji priežastis, kodėl lentelės atsiduria ne po tuo poskyriu, kuriam priklauso:
+
+| Kur | Lentelės be nė vienos `\ref` |
+|---|---|
+| 2 sk. | `tab:diegimas` |
+| 3 sk. | `tab:apribojimai` |
+| 4 sk. | `tab:jautrumas` |
+| 6 sk. | **visos septynios** |
+| 7 sk. | **abi** |
+
+`tab:rezultatai_test` dar ir buvo paskelbta iškart po 6.2 antrašte, prieš bet kokį tekstą. Plaukiojantis objektas su `[htbp]` ir be nuorodos keliauja į artimiausią laisvą vietą, o ji dažnai yra ankstesnio poskyrio puslapio viršus.
+
+**Pataisyta 6.2:** lentelė perkelta už pirmos pastraipos, o pastraipa dabar į ją rodo („kaip rodo `\ref{tab:rezultatai_test}` lentelė").
+
+#### 151. Vieną nuorodą pats iškirtau
+
+Sutikrinus su paskutiniu commit'u: iš keturiolikos necituojamų lentelių dvylika neturėjo nuorodos ir anksčiau, o dvi ją turėjo ir prarado.
+
+- `tab:matrica` — nuoroda buvo 4.7 sakinyje *„iš keturių pasirinktų metodų `\ref{tab:matrica}` lentelės viršūnėje yra tik XGBoost"*, kurį perrašiau kaip apskritą. **Grąžinta.**
+- `tab:klaidu_tipai` — nuoroda dingo taisymuose iki šios sesijos (6.3 poskyrio neliečiau).
+
+> **Pamoka:** perrašant sakinį reikia tikrinti ne tik jo turinį, bet ir ar jame nebuvo vienintelės nuorodos į lentelę. Formuluočių patikra to negaudo.
+
+#### 152. Apie maketą spręsta iš `.tex`, neatvėrus PDF ⚠️⚠️
+
+Visi šios sesijos teiginiai apie lentelių numerius ir jų vietą puslapiuose buvo daryti skaitant tik `.tex` failus. Iš jų matyti eilė, bet nematyti nei numerio, nei puslapio, nei kur nuplaukia `[htbp]` objektas. Todėl ir atsirado klaidinga „15 = `tab:veikimas`" rekonstrukcija.
+
+**Dabar PDF atvertas.** `ataskaita.pdf`, 43 psl., surinktas 10:52, jau su šios sesijos taisymais. `pdftotext` yra ir mašinos Linux pusėje, tad tai buvo galima daryti nuo pat pradžių.
+
+**Ką rodo PDF:**
+
+- **15 lentelė „Aptikimo kokybė testavimo aibėje" yra 26 puslapyje, 6.2 poskyryje**, iškart po pastraipa, kuri į ją rodo. Prieš taisymą lentelė buvo paskelbta prieš bet kokį 6.2 tekstą ir be nuorodos, tad plaukė į puslapio viršų, o to puslapio viršuje baigiasi 6.1. Būtent tai ir buvo matoma.
+- Neišspręstų nuorodų (`??`) nėra nė vienos, tad naujas šaltinis ir visos naujos `\ref` komandos susirišo.
+- Literatūros sąrašas prasideda 41 puslapyje.
+
+**Taisyklė toliau:** bet koks teiginys apie numerius, puslapius, lentelių vietą ar perpildymą tikrinamas `pdftotext ataskaita.pdf`, ne `.tex` faile.
+
+### Vėliau — 6.2 sutrumpintas, sandara palikta
+
+Sandara nekeista: abi lentelės lieka 6.2 poskyryje. **Proza 108 → 80 žodžių** trijose pastraipose (visas poskyris ~182 → 154).
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| Triju modelių macro-F1 rikiuotės perskaitymas (0,7276 / 0,7210 / 0,6346) | 15 lentelė, o 7.2 dar kartą: „ties argmax pirmauja Random Forest (0,727 prieš 0,721)" |
+| Autokoderio \num{0.2187} ir 0,93 % | 15 lentelė ir 7.2 pastraipa |
+| „3--30 mikrosekundžių vienam įrašui" | 16 lentelės stulpelis |
+| „užima 638 MB diske", „XGBoost su 45 MB" | 16 lentelės stulpelis, o dydžių istorija dar ir 7.2 bei 7.7 |
+
+**Palikta tai, ko lentelėse nėra:** kad persvara 0,0066 viršija paleidimų sklaidą 0,0001 ir todėl nėra atsitiktinė; kad rikiuotė ties biudžetu apsiverčia ir tas pats reiškinys matomas validacijos aibėje bei su nesuderintais hiperparametrais; kad delsa tris eiles mažesnė už biudžetą; kad Random Forest į 1--8 GB įrenginį netelpa.
+
+**Abi lentelės gavo `\ref` nuorodas.** 16 lentelė jos neturėjo, todėl PDF'e nuplaukdavo į 27 puslapio viršų, virš „6.3 Klaidų analizė" antraštės.
+
+⚠️ **Pastebėta 7.2 poskyriui:** sakinys „o priežastis yra tikimybių skiriamoji geba (`\ref{sec:slenkstis}` poskyris)" yra ir 6.2, ir 7.2, pažodžiui su ta pačia nuoroda.
+
+### Vėliau — 6.3: išimta tai, ką skaitytojas mato lentelėse
+
+**Trys vietos, 104 → 67 žodžiai** (visas poskyris ~267 → 230).
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| „klaidingas teigiamas, praleista ataka ir painiava tarp dviejų atakų kategorijų" | 17 lentelės stulpelių pavadinimai, o kainų skirtumą paaiškina tos pačios lentelės išnaša |
+| „gerybinio srauto tikslumas tesiekia 0,543" | 18 lentelės `Benign` eilutė |
+| „Web ($n=3556$) ir BruteForce ($n=1878$) F1 yra 0,38--0,47 medžių ansambliuose ir 0,21--0,22 MLP, o Mirai siekia 0,998" | 18 lentelė, po vieną langelį kiekvienam skaičiui |
+| „kurių tikslumas tesiekia 0,125--0,137 prie atkūrimo 0,60--0,62" | 18 lentelės MLP blokas |
+
+**Palikta viskas, ko lentelėse nėra:** 63,5 % klaidų sudaranti DDoS ir DoS pora su tiksliais skaičiais iš sumaišymo matricos, išvada, kad abi kategorijos sukelia tą patį veiksmą, paaiškinimas, kodėl tikslumas 0,8303 nereiškia praleistos kas šeštos atakos, gerybinio srauto ir žvalgybos painiavos dydžiai iš matricos, ir sąsaja su 1 lentelėje užfiksuotu apribojimu.
+
+**Abi lentelės gavo nuorodas** (17 jos neturėjo iš viso, 18 turėjo, bet ji dingo ankstesniuose taisymuose).
+
+**Pastaba dėl savo paties formuluočių:** pirmoji naujos pastraipos redakcija turėjo dvitaškį vietoj jungties („eina būtent į tas dvi retas kategorijas: klasių svoriai…") ir teiginį „gausiausiose atpažinimas beveik nepriekaištingas", kurio 18 lentelė nepatvirtina (DDoS F1 ties MLP yra 0,847). Abu pataisyti prieš įrašant.
+
+### Vėliau — 6.4 sutrumpintas
+
+**Dvi vietos, 62 → 38 žodžiai.**
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| „klaidingų teigiamų dalis yra 21--31 %", „krenta iki 0,95 %", „aptikimas išlieka 88,5 %" | 19 lentelė, `argmax` ir $\tau$ eilutės kiekvienam modeliui |
+| „Web tik 37,5 %" | 5 paveikslas; Recon palikta kaip ryškiausias atvejis |
+
+Palikta tai, ko lentelė neduoda: kad klaidingų teigiamų sumažėja **daugiau nei dvidešimt kartų**, o macro-F1 tik 8 %; autokoderio kreivės lūžis tarp 95-ojo ir 99-ojo procentilio; ir išvada, kad biudžeto laikymasis perkamas žvalgybos aptikimu.
+
+**19 lentelė gavo nuorodą** (neturėjo nė vienos).
+
+#### 153. Kerpant vos neįrašiau teiginio, kurio lentelė paneigia ⚠️
+
+Sutrumpintoje pastraipoje buvau parašęs „Aptikimo lygis beveik nekinta". **Lentelė sako priešingai:** ties argmax aptinkama 96--97 %, ties $\tau$ 85--88 %, t. y. krenta apie devynis punktus. Sakinys pašalintas visai; aptikimo lygiai lieka lentelėje.
+
+Tai antras toks atvejis per dvi valandas (6.3 „gausiausiose atpažinimas beveik nepriekaištingas" prieš DDoS F1 0,847). **Abu kartus klaida atsirado ne kerpant, o rašant naują apibendrinantį sakinį vietoj iškirptų skaičių.** Iškirpti skaičių saugu; pakeisti jį savo žodžiais — ne.
+
+### Vėliau — 6.5: palikti rezultatai ir ką jie reiškia
+
+**225 → 175 žodžiai.**
+
+**Iškirsta visa metodikos pastraipa**, nes visi trys jos sakiniai yra 20 lentelės išnašoje: kad klausiama tik apie „bet kurią ataką", kad macro-F1 netinka, nes pašalinus `DICTIONARYBRUTEFORCE` ištuštėja `BruteForce` kategorija, ir kad autokoderis nepermokomas, nes jam visos klasės ir taip nematytos.
+
+**Iškirstas trijų punktų sąrašas** su 0,0 / 1,5 / 21,3 procentinio punkto reikšmėmis. Tai lentelės dviejų paskutinių stulpelių atimtis (99,9−99,9, 48,7−47,2, 45,7−24,4), kurią skaitytojas mato pats. ⭐ **Kartu dingo ir `ataskaitos_defektai.md` B5 defektas** — būtent šis sąrašas PDF'e buvo perskeltas per du puslapius, du punktai 34-ame, trečias 35-ame po lentele.
+
+**Palikta:** pagrindinis rezultatas su prielaidos verdiktu; paaiškinimas, kad skirtumą lemia ne klasė, o tai, ar išlieka jos kategorija (11 ir 4 giminingos klasės prieš vienintelę); `DDOS-SLOWLORIS` atvejis su priežastimi (nėra trukmės požymio) ir jo pasekme eksploatacijai; rezultato galiojimo riba.
+
+**20 lentelė gavo nuorodą** (neturėjo nė vienos); kartu iš teksto išimtos jos reikšmės 24,4 % ir 25,3 %, likus tik skirtumui 0,9 punkto.
+
+### Vėliau — 6.6: formuluotės ir B3 defektas
+
+**190 → 156 žodžiai.**
+
+**Keturios pastraipos prasidėdavo antrašte, o ne teiginiu:**
+
+| Buvo | Yra |
+|---|---|
+| „Skiriasi **ne tik** lygis, **bet ir** dėsningumo forma." | pastraipa prasideda pačiu palyginimu |
+| „**Taip atrodytų, jei** mokymo aibėje liktų pasikartojančių eilučių." | „Toks skirtumas kyla iš dublikatų." |
+| „Didžiausias atotrūkis yra paprasčiausioje užduotyje." | įaugo į sakinį apie dvejetainę formuluotę |
+| „Detalumas kainuoja pagal visas ašis." | įaugo į sakinį apie perėjimą prie 34 klasių |
+
+Visi keturi yra tas pats šablonas: sakinys, kuris paskelbia, ką pastraipa įrodys, o po to ji tai įrodo. Iš „trys **išmatuoti** veiksniai" nuimtas ir pats savęs patvirtinimas.
+
+**Iškirsti lentelių skaičiai:** keturi rėžiai (0,001 / 0,108 / 0,123 / 0,173) iš 21 lentelės paskutinės eilutės ir šeši veikimo rodikliai (45 → 113 MB, 112 → 407 s, 29,6 → 90,1 µs) iš 16 lentelės. Vietoj jų liko nuorodos į abi lenteles.
+
+#### 154. Uždarytas B3 defektas
+
+`tab:formuluotes` buvo vienintelė darbo lentelė, kurios `\caption` stovėjo **po** `tabularx`, tad PDF'e antraštė atsidurdavo po lentele. Perkelta virš jos, kaip visose kitose. Kartu lentelė gavo ir pirmą `\ref` nuorodą.
+
+### Vėliau — 6.7: numeravimo antraštės ir pamokos formuluotė
+
+**118 → 93 žodžiai** dviejose paskutinėse pastraipose. 6 skyrius baigtas: 1485 → 1323 žodžiai.
+
+| Išimta | Kodėl |
+|---|---|
+| „**Pirmasis radinys yra** operacinio taško perkeliamumas." | pastraipa iš karto pasako, kas išmatuota; pavadinti radinį numeriu nieko neprideda |
+| „**Antrasis radinys yra** dedublikavimo ir požymių atrankos tvarka." | tas pats; dabar pastraipa prasideda pačia taisykle |
+| „**bet taisyklė iš to aiški.** Dedublikavimas ir požymių atranka turi vykti toje pačioje erdvėje." | „štai ir pamoka" konstrukcija prieš pačią pamoką; taisyklė perkelta į pastraipos pradžią ir sakoma tiesiai |
+| „Slenkstį reikia rinkti su atsarga, pavyzdžiui, ties 80 % biudžeto." | **pažodžiui yra 7.7 poskyryje**, kur ir turi būti, nes tai rekomendacija; 6.7 lieka radinys, kodėl atsargos reikia |
+
+Pirmųjų trijų patikrų sandara („teiginys, tada įrodymas") nekeista — tai ne šablonas, o tinkamas patikrų sąrašo pavidalas, ir jis nuoseklus visose trijose.
+
+**22 lentelė gavo nuorodą** (neturėjo nė vienos).
+
+### Vėliau — 7.1 perrašytas, terminija suvienodinta
+
+#### 155. 7.1 buvo neperskaitomas, ir priežastis ne stilius, o neapibrėžti terminai ⚠️⚠️
+
+Buvęs tekstas: *„Palyginimas atliekamas ties **suderintu klaidingų teigiamų biudžetu**. Palyginimas **ties didžiausios tikimybės tašku matuotų tašką, kurio sistema niekada nedirbtų**. Skirtumai vertinami ta pačia taisykle kaip 6 skyriuje. Tikru laikomas tik toks skirtumas, kuris viršija **paleidimų sklaidą**."*
+
+Keturiuose sakiniuose trys neapibrėžti terminai ir viena susukta konstrukcija („matuotų tašką, kurio sistema nedirbtų"). Perrašyta paprastais žodžiais: lyginama ties tuo pačiu klaidingų teigiamų lygiu, nes tik tokiu sistema realiai dirbtų, o didžiausios tikimybės taisyklė paaiškinta skliaustuose („kai atsakymu imama labiausiai tikėtina klasė be slenksčio"). 36 → 58 žodžiai; **čia ilgiau reiškia geriau**.
+
+#### 156. Tas pats dalykas darbe vadinamas dviem vardais, o vienas jų niekur nepaaiškintas ⚠️
+
+| Sąvoka | Prozoje | Lentelėse |
+|---|---|---|
+| didžiausios tikimybės taškas | 6 kartai | 1 |
+| **`argmax`** | 5 kartai (7 sk. ir išvados) | **11** |
+
+Skaitytojas žodį `argmax` pirmą kartą sutinka **lentelės eilutės pavadinime**, niekur neapibrėžtą, o prozoje tas pats dalykas vadinamas lietuviškai. Tas pats šablonas kaip `Atsitiktinis miškas` prieš `Random Forest` ir `makro-F1` prieš `macro-F1`.
+
+**Sprendimas be generatorių keitimo:** sąvoka įvedama 5.5 poskyryje, kur ji darbe atsiranda pirmą kartą, kartu nurodant, kad lentelėse ji žymima `argmax`. Prozoje visur lieka lietuviškas pavadinimas, lentelėse — `argmax`, ir skaitytojas vieną kartą sužino, kad tai tas pats.
+
+**Taip pat suvienodinta „paleidimų sklaida".** Terminas paaiškintas 6.1 poskyryje prie pirmo vartojimo rezultatų dalyje („to paties modelio pakartotinų paleidimų svyravimą"), o toliau vartojamas trumpasis pavadinimas.
+
+⚠️ **Verta patikrinti ir kitus terminus** tuo pačiu principu: `operacinis taškas`, `abliacija`, `zero-day` prieš `nematytos atakos`.
+
+### Vėliau — 7.2 sutrumpintas
+
+**99 → 65 žodžiai.**
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| „XGBoost (0,663), Random Forest (0,646), MLP (0,595)" | 23 lentelės stulpelis `macro-F1 ties $\tau$` |
+| „aptikimo lygis panašus (85--89 %)" | stulpelis `Atakų aptikta` |
+| „Nuo 0,52 MB iki 638 MB macro-F1 pakyla nuo 0,595 iki 0,646" | stulpeliai `Dydis, MB` ir `macro-F1 ties $\tau$` |
+| „(0,93 % klaidingų teigiamų)" | stulpelis `FPR` |
+| **„Jo PR-AUC yra 0,996, tad rikiuoja jis gerai, o sprendimo ties reikalaujamu biudžetu nepriima."** | **`suvestine.tex` išnašos paskutinis sakinys**, beveik pažodžiui: „Autokoderio PR-AUC yra 0,996, t. y. rikiavimas geras, nors sprendimas ties reikalaujamu biudžetu nepakankamas" |
+
+Paskutinis atvejis buvo pastebėtas dar tvarkant 5.4 ir dabar uždarytas. Išnaša generuojama kartu su lentele, tad ji ir lieka tų žodžių šaltiniu.
+
+**Palikta:** išvada, kad skirtumą daro ne aptiktų atakų kiekis, o priskyrimo tikslumas ir biudžeto kaina; santykis „dydžiai skiriasi tūkstantį kartų, o macro-F1 tik dešimtadaliu"; autokoderio 18,6 % ir DDoS 30,8 % (antrojo lentelėje nėra).
+
+**Išimtas ir anonsas** „ir šis neproporcingumas lemia rekomendaciją" — 7.7 poskyris rekomendaciją pateikia pats.
+
+**23 lentelė gavo nuorodą** (neturėjo nė vienos).
+
+### Vėliau — 7.3 sutrumpintas trečdaliu
+
+**250 → 168 žodžių.** Ilgas jis buvo ne dėl turinio, o todėl, kad kiekvieną verdiktą lydėjo visi jį pagrindžiantys skaičiai, jau esantys 23 lentelėje, 6 paveiksle arba ankstesniuose skyriuose.
+
+| Išimta | Kur tas pats yra |
+|---|---|
+| „XGBoost netenka 8,1 %, Random Forest 11,3 %, MLP 6,3 %" | 6 paveikslas, kurio antraštė sako, kad skaičius virš stulpelių rodo santykinį kritimą |
+| „Ties didžiausios tikimybės tašku pirmauja Random Forest (0,727 prieš 0,721), ties biudžetu XGBoost (0,663 prieš 0,646)" | 23 lentelė ir 6.2 poskyris |
+| „o priežastis yra tikimybių skiriamoji geba (5.5 poskyris)" | **pažodžiui 6.2 poskyryje**; dabar liko tik ten, kur matavimas ir daromas |
+| „14 kartų didesnis už XGBoost (638 MB prieš 45 MB)" | 23 lentelė |
+| „Į atmintį modelis įkeliamas kelis kartus didesnis, tad 1--8 GB įrenginyje netelpa" | 6.2 poskyris |
+| „(0,52 MB)", „kainuoja 0,068 macro-F1" | 23 lentelė |
+| „auga 2,5--3,6 karto, o macro-F1 krenta nuo 0,721 iki 0,646" | 16 ir 21 lentelės; 6.6 tą patį jau sako |
+| „18,6 % prieš 85--89 % aptikimo" | 23 lentelė ir 7.2 poskyris |
+
+**Visi keturi verdiktai palikti**, nes tai rezultatai, o ne vertinimai: Random Forest nė pagal vieną kriterijų nėra geresnis už XGBoost; tikras kompromisas yra tarp XGBoost ir MLP; smulkesnis detalumas kainuoja visomis ašimis ir negrąžina nieko; prižiūrimo ir neprižiūrimo skirtumas nėra laipsniškas. Kiekvienas jų dabar pasakomas **po vieną kartą**, be pakartotinio skaičių išvardijimo.
+
+Palikti ir du dalykai, kurių niekur kitur nėra: metodinė pastaba, kad darbuose, skelbiančiuose tik didžiausios tikimybės rezultatą, nugalėtojas gali būti kitas, ir paaiškinimas, kodėl aukštas PR-AUC neprieštarauja prastam aptikimui.
+
+7 skyrius: 1129 → 1037 žodžių.
+
+### Vėliau — 7.4 kirptas mažai ir sąmoningai
+
+**68 → 61 žodis** trijose vietose. Poskyris beveik visas yra turinys, kurio niekur kitur nėra.
+
+Išimti tik lentelėse esantys skaičiai: trys matricos balai (4,70 / 3,55 / 3,25) ir sprendimų medžio 3,80, pakeisti nuoroda į `tab:matrica` ir palyginimu „daugiau balų nei Random Forest"; taip pat 638 MB pirmame paminėjime, nes tas pats skaičius po dviejų sakinių yra 196 → 638 MB palyginimo antroje pusėje, kur jis ir neša mintį.
+
+**Nekeista sandara „Sutapimas turi dvi išlygas. Pirma… Antra…"** Tai ne anonsas, o dviejų dalių jungtis: skaitytojui pasakoma, kiek išlygų bus, ir kiekviena gauna savo pastraipą. Skiriasi nuo 6.7 „Pirmasis radinys yra…", kuris pastraipos turinį tik pavadindavo iš naujo.
+
+**Palikti visi trys nepatogūs teiginiai**, nes jie yra šio poskyrio esmė: matricos prognozė sutampa tik ties operaciniu tašku; Random Forest resursų balas buvo **sisteminė klaida**, nes skalė neapima mokymo aibės dydžio (196 MB imtyje virto 638 MB pilnoje aibėje); sprendimų medis surinko daugiau balų, bet liko nepatikrintas.
+
+Šis poskyris yra vienintelė vieta darbe, kur matricos prognozė gretinama su matavimu, tad jo kirpti giliau nėra prasmės.
+
+### Vėliau — 7.5: palikti verdiktai, matavimas grąžintas 6.5 poskyriui
+
+**120 → 86 žodžiai.**
+
+Poskyris kartojo tai, kas ką tik išmatuota 6.5:
+
+| Išimta iš 7.5 | Kur tas pats yra |
+|---|---|
+| „Prižiūrimas modelis, klasės niekada nematęs, aptinka ją geriau dviem atvejais iš trijų, o trečiuoju atsilieka 0,9 procentinio punkto" | **pažodžiui 6.5** |
+| „Kai kategorija išlieka, aptikimas nukrenta 0,0--1,5 procentinio punkto, o kai ištuštėja, 21,3 punkto" | tos pačios reikšmės, kurias prieš valandą iškirpau iš 6.5 kaip 20 lentelės perskaitymą; jos grįždavo čia |
+| „(matricoje jis pralaimėjo Isolation Forest, 2,95 prieš 3,50)" | `tab:matrica`; 4.7 tą patį sako žodžiais |
+
+Vietoj jų liko nuorodos į 4.7 ir 6.5.
+
+**Palikti trys dalykai, kurių niekur kitur nėra ir kurie yra šio poskyrio paskirtis:**
+
+1. verdiktas, kad neprižiūrimas metodas ketverte savo vietos nepateisino, nes pralaimi ir pagrindinį uždavinį, ir tą, kuriam buvo įtrauktas;
+2. iš matricos sekantis atviras klausimas, kad ketvirtoji vieta būtų buvusi naudingesnė Isolation Forest arba antram prižiūrimam metodui;
+3. ⭐ perfrazavimas, kad zero-day klausimas yra ne „prižiūrimas ar neprižiūrimas", o „ar nauja ataka patenka į jau žinomą šeimą".
+
+Trečiasis yra bene stipriausias viso 7 skyriaus sakinys, ir anksčiau jis stovėjo po dviem pastraipomis perpasakotų skaičių.
+
+7 skyrius: 1129 → 996 žodžių.
+
+### Vėliau — 7.6: tekstas kartojo generuojamos lentelės išnašą
+
+**144 → 128 žodžiai** (su įžanga 170 → 150).
+
+`pozymiai.tex` išnaša generuojama kartu su lentele, ir joje jau yra beveik viskas, ką sakė tekstas:
+
+| Prozos sakinys | Išnašos sakinys |
+|---|---|
+| „Informacijos prieaugis nerodo krypties. Jis pasako, kuo modelis remiasi, o ne kokia požymio reikšmė reiškia ataką." | **„Gain nerodo krypties. Jis pasako, kuo modelis remiasi, o ne kokia požymio reikšmė reiškia ataką."** — pažodžiui |
+| „penki pirmieji kartu 80,4 %" | „Penki pirmieji požymiai surenka 80,4 %" |
+| „Šeši sąmoningai palikti mažos dispersijos požymiai kartu surenka 1,9 % prieaugio" | tas pats sakinys |
+| „apskaičiuojamas iš paties modelio" | „Skaičiuojama iš paties modelio" |
+| „62,3 %", „6,0 %" | lentelės eilutės |
+
+**Palikta interpretacija**, kurios išnašoje nėra: kad pasiskirstymas atitinka imties sudėtį (DDoS, DoS ir Mirai sudaro 70,8 % eilučių); kad tas pats pasiskirstymas yra apribojimas, nes žemo intensyvumo atakoms lieka mažai atramos, o `DDOS-SLOWLORIS` atvejis tai iliustruoja; kad antrą vietą užima protokolo kodas, nors yra atskiri TCP, UDP ir ICMP požymiai; kad automatinis filtras būtų pašalinęs informaciją, o ne triukšmą; ir kad analitikui prieaugio nepakanka.
+
+#### 157. Trečias kartas, kai perfrazuojant vos neatsirado klaidingas teiginys ⚠️
+
+Rašydamas buvau formulavęs „sąmoningai palikti mažos dispersijos požymiai **patenka į dešimtuką**". Lentelėje jų nėra nė vieno: dešimtuke stovi `rst_flag_number`, `ack_count`, `ack_flag_number`, o šeši mažos dispersijos požymiai kartu surenka tik 1,9 %. Pataisyta į „kartu duoda nedaug, bet ne nulį".
+
+Po 6.3 ir 6.4 tai jau trečias atvejis. **Bendras šablonas: pavojinga ne pati santrauka, o santrauka, kuriai reikia pažiūrėti į lentelę ir pasakyti, ko joje yra.** Todėl 7.6 pirmas sakinys dabar sako „surenka didžiąją dalį viso prieaugio", o tikslų 62,3 % palieka lentelei.
+
+### Vėliau — 7.7 sutrumpintas beveik perpus; 7 skyrius baigtas
+
+**203 → 131 žodis.**
+
+**Formuluotės:**
+
+| Buvo | Kodėl išimta |
+|---|---|
+| „**Vieno atsakymo nėra**, nes skiriasi diegimo sąlygos." | įžanga, skelbianti, kad toliau bus keli variantai; po jos einančios keturios pastraipos tai ir parodo |
+| „**Jo vertė šiame darbe yra** atskaitos lygis, ties kuriuo matuojamas gradientinio stiprinimo prieaugis." | paguodos sakinys po atmetimo; tą patį 4.7 jau sako kaip sprendimą, o ne kaip pateisinimą |
+
+**Skaičiai, esantys 23 lentelėje:** macro-F1 0,663, aptikimas 88,5 %, FPR 0,95 %, 45 MB, 29,6 µs, MLP 0,64 % ir „86 kartus mažesnis". Pastarasis dar ir pažodžiui yra 7.3 poskyryje.
+
+**Rekomendacija dabar yra keturios eilutės, po vieną scenarijui:** kraštinis šliuzas su biudžetu — XGBoost su slenksčiu; griežtai ribota atmintis — MLP; Random Forest nerekomenduojamas; autokoderis netinka kaip vienintelis metodas, bet svarstytinas kaip rikiavimo pakopa.
+
+**Palikti du dalykai, kurių niekur kitur nėra:** 200 medžių konfigūracija (atsiliko mažiau nei 1 %, 7,4 MB, bet dydis matuotas imtyje) ir galiojimo ribos pastraipa su `eren2026drift`. Pastaroji svarbi tuo labiau, kad „Darbo apribojimų" poskyris iš išvadų pašalintas.
+
+---
+
+## Skyrių trumpinimas baigtas
+
+| Skyrius | Pradžioje | Dabar |
+|---|---:|---:|
+| 1. Įvadas | 378 | 414 |
+| 2. Atakos | 2411 | ~2200 |
+| 3. DI metodai | 2028 | ~2050 |
+| 4. Parinkimas | 1443 | ~1600 |
+| 5. Sprendimas | 888 | ~800 |
+| 6. Vertinimas | 1485 | 1323 |
+| 7. Palyginimas | 1079 | 909 |
+| 8. Išvados | 337 | 397 |
+
+⚠️ **Skaičiai neapima lentelių pokyčių** (`tab:metodai` neteko stulpelio, `tab:slenkstis` pašalinta), tad tikrąjį rezultatą parodys tik `.\build.ps1`. Prieš kirpimą buvo 43 puslapiai.
+
+**Kas liko padaryti:**
+
+1. `.\build.ps1` ir puslapių skaičiaus patikra.
+2. Terminų patikra: `operacinis taškas`, `abliacija`, `zero-day` prieš „nematytos atakos" (155--156 radiniai).
+3. `veikimas.tex` ir `veikimas_test.tex` dubliavimo klausimas; `slenkstis.tex` nebenaudojama.
+
+### Vėliau — išvados sutrauktos į dvi pastraipas
+
+**399 → 228 žodžių**, šeši numeruoti punktai virto dviem pastraipomis.
+
+**Pirma pastraipa:** tikslas, kas padaryta (iš 18 metodų parinkti keturi, sukurta visa grandinė, įvertinta nepriklausoma aibe) ir pagrindinis rezultatas su skaičiais.
+
+**Antra pastraipa:** ribojantis veiksnys (duomenų struktūra, keturi iš aštuonių atmetimų, 78,7 % klaidų tarp atakų) ir du plačiau galiojantys rezultatai (nugalėtojas priklauso nuo sprendimo taško; paneigta prielaida dėl neprižiūrimo metodo).
+
+⚠️ **Prarastas sąryšis su uždavinių sąrašu.** Rugsėjo 13 d. buvo priimtas sprendimas: *„Išvados sudėliotos pagal uždavinius, ne pagal skyrius. Vadovo vienintelis turimas kriterijus yra užduočių sąrašas, todėl išvadų numeracija 1--6 atitinka uždavinių numeraciją."* Dviejose pastraipose to atitikimo nebėra, tad vadovas nebegali eiti punktas po punkto ir tikrinti, ką davė kiekvienas uždavinys.
+
+**Kas iškrito visai:**
+
+- 3 uždavinio išvada apie dviejų pakopų atranką ir užrakintą protokolą su 53,3 % dublikatų šalinimu (liko tik „dviem pakopomis");
+- 4 uždavinio išvada, išvardijanti grandinės žingsnius (36 požymiai, 70/15/15 skaidymas, slenkstis, prototipas);
+- 1 uždavinio prognozė apie žvalgybos painiavą, pasitvirtinusi eksperimente.
+
+Pirmasis ir trečiasis lieka 4 ir 6 skyriuose, bet išvadose jų nebėra. Ankstesnė redakcija yra git istorijoje ir `/tmp/isvados_senos.tex`.
+
+### Vėliau — šriftas sumažintas iki 11 pt
+
+`ataskaita.tex` ir `literatura.tex` pakeista į `\documentclass[11pt,a4paper]`.
+
+**Kodėl 11, o ne 10.** LaTeX dydžiai priklauso nuo bazinio dydžio:
+
+| Bazė | `\footnotesize` (lentelių tekstas) | `\scriptsize` (lentelių išnašos) |
+|---|---|---|
+| 12 pt | 10 pt | 8 pt |
+| **11 pt** | **9 pt** | **8 pt** |
+| 10 pt | 9 pt | **7 pt** |
+
+Darbe `\footnotesize` naudojamas 32 kartus, `\scriptsize` 13 kartų. Prie 11 pt viskas lieka 8 pt ir daugiau; prie 10 pt lentelių išnašos nukristų iki 7 pt.
+
+**IEEE atskaita** (ataskaitai neprivaloma, bet kaip riba tinka): konferencijų šablonuose pagrindinis tekstas 9--10 pt, antraštės ir literatūros sąrašas 8 pt, o grafikų ir lentelių viduje rekomenduojama 9--10 pt. Taigi 8 pt yra praktinė apatinė riba, ir 11 pt bazė jos nepažeidžia.
+
+⚠️ **Didesnis rezervas yra ne šrifte, o tarpuose.** Dokumentas naudoja `\onehalfspacing`; perėjimas į `\setstretch{1.25}` duotų daugiau puslapių nei šrifto mažinimas ir teksto dydžio neliestų. Nedaryta, nes nebuvo prašyta.
+
+Puslapių skaičių parodys `.\build.ps1`. Prieš trumpinimą buvo 43.
+
+### Vėliau — `claude/` išimamas iš GitHub; commit ir push lieka Windows pusei
+
+**Paruošta:** `.gitignore` papildytas `claude/` eilute.
+
+**Į GitHub pakelti yra penki failai**, visi `claude/` aplanke: `uzduotis_02_planas.md` ... `uzduotis_06_planas.md`. `ataskaitos_defektai.md` ir `rasymo_principai.md` niekada nebuvo sekami, tad jų GitHub'e ir nėra.
+
+#### 158. Git operacijų iš šios sesijos atlikti negalima ⚠️
+
+Dvi kliūtys, abi susijusios su tuo, kaip prijungtas aplankas pasiekiamas:
+
+1. **Trynimas neleidžiamas.** Bet kuri indeksą keičianti git komanda sukuria `.git/index.lock` ir po to jį ištrina. Trynimas per prijungtą aplanką neleidžiamas, tad `git add`, `git rm --cached` ir `git commit` neveikia.
+2. **Nėra GitHub kredencialų.** `git ls-remote` grąžina „could not read Username for 'https://github.com'". Windows Credential Manager iš šios pusės nepasiekiamas.
+
+⚠️ **Liko pakibęs `.git/index.lock`** (0 baitų, sukurtas 14:19 paleidus `git status`). Kol jis neištrintas, git neveiks ir Windows pusėje. Trinti reikia pirmu veiksmu.
+
+**Darbo būklė:** 42 pakeisti failai, visi diske, nė vienas neprarastas. Commit ir push atliekami Windows terminale.

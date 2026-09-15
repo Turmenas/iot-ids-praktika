@@ -277,10 +277,10 @@ def _lentele(t: pd.DataFrame) -> str:
     sk += [r"\bottomrule", r"\end{tabularx}",
            r"\vspace{2pt}",
            r"\raggedright\scriptsize Testavimo aibė. Klausiama tik to, ar eilutė "
-           r"pažymima kaip \emph{bet kuri} ataka: pašalinus "
+           r"pažymima kaip bet kuri ataka: pašalinus "
            r"\texttt{DICTIONARYBRUTEFORCE} ištuštėja visa \texttt{BruteForce} "
            r"kategorija, todėl macro-F1 su baziniu modeliu būtų nepalyginamas. "
-           r"Autokoderis \emph{nepermokomas} --- jis mokomas tik iš gerybinio "
+           r"Autokoderis nepermokomas, nes mokomas tik iš gerybinio "
            r"srauto, tad visos atakų klasės jam ir taip nematytos. Paskutinis "
            r"stulpelis rodo, kiek kainuoja klasės nematyti. Kiekvienam modeliui "
            r"$\tau$ parinktas validacijos aibėje.",

@@ -40,7 +40,7 @@ SAUGOMI = ["ece_flag_number", "cwr_flag_number", "Telnet", "SMTP",
 
 #: Trumpi paaiskinimai - ka pozymis matuoja 10/100 paketu lange.
 KA_MATUOJA = {
-    "Time_To_Live": "paketo TTL --- kiek tarpinių mazgų praėjo",
+    "Time_To_Live": "paketo TTL, kiek tarpinių mazgų praėjo",
     "Rate": "paketų dažnis lange",
     "IAT": "vidutinis tarpas tarp paketų",
     "Number": "paketų skaičius lange",
@@ -122,14 +122,14 @@ def lentele(e: list[tuple[str, float]]) -> str:
     ]
 
     isnasa = (
-        r"Vidutinis informacijos prieaugis (\emph{gain}), normalizuotas iki "
+        r"Vidutinis informacijos prieaugis (gain), normalizuotas iki "
         r"visų " + str(len(e)) + r" naudotų požymių sumos; XGBoost, "
         r"aštuonių kategorijų formuluotė, pradinis dydis 42. Skaičiuojama iš "
-        r"paties modelio --- duomenų aibė neatidaroma. Penki pirmieji "
-        r"požymiai surenka " + _sk(penki) + r"~\%, dešimt --- " +
+        r"paties modelio, o duomenų aibė neatidaroma. Penki pirmieji "
+        r"požymiai surenka " + _sk(penki) + r"~\%, o visi dešimt surenka " +
         _sk(dalis) + r"~\% viso prieaugio. Šeši sąmoningai palikti mažos "
         r"dispersijos požymiai kartu surenka " + _sk(saugomu_dalis, 1) +
-        r"~\%. Gain nerodo krypties: jis pasako, kuo modelis remiasi, o ne "
+        r"~\%. Gain nerodo krypties. Jis pasako, kuo modelis remiasi, o ne "
         r"kokia požymio reikšmė reiškia ataką."
     )
 

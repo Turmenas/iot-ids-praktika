@@ -12,33 +12,31 @@ apsauga. Skirtingai nuo bendrosios paskirties kompiuterių, jie dažnai
 turi ribotus skaičiavimo išteklius, gamykloje nustatytus prisijungimo
 duomenis ir programinę įrangą, kuri po pardavimo nebeatnaujinama.
 Sisteminės apžvalgos šį derinį įvardija kaip pagrindinę IoT saugumo
-problemą: pažeidžiamumų pobūdis čia kyla ne tiek iš atakų
+problemą. Pažeidžiamumų pobūdis čia kyla ne tiek iš atakų
 išradingumo, kiek iš to, kad įprastos apsaugos priemonės į tokius
-įrenginius netelpa \cite{sasi2024attacks,alwhbi2024encrypted}.
+įrenginius netelpa \cite{sasi2024attacks}.
 
-Praktinė to kaina jau išmatuota. \citeauthor{antonakakis2017mirai}
-\cite{antonakakis2017mirai} aprašytas Mirai botnetas užgrobė šimtus
+\citeauthor{antonakakis2017mirai} \cite{antonakakis2017mirai} aprašytas Mirai botnetas užgrobė šimtus
 tūkstančių įrenginių naudodamas vien numatytuosius slaptažodžius, o iš
-jų sudarytas tinklas vykdė vienas didžiausių to meto paskirstytojo
-paslaugos trikdymo atakų. Nuo tada atakų įvairovė tik augo: naujausiuose
-IoT srauto rinkiniuose fiksuojamos kelios dešimtys skirtingų atakų
-klasių --- nuo įvairių potvynio tipų iki žvalgybos, klastojimo ir
+jų sudarytas tinklas vykdė vieną didžiausių to meto paskirstytųjų
+paslaugos trikdymo atakų. Nuo tada atakų įvairovė tik augo.
+Naujausiuose IoT srauto rinkiniuose fiksuojamos kelios dešimtys skirtingų atakų
+klasių, nuo įvairių potvynio tipų iki žvalgybos, klastojimo ir
 žiniatinklio atakų \cite{neto2023ciciot}.
 
 Kadangi pažeidžiamumai lieka neištaisyti, o įrenginių individualiai
 konfigūruoti neįmanoma, praktiškai vienintelė likusi apsaugos
-priemonė yra atakų \emph{aptikimas} stebint tinklo srautą. Klasikinės
+priemonė yra atakų aptikimas stebint tinklo srautą. Klasikinės
 parašais grįstos sistemos čia riboto naudingumo, nes atpažįsta tik jau
 žinomus šablonus, o srauto šifravimas turinio analizę daro
 neįmanomą \cite{komal2026idsreview,fei2023systematic}. Todėl dėmesys
 krypsta į mašininiu mokymusi grįstą aptikimą. Tačiau šioje srityje
 skelbiami rezultatai dažnai yra optimistiškesni, nei leistų tikėtis
-uždavinio sunkumas: \citeauthor{reddy2026datasets}
-\cite{reddy2026datasets} rodo, kad daugelis 99~\%
-siekiančių tikslumų yra klasių disbalanso, pasikartojančių eilučių ir
-vertinimo metodikos artefaktai. Vadinasi, praktiškai vertingas darbas
-turi ne tik pasiekti aukštą metriką, bet ir parodyti, kokiomis
-sąlygomis ji gauta.
+uždavinio sunkumas. \citeauthor{reddy2026datasets}
+\cite{reddy2026datasets} rodo, kad daugelis 99~\% siekiančių tikslumų
+yra klasių disbalanso, pasikartojančių eilučių ir vertinimo metodikos
+artefaktai. Praktiškai vertingas darbas turi ne tik pasiekti aukštą
+metriką, bet ir parodyti, kokiomis sąlygomis ji gauta.
 
 \subsection*{Darbo tikslas}
 
@@ -61,37 +59,16 @@ tinklo kibernetinių atakų aptikimo sprendimą.
 
 \subsection*{Darbo prielaidos}
 
-Visame darbe laikomasi dviejų prielaidų, kurios išvedamos
-\ref{sec:atakos} skyriuje ir nuo jo nebekvestionuojamos. Pirma,
-aptikimas diegiamas \emph{kraštiniame šliuze} ir remiasi tik tinklo
-srauto požymiais --- tai vienintelė vieta, kur įmanoma stebėti visus
-įrenginius jų nekonfigūruojant. Antra, sistema privalo neviršyti
-1~\% klaidingų teigiamų: tipinėje apkrovoje tai jau
-reiškia apie tūkstantį signalų per parą, o dažnesni signalai praktikoje
-veda prie sistemos išjungimo. Antroji prielaida lemia, kad visas
-metodų palyginimas atliekamas ne ties didžiausios tikimybės tašku, o
-ties šiuo klaidingų teigiamų biudžetu.
+Aptikimas diegiamas kraštiniame šliuze ir remiasi tik tinklo
+srauto požymiais. Tai vienintelė vieta, kur įmanoma stebėti visus
+įrenginius jų nekonfigūruojant. Taip pat priimama, kad sistema neturi viršyti
+1~\% klaidingų teigiamų; ši riba pagrindžiama \ref{sec:atakos}
+skyriuje.
 
-\subsection*{Darbo struktūra ir pagrindiniai rezultatai}
+\subsection*{Darbo pagrindiniai rezultatai}
 
-Ataskaitos skyriai atitinka uždavinius. \ref{sec:atakos} skyriuje
-pateikiama atakų taksonomija pagal IoT architektūros sluoksnius,
-susieta su matomais srauto požymiais, ir išvedami reikalavimai
-sprendimui. \ref{sec:di_metodai} skyriuje apžvelgiami dirbtinio
-intelekto metodai ir jų praktiniai apribojimai. \ref{sec:parinkimas}
-skyriuje metodai atrenkami dviem pakopomis ir užrakinamas eksperimento
-protokolas. \ref{sec:sprendimas} skyriuje aprašomas sukurtas
-sprendimas --- nuo duomenų paruošimo iki prototipo.
-\ref{sec:vertinimas} skyriuje pateikiami matavimai nepriklausomoje
-testavimo aibėje, o \ref{sec:palyginimas} skyriuje metodai lyginami ir
-pateikiama rekomendacija.
-
-Praktinis darbo rezultatas --- veikianti aptikimo grandinė, kurios
+Praktinis darbo rezultatas yra veikianti aptikimo grandinė, kurios
 geriausias variantas ties reikalaujamu klaidingų teigiamų biudžetu
 aptinka 88,5~\% atakų srauto prie
 0,95~\% klaidingų teigiamų, telpa į 45~MB ir
-vienam įrašui sunaudoja apie 30 mikrosekundžių. Metodinis rezultatas
-svarbesnis: parodyta, kad metodų rikiuotė priklauso nuo to, kuriame
-sprendimo taške lyginama, o dalis rezultatų atotrūkio nuo literatūros
-paaiškinama tuo, kad iš mokymo duomenų pašalintos pasikartojančios
-eilutės.
+vienam įrašui sunaudoja apie 30 mikrosekundžių.

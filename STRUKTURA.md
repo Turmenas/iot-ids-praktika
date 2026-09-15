@@ -49,6 +49,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `uzduotis_04_planas.md` | **4 užd.** tikslų planas — **įkėlimo grandinė, modelių kontraktas, 3 dienų biudžetas** *(2026-09-06)* |
 | ✅ `uzduotis_05_planas.md` | **5 užd.** tikslų planas — **vienas prėjimas per `test`, vertinimo protokolas, nematytų klasių taisyklės** *(2026-09-08)* |
 | ✅ `uzduotis_06_planas.md` | **6 užd.** tikslų planas — **naujų matavimų nereikia; palyginimas ties FPR biudžetu, rekomendacija** *(2026-09-09)* |
+| ✅ `rasymo_principai.md` | Rašymo taisyklės: brūkšniai, dvitaškis, paryškinimai, datos |
+| ✅ `ataskaitos_defektai.md` | ⭐ `ataskaita.pdf` peržiūros defektų sąrašas: A (būtina), B (verta), C (kalba) *(2026-09-14)* |
 | ⬛ `uzduotis_01_planas.md` · `praktikos_planas.md` · `kontekstas.md` | Kol kas tik Claude projekte |
 
 ## `ataskaita\`
@@ -57,8 +59,8 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 |---|---|
 | ✅ `ataskaita.tex` | Pagrindinis dokumentas — preambulė + `\input`. **09-13: titulinis perdarytas** — be universitetinės atributikos, nes dokumentas teikiamas Aineros vadovui |
 | ✅ `saltiniai.bib` | Visi šaltiniai — **20 įrašų**, visi su patikrintu DOI (išsk. `antonakakis2017mirai`) |
-| ✅ `build.ps1` | Kompiliavimas — **gryname ASCII**. `-Clean`, `-Greitas` |
-| ✅ `literatura.tex` → `literatura.pdf` | ⭐ Bibliografija atskirai (žr. žemiau) |
+| ✅ `build.ps1` | Kompiliavimas — **gryname ASCII**. `-Clean`, `-Greitas`. **09-14: po `biber` tikrina, ar `ataskaita.bbl` ir `literatura.bbl` raktų eilės sutampa** |
+| ✅ `literatura.tex` → `literatura.pdf` | ⭐ Bibliografija atskirai (žr. žemiau). **Šaltinių eilė turi sutapti su citavimo eile** |
 | ✅ `skyriai\00_ivadas.tex` | **BAIGTAS 09-13** — aktualumas, tikslas, uždaviniai, **prielaidos**, struktūra ir pagrindiniai rezultatai. Naujų šaltinių nepridėta |
 | ✅ `skyriai\01_atakos.tex` | **1 užd.** Baigta. **2026-09-03: `tab:atakos` suderinta su 39 požymių leidimu** (15 taisymų). `tab:reikalavimai` **lieka čia** — perkėlimas atšauktas |
 | ✅ `skyriai\02_di_metodai.tex` | **2 užd.** Baigta — 8 poskyriai, 3 lentelės, 9,7 psl. |
@@ -69,7 +71,7 @@ Atitinka Claude projekto dokumentų erdvę 1:1, kad sinchronizavimas būtų ties
 | ✅ `skyriai\07_isvados.tex` | **BAIGTOS 09-13** — po vieną išvadą kiekvienam uždaviniui, rekomendacija, apribojimai, 5 tyrimų kryptys |
 | ✅ `lenteles\veikimas.tex` · `lenteles\*_test.tex` | **Generuojami** per `i_latex.py` — ranka neliesti. ⚠️ `rezultatai.tex` (val) pašalinta 09-13: nenaudojama nė viename skyriuje ir kaip tik ją lietė `i_latex` vidurkinimo yda |
 | ✅ `lenteles\matrica.tex` · `lenteles\jautrumas.tex` | **Generuojami** per `matrica.py` / `jautrumas.py` — ranka neliesti |
-| ✅ `lenteles\suvestine.tex` · `lenteles\pozymiai.tex` | **Generuojami** per `suvestine.py` / `pozymiu_svarba.py` — ranka neliesti |
+| ✅ `lenteles\suvestine.tex` · `lenteles\pozymiai.tex` | **Generuojami** per `suvestine.py` / `pozymiu_svarba.py` — ranka neliesti ⚠️ `slenkstis.tex` nuo 09-15 nenaudojama nė viename skyriuje (4.5 apkarpytas); `slenkstis_test.tex` lieka 5.4 poskyryje |
 | ✅ `paveikslai\architektura.pdf` · `prototipas.png` · `sumaisymas.pdf` · `kreives.pdf` · `kategorijos.pdf` · `kompromisai.pdf` | Visi **generuojami**, PDF data išjungta |
 | ⬜ `skaidres\` | Skaidrės, jei reikės |
 
@@ -198,6 +200,10 @@ git add . ; git commit -m "..." ; git push
 Pilnoje `ataskaita.tex` preambulėje `\printbibliography` lūžta; minimalioje veikia. Priežastis nerasta (įtariamas `csquotes` su lietuviškomis kabutėmis).
 
 Apėjimas: `literatura.tex` → `literatura.pdf` → `\includepdf`. **`build.ps1` tai daro pats — rankinio sujungimo nereikia.** Citavimai veikia; neveikia tik nuorodos iš citavimo į įrašą.
+
+⚠️ **Apėjimo kaina, rasta 2026-09-14.** Abu dokumentai naudoja `sorting=none`, bet ataskaitoje numerį duoda pirmas citavimas tekste, o `literatura.tex` su nocite žvaigždute imdavo `.bib` failo eilę. Eilės nesutapo, todėl **15 nuorodų iš 19 rodė į ne tą šaltinį**, o PDF atrodė visiškai tvarkingas.
+
+Dabar `literatura.tex` turi aiškų 19 raktų `\nocite` sąrašą, surašytą `ataskaita.bbl` `\entry` eile, o `build.ps1` tą eilę sutikrina kiekvieno paleidimo metu ir sustoja, jei ji išsiskyrė. Necituojami šaltiniai (`houichi2025smartcity`) į sąrašą nebepatenka.
 
 ---
 

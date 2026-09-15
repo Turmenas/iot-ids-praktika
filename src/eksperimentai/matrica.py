@@ -62,12 +62,12 @@ def i_latex(eilutes: list[dict]) -> str:
           r">{\centering\arraybackslash}p{1.15cm}"
           r">{\centering\arraybackslash}p{1.35cm}"
           r">{\centering\arraybackslash}p{1.15cm}"
-          r">{\centering\arraybackslash}p{1.45cm}"
-          r">{\centering\arraybackslash}p{1.25cm}"
-          r">{\raggedright\arraybackslash}p{1.9cm}@{}}",
+          r">{\centering\arraybackslash}p{1.9cm}"
+          r">{\centering\arraybackslash}p{1.4cm}"
+          r">{\raggedright\arraybackslash}p{1.4cm}@{}}",
           r"\toprule",
           r"\textbf{Metodas} & \textbf{Kokybė} & \textbf{Disba\-lansas}"
-          r" & \textbf{Resur\-sai} & \textbf{Interpre\-tuojamumas}"
+          r" & \textbf{Resur\-sai} & \textbf{Interpre\-tuo\-jamumas}"
           r" & \textbf{Svertinė suma} & \textbf{Šalt.} \\",
           r"\multicolumn{1}{@{}l}{\itshape svoris} & 0,30 & 0,30 & 0,25 & 0,15"
           r" & --- & \\",

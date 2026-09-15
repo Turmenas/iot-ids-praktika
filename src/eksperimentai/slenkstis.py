@@ -205,15 +205,15 @@ def _lentele(t: pd.DataFrame, aibe: str = "val") -> str:
                 sk_(e.ataku_aptikta * 100, 1), sk_(e.macro_f1)))
         sk.append(r"\addlinespace")
     sk[-1] = r"\bottomrule"
-    isnasa = (r"Slenkstis parenkamas \emph{tik} validacijos aibėje: "
+    isnasa = (r"Slenkstis parenkamas tik validacijos aibėje: "
               r"mažiausias $\tau$, tenkinantis klaidingų teigiamų biudžetą. "
               r"Modeliai nepermokomi.")
     if aibe == "test":
         # Isnasa privalo pasakyti, kad tau atkeliavo is kitos aibes. Be to
         # lentele atrodo taip, tarsi tau butu parinktas cia pat.
         isnasa = (r"Rodikliai išmatuoti \textbf{testavimo} aibėje. $\tau$ "
-                  r"parinktas validacijos aibėje ir čia \emph{netaikomas iš "
-                  r"naujo}: perrinkimas testavimo aibėje būtų nutekėjimas. "
+                  r"parinktas validacijos aibėje ir čia netaikomas iš "
+                  r"naujo: perrinkimas testavimo aibėje būtų nutekėjimas. "
                   r"Modeliai nepermokomi.")
     sk += [r"\end{tabularx}",
            r"\vspace{2pt}",

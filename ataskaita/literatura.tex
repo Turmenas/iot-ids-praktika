@@ -1,5 +1,5 @@
 % =====================================================================
-%  literatura.tex — TIK bibliografija, atskiras dokumentas.
+%  literatura.tex - TIK bibliografija, atskiras dokumentas.
 %
 %  Kodel atskirai: pilnoje ataskaita.tex preambuleje biblatex luzta
 %  (! Improper alphabetic constant ties \q__text_recursion_tail).
@@ -18,11 +18,11 @@
 %  paketas cia yra rizika, kad grizs ta pati klaida.
 % =====================================================================
 
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 
-% Tie patys parastes kaip ataskaita.tex — kad puslapis atrodytu vienodai
+% Tie patys parastes kaip ataskaita.tex, kad puslapis atrodytu vienodai
 \usepackage[a4paper,left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{setspace}
 \onehalfspacing
@@ -36,7 +36,46 @@
 \begin{document}
 
 \section*{Literatūros sąrašas}
-\nocite{*}
+
+% =====================================================================
+%  SALTINIU EILE TURI SUTAPTI SU ataskaita.tex CITAVIMO EILE.
+%
+%  Kodel: abu dokumentai naudoja sorting=none, todel numeri [n] duoda
+%  eile, kuria saltiniai cia surasyti. Anksciau cia buvo nocite su zvaigzdute,
+%  kuris ima .bib failo eile, o ataskaita.tex numeruoja pagal pirma
+%  citavima tekste. Eiles nesutapo, todel 15 nuorodu is 19 rode i ne ta
+%  saltini (pvz. tekste "Sasi et al. [1]", o sarase [1] buvo Krishna).
+%
+%  Sis sarasas nurasytas nuo ataskaita.bbl \entry{...} eiles.
+%  build.ps1 kiekvieno paleidimo metu ja sutikrina ir sustoja, jei
+%  eiles issiskyre. Jei sustojo - jis pats atspausdina teisinga sarasa.
+%
+%  houichi2025smartcity cia NEIRASYTAS samoningai: jis yra saltiniai.bib
+%  faile, bet tekste necituojamas nei karto, todel i literaturos sarasa
+%  nepatenka. Jei bus pacituotas, build.ps1 apie tai pranes.
+% =====================================================================
+
+\nocite{sasi2024attacks}
+\nocite{antonakakis2017mirai}
+\nocite{neto2023ciciot}
+\nocite{komal2026idsreview}
+\nocite{fei2023systematic}
+\nocite{reddy2026datasets}
+\nocite{krishna2021taxonomy}
+\nocite{prajapati2025rpl}
+\nocite{meidan2018nbaiot}
+\nocite{alwhbi2024encrypted}
+\nocite{sommer2010closed}
+\nocite{sallam2026gap}
+\nocite{almahaqeri2026gradient}
+\nocite{mazinani2026constrained}
+\nocite{nassef2026tinyml}
+\nocite{mohale2025xai}
+\nocite{imani2025imbalance}
+\nocite{eren2026drift}
+\nocite{chawla2002smote}
+\nocite{dietterich1998tests}
+
 \printbibliography[heading=none]
 
 \end{document}

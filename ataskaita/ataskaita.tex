@@ -13,7 +13,7 @@
 %              keitiklis lūžta ties lietuviškomis raidėmis).
 % =====================================================================
 
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 
 % ─── Koduotė ir kalba ────────────────────────────────────────────────
 \usepackage[T1]{fontenc}
@@ -36,7 +36,8 @@
                                    % (reikalinga tab:atakos, 17 eilučių)
 \usepackage{multirow}
 \usepackage{siunitx}               % skaičių lygiavimas pagal kablelį
-\sisetup{output-decimal-marker={,}, group-separator={\,}}
+\sisetup{output-decimal-marker={,}, group-separator={\,},
+         range-phrase={--}, range-units=single}
 \usepackage{graphicx}
 \graphicspath{{paveikslai/}}
 \usepackage{float}
@@ -124,19 +125,12 @@
 \vspace*{3.5cm}
 
 {\huge\bfseries IoT kibernetinių atakų prevencija\\[6pt] naudojant dirbtinio intelekto sistemas\par}
-\vspace{1.2cm}
-
-{\Large Praktikos ataskaita\par}
 
 \vfill
 
 {\Large\bfseries Gabrielius Tumėnas\par}
-\vspace{0.4cm}
-{\large Dirbtinio intelekto programinės sistemos\par}
 
 \vspace{2cm}
-{\large Praktikos vieta: Ainera\par}
-\vspace{0.6cm}
 {\large 2026 m. rugsėjis\par}
 
 \vspace{2cm}

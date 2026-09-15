@@ -74,3 +74,6 @@ desktop.ini
 
 # Atsargines kodo kopijos
 *.bak
+
+# Claude darbiniai failai - tik vietiniam naudojimui, i GitHub nekeliami
+claude/
