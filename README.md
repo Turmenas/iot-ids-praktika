@@ -140,7 +140,6 @@ Ataskaitos lentelės su skaičiais generuojamos iš `rezultatai.csv`, tad rankom
 | Kas ir kada padaryta, kodėl taip nuspręsta | `DARBO_ZURNALAS.md` |
 | Duomenų rinkinys: požymiai, etiketės, spąstai | `duomenys/README.md` |
 | Šaltinių anotacijos | `literatura/anotacijos.md` |
-| Užduočių planai | `claude/uzduotis_NN_planas.md` |
 
 ## Citavimas
 
